@@ -11,9 +11,49 @@
     <header>
         <h1>🛍 MaxiMarket</h1>
     </header>
-    <main id="products-container">
-        <!-- Mahsulotlar JavaScript orqali yuklanadi -->
-    </main>
+    <main id="products-container"></main>
+
+    <!-- Buyurtma oynasi (Modal) -->
+    <div id="order-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            
+            <!-- Rasm slayderi -->
+            <div class="slider">
+                <button class="slider-btn prev" onclick="slideImage(-1)">‹</button>
+                <img id="modal-image" src="" alt="Mahsulot rasmi">
+                <button class="slider-btn next" onclick="slideImage(1)">›</button>
+                <div class="slider-dots" id="slider-dots"></div>
+            </div>
+
+            <!-- Mahsulot ma'lumotlari -->
+            <h2 id="modal-title">🤩 BEL VA TANADAGI CHARCHOQLARGA YECHIM! 🔥</h2>
+            <p class="aksiya-badge">❗ AKSIYA NARXIDA ❗</p>
+            <p class="modal-price">💵 <span id="modal-price">199,000</span> SO'M</p>
+            
+            <p class="countdown-label">👉 Bugungi aksiya tugashiga</p>
+            <div class="countdown" id="countdown">
+                <div><span id="cd-hours">00</span><small>SOAT</small></div>
+                <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
+                <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
+            </div>
+
+            <p class="info-label">Ma'lumotlaringizni yozib qoldiring ⬇️</p>
+
+            <form id="order-form" onsubmit="submitOrder(event)">
+                <label>ISMINGIZ *</label>
+                <input type="text" id="order-name" placeholder="Ismingizni kiriting" required>
+
+                <label>TELEFON RAQAMINGIZ *</label>
+                <input type="tel" id="order-phone" placeholder="+998 90 000 00 00" value="+998 " required>
+
+                <button type="submit" class="order-btn">🛒 Buyurtma berish</button>
+            </form>
+
+            <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
