@@ -1,52 +1,81 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+    background: #f5f5f5;
+    color: #222;
     margin: 0;
     padding: 16px;
+    padding-bottom: 40px;
 }
-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-.product-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
+header { text-align: center; margin-bottom: 20px; }
+.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .product-card {
-    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    background: #fff; border-radius: 12px; padding: 10px;
+    text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: pointer; transition: transform 0.1s;
 }
-.product-card img {
-    width: 100%;
-    border-radius: 8px;
-    height: 120px;
-    object-fit: cover;
+.product-card:active { transform: scale(0.97); }
+.product-card img { width: 100%; border-radius: 8px; height: 130px; object-fit: cover; }
+.product-card h3 { font-size: 13px; margin: 8px 0 4px; }
+.product-card .old-price { font-size: 11px; color: #999; text-decoration: line-through; }
+.product-card .new-price { font-size: 14px; color: #e53935; font-weight: bold; }
+
+/* Modal (Buyurtma oynasi) */
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 999;
+    justify-content: center; align-items: flex-start;
+    overflow-y: auto; padding: 10px;
 }
-.product-card h3 {
-    font-size: 14px;
-    margin: 8px 0 4px;
+.modal-overlay.active { display: flex; }
+.modal-content {
+    background: #fff; border-radius: 16px; padding: 16px;
+    max-width: 420px; width: 100%; position: relative;
+    margin: auto;
 }
-.product-card p {
-    font-size: 13px;
-    color: #555;
-    margin: 4px 0;
+.modal-close {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,0.5); color: #fff;
+    border: none; border-radius: 50%; width: 30px; height: 30px;
+    font-size: 16px; cursor: pointer; z-index: 2;
 }
-.product-card button {
-    background: var(--tg-theme-button-color, #2481cc);
-    color: var(--tg-theme-button-text-color, #ffffff);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    margin-top: 8px;
-    width: 100%;
-    font-size: 14px;
-    cursor: pointer;
+.slider { position: relative; margin-bottom: 12px; }
+.slider img { width: 100%; border-radius: 12px; height: 260px; object-fit: cover; }
+.slider-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.9); border: none;
+    width: 34px; height: 34px; border-radius: 50%;
+    font-size: 20px; cursor: pointer;
 }
-.product-card button:active {
-    opacity: 0.8;
+.slider-btn.prev { left: 6px; }
+.slider-btn.next { right: 6px; }
+.slider-dots { text-align: center; margin-top: 6px; }
+.slider-dots span {
+    display: inline-block; width: 7px; height: 7px;
+    background: #ccc; border-radius: 50%; margin: 0 3px;
+}
+.slider-dots span.active { background: #2481cc; }
+
+#modal-title { font-size: 15px; text-align: center; margin: 10px 0; }
+.aksiya-badge { text-align: center; color: #e53935; font-weight: bold; margin: 4px 0; }
+.modal-price { text-align: center; font-size: 22px; font-weight: bold; color: #2e7d32; margin: 8px 0; }
+.countdown-label { text-align: center; font-size: 13px; margin: 8px 0 4px; }
+.countdown { display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; }
+.countdown div { text-align: center; }
+.countdown span { font-size: 26px; font-weight: bold; color: #1565c0; display: block; }
+.countdown small { font-size: 10px; color: #888; }
+.info-label { text-align: center; font-size: 13px; margin: 12px 0 6px; }
+#order-form label { font-size: 12px; font-weight: bold; display: block; margin: 10px 0 4px; }
+#order-form input {
+    width: 100%; padding: 12px; border: 1px solid #ddd;
+    border-radius: 8px; font-size: 15px; box-sizing: border-box;
+}
+.order-btn {
+    width: 100%; background: #1565c0; color: #fff;
+    border: none; padding: 14px; border-radius: 8px;
+    font-size: 16px; font-weight: bold; margin-top: 14px; cursor: pointer;
+}
+.order-btn:active { background: #0d47a1; }
+.delivery-info {
+    text-align: center; font-size: 11px; color: #666;
+    margin-top: 12px; padding: 8px; background: #f5f5f5; border-radius: 8px;
 }
