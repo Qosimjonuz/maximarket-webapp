@@ -11,14 +11,30 @@
     <header>
         <h1>🛍 MaxiMarket</h1>
     </header>
+
+    <!-- BANNER CAROUSEL - katta aylanadigan rasmlar -->
+    <div class="banner-carousel">
+        <img id="banner-img" src="" alt="Banner">
+        <button class="banner-nav prev" onclick="slideBanner(-1)">‹</button>
+        <button class="banner-nav next" onclick="slideBanner(1)">›</button>
+        <div class="banner-dots" id="banner-dots"></div>
+    </div>
+
+    <!-- QIDIRUV -->
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Mahsulot qidirish..." oninput="filterProducts()">
+        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none;">✕</button>
+    </div>
+
+    <!-- MAHSULOTLAR -->
     <main id="products-container"></main>
 
-    <!-- Buyurtma oynasi (Modal) -->
+    <!-- Buyurtma oynasi -->
     <div id="order-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal()">✕</button>
             
-            <!-- Rasm slayderi -->
             <div class="slider">
                 <button class="slider-btn prev" onclick="slideImage(-1)">‹</button>
                 <img id="modal-image" src="" alt="Mahsulot rasmi">
@@ -26,10 +42,11 @@
                 <div class="slider-dots" id="slider-dots"></div>
             </div>
 
-            <!-- Mahsulot ma'lumotlari -->
-            <h2 id="modal-title">🤩 BEL VA TANADAGI CHARCHOQLARGA YECHIM! 🔥</h2>
+            <h2 id="modal-title"></h2>
+            <div id="modal-description" class="modal-description"></div>
+
             <p class="aksiya-badge">❗ AKSIYA NARXIDA ❗</p>
-            <p class="modal-price">💵 <span id="modal-price">199,000</span> SO'M</p>
+            <p class="modal-price">💵 <span id="modal-price"></span> SO'M</p>
             
             <p class="countdown-label">👉 Bugungi aksiya tugashiga</p>
             <div class="countdown" id="countdown">
