@@ -179,6 +179,193 @@ header h1 {
 
 .slider-dots { text-align: center; margin-top: 8px; }
 
+* { box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, #42a5f5 0%, #90caf9 40%, #e3f2fd 100%);
+    background-attachment: fixed;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 12px;
+    padding-bottom: 40px;
+    min-height: 100vh;
+}
+
+header {
+    text-align: center;
+    margin: 8px 0 20px;
+    padding: 16px 0;
+}
+
+header h1 {
+    font-size: 24px;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* Mahsulotlar to'ri - 2 ustun */
+.product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* Karta wrapper */
+.product-card-wrapper {
+    position: relative;
+}
+
+/* Karta */
+.product-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.product-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* KATTA RASM */
+.product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    background: #f5f5f5;
+}
+
+/* Karta ichidagi matn qismi */
+.product-card .card-body {
+    padding: 10px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    line-height: 1.3;
+    color: #222;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-card .old-price {
+    font-size: 12px;
+    color: #999;
+    text-decoration: line-through;
+    margin: 0 0 2px;
+}
+
+.product-card .new-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e53935;
+    margin: 0;
+}
+
+/* Chegirma badge */
+.product-card .discount-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff6f00;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(255,111,0,0.4);
+}
+
+/* Modal (buyurtma oynasi) */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 999;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    margin: auto;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* Modal ichidagi katta rasm */
+.slider { position: relative; margin-bottom: 14px; }
+
+.slider img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #f5f5f5;
+}
+
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.95);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slider-btn.prev { left: 10px; }
+.slider-btn.next { right: 10px; }
+
+.slider-dots { text-align: center; margin-top: 8px; }
+
 .slider-dots span {
     display: inline-block;
     width: 8px;
@@ -305,8 +492,9 @@ header h1 {
 .loading {
     text-align: center;
     padding: 40px 20px;
-    color: #999;
+    color: #ffffff;
     font-size: 14px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 /* Mobil uchun kichik ekran */
