@@ -1,4 +1,4 @@
-const tg = window.Telegram.WebApp;
+    const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
@@ -11,36 +11,26 @@ let countdownInterval = null;
 
 async function loadProducts() {
     const container = document.getElementById('products-container');
-    if (!container) {
-        console.error("products-container topilmadi!");
-        return;
-    }
-    container.innerHTML = '<p style="text-align:center;padding:20px;">⏳ Yuklanmoqda...</p>';
+    container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
     
     try {
-        console.log("API so'rov yuborilmoqda...");
         const response = await fetch(`${API_URL}/api/products`);
-        console.log("API javob:", response.status);
         const data = await response.json();
-        console.log("Ma'lumotlar:", data);
         products = data.products || [];
         
         if (products.length === 0) {
-            container.innerHTML = '<p style="text-align:center;padding:20px;">Hozircha mahsulotlar yo\'q</p>';
+            container.innerHTML = '<p class="loading">Hozircha mahsulotlar yo\'q</p>';
             return;
         }
         
         renderProducts();
     } catch (error) {
-        console.error("Xatolik:", error);
-        container.innerHTML = '<p style="text-align:center;padding:20px;color:red;">❌ Yuklashda xatolik: ' + error.message + '</p>';
+        container.innerHTML = '<p class="loading">❌ Yuklashda xatolik</p>';
     }
 }
 
 function getImageUrl(url) {
     if (!url) return "https://via.placeholder.com/400x400?text=No+Image";
-    // Telegram post URL bo'lsa, to'g'ridan-to'g'ri ishlatib bo'lmaydi
-    // Lekin URL http bilan boshlansa, o'sha holicha qaytaramiz
     if (url.startsWith('http')) return url;
     return `${API_URL}/api/image/${url}`;
 }
@@ -67,6 +57,16 @@ function renderProducts() {
     }).join('') + '</div>';
 }
 
+function formatDescription(text) {
+    if (!text || !text.trim()) return '';
+    return text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => `<p>${line}</p>`)
+        .join('');
+}
+
 function openModal(id) {
     currentProduct = products.find(p => p.id === id);
     if (!currentProduct) return;
@@ -74,6 +74,13 @@ function openModal(id) {
     currentImageIndex = 0;
     document.getElementById('modal-title').innerText = currentProduct.title || '';
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
+    
+    const descEl = document.getElementById('modal-description');
+    if (descEl) {
+        const formatted = formatDescription(currentProduct.description);
+        descEl.innerHTML = formatted;
+        descEl.style.display = formatted ? 'block' : 'none';
+    }
     
     updateImage();
     startCountdown();
