@@ -1,4 +1,4 @@
-<!<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
@@ -72,6 +72,15 @@
         button.danger { background: #e53935; }
         button.danger:active { background: #c62828; }
         button.small { width: auto; padding: 7px 14px; margin: 0; font-size: 13px; }
+        .info-note {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
         .image-preview {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -128,20 +137,21 @@
         <div class="section">
             <h2>➕ Yangi mahsulot qo'shish</h2>
 
+            <div class="info-note">
+                ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi. Qo'shilgandan keyin hisob boshlanadi.
+            </div>
+
             <label>Mahsulot nomi *</label>
             <input type="text" id="p-title" placeholder="Masalan: Soch tekislovchi">
 
             <label>Tavsif</label>
-            <textarea id="p-description" rows="3" placeholder="Mahsulot haqida qisqacha ma'lumot"></textarea>
+            <textarea id="p-description" rows="5" placeholder="Har bir xususiyatni yangi qatorda yozing:&#10;Nafis va zamonaviy dizayn&#10;Premium oltin rangli korpus&#10;Kvarts mexanizm"></textarea>
 
             <label>Asl narxi (so'm) *</label>
             <input type="number" id="p-price" placeholder="250000" inputmode="numeric">
 
             <label>Chegirma narxi (so'm) *</label>
             <input type="number" id="p-discount" placeholder="199000" inputmode="numeric">
-
-            <label>Chegirma tugash vaqti</label>
-            <input type="datetime-local" id="p-end">
 
             <label>📷 Rasmlar (4 tagacha)</label>
             <input type="file" id="p-images" accept="image/*" multiple onchange="previewImages(event)">
@@ -259,7 +269,6 @@
             const description = document.getElementById('p-description').value.trim();
             const price = parseInt(document.getElementById('p-price').value) || 0;
             const discount = parseInt(document.getElementById('p-discount').value) || 0;
-            const end = document.getElementById('p-end').value;
 
             if (!title || !price || !discount) {
                 showStatus('add-status', "❗ Nomi, narx va chegirma narxini kiriting", 'err');
@@ -278,20 +287,20 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         password: adminPassword,
-                        title, description, price,
+                        title: title,
+                        description: description,
+                        price: price,
                         discount_price: discount,
-                        discount_end: end,
                         images: imageUrls
                     })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showStatus('add-status', "✅ Mahsulot muvaffaqiyatli qo'shildi!", 'ok');
+                    showStatus('add-status', "✅ Mahsulot qo'shildi! Chegirma 12 soatga o'rnatildi.", 'ok');
                     document.getElementById('p-title').value = '';
                     document.getElementById('p-description').value = '';
                     document.getElementById('p-price').value = '';
                     document.getElementById('p-discount').value = '';
-                    document.getElementById('p-end').value = '';
                     document.getElementById('p-images').value = '';
                     selectedFiles = [];
                     previewImages({target: {files: []}});
