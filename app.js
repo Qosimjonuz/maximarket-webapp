@@ -47,14 +47,24 @@ function getImageUrl(url) {
 
 function renderProducts() {
     const container = document.getElementById('products-container');
-    container.innerHTML = '<div class="product-grid">' + products.map(p => `
-        <div class="product-card" onclick="openModal(${p.id})">
-            <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/400x400?text=Rasm+yoq'">
-            <h3>${(p.title || '').substring(0, 40)}</h3>
-            <p class="old-price">${(p.price || 0).toLocaleString()} UZS</p>
-            <p class="new-price">${(p.discount_price || 0).toLocaleString()} UZS</p>
+    container.innerHTML = '<div class="product-grid">' + products.map(p => {
+        const discountPercent = p.price > 0 && p.discount_price > 0 
+            ? Math.round((1 - p.discount_price / p.price) * 100) 
+            : 0;
+        return `
+        <div class="product-card-wrapper">
+            <div class="product-card" onclick="openModal(${p.id})">
+                ${discountPercent > 0 ? `<div class="discount-badge">-${discountPercent}%</div>` : ''}
+                <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/400x400?text=Rasm+yoq'">
+                <div class="card-body">
+                    <h3>${p.title || ''}</h3>
+                    ${p.price > p.discount_price ? `<p class="old-price">${p.price.toLocaleString()} UZS</p>` : ''}
+                    <p class="new-price">${(p.discount_price || 0).toLocaleString()} UZS</p>
+                </div>
+            </div>
         </div>
-    `).join('') + '</div>';
+        `;
+    }).join('') + '</div>';
 }
 
 function openModal(id) {
