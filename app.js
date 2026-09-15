@@ -1,32 +1,33 @@
-    const tg = window.Telegram.WebApp;
+const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
 const API_URL = "https://maximarketbot-production.up.railway.app";
 
-// ==================== BANNER RASMLARI ====================
-// Bu yerga 15 ta yoki ko'proq rasm URL manzillarini qo'ying
-const bannerImages = [
-    "https://via.placeholder.com/800x400/1565c0/ffffff?text=Banner+1",
-    "https://via.placeholder.com/800x400/42a5f5/ffffff?text=Banner+2",
-    "https://via.placeholder.com/800x400/1976d2/ffffff?text=Banner+3",
-    "https://via.placeholder.com/800x400/0d47a1/ffffff?text=Banner+4",
-    "https://via.placeholder.com/800x400/2196f3/ffffff?text=Banner+5",
-    "https://via.placeholder.com/800x400/1565c0/ffffff?text=Banner+6",
-    "https://via.placeholder.com/800x400/42a5f5/ffffff?text=Banner+7",
-    "https://via.placeholder.com/800x400/1976d2/ffffff?text=Banner+8",
-    "https://via.placeholder.com/800x400/0d47a1/ffffff?text=Banner+9",
-    "https://via.placeholder.com/800x400/2196f3/ffffff?text=Banner+10",
-    "https://via.placeholder.com/800x400/1565c0/ffffff?text=Banner+11",
-    "https://via.placeholder.com/800x400/42a5f5/ffffff?text=Banner+12",
-    "https://via.placeholder.com/800x400/1976d2/ffffff?text=Banner+13",
-    "https://via.placeholder.com/800x400/0d47a1/ffffff?text=Banner+14",
-    "https://via.placeholder.com/800x400/2196f3/ffffff?text=Banner+15"
+// ==================== BANNERLAR ====================
+// Har bir banner: emoji, sarlavha, subtitle va fon rangi
+// Xohlagancha qo'shishingiz mumkin (15 ta tayyor)
+const banners = [
+    { emoji: "🎁", title: "MaxiMarket", subtitle: "Yangi mahsulotlar", bg: "linear-gradient(135deg, #1565c0, #42a5f5)" },
+    { emoji: "🔥", title: "CHEGIRMALAR", subtitle: "70% gacha arzonlashuv", bg: "linear-gradient(135deg, #e53935, #ff6f00)" },
+    { emoji: "🚚", title: "Bepul yetkazib berish", subtitle: "O'zbekiston bo'ylab", bg: "linear-gradient(135deg, #2e7d32, #66bb6a)" },
+    { emoji: "💎", title: "Premium sifat", subtitle: "Eng yaxshi brendlar", bg: "linear-gradient(135deg, #6a1b9a, #ab47bc)" },
+    { emoji: "⚡", title: "Tezkor xizmat", subtitle: "24/7 ishlaymiz", bg: "linear-gradient(135deg, #f57c00, #ffb74d)" },
+    { emoji: "🎯", title: "Kafolatlangan", subtitle: "Sifat kafolati", bg: "linear-gradient(135deg, #0d47a1, #1976d2)" },
+    { emoji: "🏆", title: "Eng yaxshi narxlar", subtitle: "Bozordagi eng arzon", bg: "linear-gradient(135deg, #c62828, #e53935)" },
+    { emoji: "💝", title: "Sovg'alar", subtitle: "Yaqinlaringizga", bg: "linear-gradient(135deg, #ad1457, #ec407a)" },
+    { emoji: "📱", title: "Elektronika", subtitle: "Zamonaviy texnika", bg: "linear-gradient(135deg, #0277bd, #29b6f6)" },
+    { emoji: "👗", title: "Kiyimlar", subtitle: "Yangi kolleksiya", bg: "linear-gradient(135deg, #6a1b9a, #8e24aa)" },
+    { emoji: "🏠", title: "Uy uchun", subtitle: "Qulaylik yaratuvchi", bg: "linear-gradient(135deg, #ef6c00, #fb8c00)" },
+    { emoji: "🎮", title: "O'yinchoqlar", subtitle: "Bolalar uchun", bg: "linear-gradient(135deg, #283593, #3f51b5)" },
+    { emoji: "💄", title: "Go'zallik", subtitle: "Kosmetika mahsulotlari", bg: "linear-gradient(135deg, #c2185b, #f06292)" },
+    { emoji: "🍔", title: "Oziq-ovqat", subtitle: "Mazali mahsulotlar", bg: "linear-gradient(135deg, #d84315, #ff7043)" },
+    { emoji: "⭐", title: "Sizning tanlovingiz", subtitle: "Eng ko'p sotilgan", bg: "linear-gradient(135deg, #1565c0, #1e88e5)" }
 ];
 
 let currentBannerIndex = 0;
 let bannerInterval = null;
-const BANNER_DELAY = 4000; // 4 sekund
+const BANNER_DELAY = 4000;
 
 let products = [];
 let filteredProducts = [];
@@ -36,18 +37,13 @@ let countdownInterval = null;
 
 // ==================== BANNER ====================
 function initBanner() {
-    if (bannerImages.length === 0) return;
+    updateBanner();
     
-    const img = document.getElementById('banner-img');
-    img.src = bannerImages[0];
-    
-    // Dots
     const dotsEl = document.getElementById('banner-dots');
-    dotsEl.innerHTML = bannerImages.map((_, i) => 
+    dotsEl.innerHTML = banners.map((_, i) => 
         `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
     ).join('');
     
-    // Auto-slide
     startBannerAutoSlide();
 }
 
@@ -57,10 +53,9 @@ function startBannerAutoSlide() {
 }
 
 function slideBanner(dir) {
-    if (bannerImages.length === 0) return;
-    currentBannerIndex = (currentBannerIndex + dir + bannerImages.length) % bannerImages.length;
+    currentBannerIndex = (currentBannerIndex + dir + banners.length) % banners.length;
     updateBanner();
-    startBannerAutoSlide(); // Reset timer
+    startBannerAutoSlide();
 }
 
 function goToBanner(index) {
@@ -70,15 +65,19 @@ function goToBanner(index) {
 }
 
 function updateBanner() {
-    const img = document.getElementById('banner-img');
-    img.style.opacity = '0';
-    setTimeout(() => {
-        img.src = bannerImages[currentBannerIndex];
-        img.style.opacity = '1';
-    }, 150);
+    const banner = banners[currentBannerIndex];
+    const slide = document.getElementById('banner-slide');
     
-    const dots = document.querySelectorAll('#banner-dots span');
-    dots.forEach((dot, i) => {
+    slide.style.opacity = '0';
+    setTimeout(() => {
+        slide.style.background = banner.bg;
+        document.getElementById('banner-emoji').innerText = banner.emoji;
+        document.getElementById('banner-title').innerText = banner.title;
+        document.getElementById('banner-subtitle').innerText = banner.subtitle;
+        slide.style.opacity = '1';
+    }, 200);
+    
+    document.querySelectorAll('#banner-dots span').forEach((dot, i) => {
         dot.classList.toggle('active', i === currentBannerIndex);
     });
 }
@@ -115,19 +114,27 @@ async function loadProducts() {
     container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
     
     try {
+        console.log("API so'rov:", `${API_URL}/api/products`);
         const response = await fetch(`${API_URL}/api/products`);
+        console.log("API javob statusi:", response.status);
+        
         const data = await response.json();
+        console.log("API ma'lumotlar:", data);
+        
         products = data.products || [];
         filteredProducts = [...products];
         
+        console.log("Mahsulotlar soni:", products.length);
+        
         if (products.length === 0) {
-            container.innerHTML = '<p class="loading">Hozircha mahsulotlar yo\'q</p>';
+            container.innerHTML = '<p class="loading">📦 Hozircha mahsulotlar yo\'q</p>';
             return;
         }
         
         renderProducts();
     } catch (error) {
-        container.innerHTML = '<p class="loading">❌ Yuklashda xatolik</p>';
+        console.error("Yuklash xatosi:", error);
+        container.innerHTML = '<p class="loading">❌ Xatolik: ' + error.message + '</p>';
     }
 }
 
@@ -154,7 +161,7 @@ function renderProducts() {
         return `
         <div class="product-card" onclick="openModal(${p.id})">
             <div class="product-image-wrap">
-                <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/400x400?text=Rasm+yoq'">
+                <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
                 ${discountPercent > 0 ? `<div class="discount-badge">-${discountPercent}%</div>` : ''}
             </div>
             <div class="product-info">
