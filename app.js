@@ -2,56 +2,52 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// Mahsulotlar ro'yxati (Hozircha statik, keyinchalik API ga ulanadi)
-const products = [
-    {
-        id: 1,
-        title: "🤩 BEL VA TANADAGI CHARCHOQLARGA YECHIM! 🔥",
-        price: 250000,
-        discount_price: 199000,
-        discount_end: new Date(Date.now() + 10 * 60 * 60 * 1000).toISOString(), // 10 soatdan keyin tugaydi
-        images: [
-            "https://via.placeholder.com/400x400?text=Rasm+1",
-            "https://via.placeholder.com/400x400?text=Rasm+2",
-            "https://via.placeholder.com/400x400?text=Rasm+3",
-            "https://via.placeholder.com/400x400?text=Rasm+4"
-        ]
-    },
-    {
-        id: 2,
-        title: "👕 Oversayz yengil kurtka",
-        price: 290000,
-        discount_price: 250000,
-        discount_end: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
-        images: [
-            "https://via.placeholder.com/400x400?text=Kurtka+1",
-            "https://via.placeholder.com/400x400?text=Kurtka+2",
-            "https://via.placeholder.com/400x400?text=Kurtka+3",
-            "https://via.placeholder.com/400x400?text=Kurtka+4"
-        ]
-    }
-];
+const API_URL = "https://maximarketbot-production.up.railway.app";
 
+let products = [];
 let currentProduct = null;
 let currentImageIndex = 0;
 let countdownInterval = null;
 
-// Mahsulotlarni ekranga chiqarish
+// Mahsulotlarni API dan olish
+async function loadProducts() {
+    const container = document.getElementById('products-container');
+    container.innerHTML = '<p style="text-align:center;padding:20px;">⏳ Yuklanmoqda...</p>';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/products`);
+        const data = await response.json();
+        products = data.products || [];
+        
+        if (products.length === 0) {
+            container.innerHTML = '<p style="text-align:center;padding:20px;">Hozircha mahsulotlar yo\\'q</p>';
+            return;
+        }
+        
+        renderProducts();
+    } catch (error) {
+        console.error("Xatolik:", error);
+        container.innerHTML = '<p style="text-align:center;padding:20px;">❌ Yuklashda xatolik</p>';
+    }
+}
+
+function getImageUrl(file_id) {
+    if (!file_id) return "https://via.placeholder.com/400x400?text=No+Image";
+    return `${API_URL}/api/image/${file_id}`;
+}
+
 function renderProducts() {
     const container = document.getElementById('products-container');
-    if (!container) return;
-    
     container.innerHTML = '<div class="product-grid">' + products.map(p => `
         <div class="product-card" onclick="openModal(${p.id})">
-            <img src="${p.images[0]}" alt="${p.title}">
-            <h3>${p.title.substring(0, 30)}...</h3>
+            <img src="${getImageUrl(p.images[0])}" alt="${p.title}">
+            <h3>${p.title.substring(0, 40)}</h3>
             <p class="old-price">${p.price.toLocaleString()} UZS</p>
             <p class="new-price">${p.discount_price.toLocaleString()} UZS</p>
         </div>
     `).join('') + '</div>';
 }
 
-// Buyurtma oynasini ochish
 function openModal(id) {
     currentProduct = products.find(p => p.id === id);
     if (!currentProduct) return;
@@ -66,33 +62,35 @@ function openModal(id) {
     document.getElementById('order-modal').classList.add('active');
 }
 
-// Oynani yopish
 function closeModal() {
     document.getElementById('order-modal').classList.remove('active');
     if (countdownInterval) clearInterval(countdownInterval);
 }
 
-// Rasm slayderini yangilash
 function updateImage() {
-    document.getElementById('modal-image').src = currentProduct.images[currentImageIndex];
+    const img = document.getElementById('modal-image');
+    if (currentProduct.images.length > 0) {
+        img.src = getImageUrl(currentProduct.images[currentImageIndex]);
+    } else {
+        img.src = "https://via.placeholder.com/400x400?text=No+Image";
+    }
     const dots = currentProduct.images.map((_, i) => 
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`
     ).join('');
     document.getElementById('slider-dots').innerHTML = dots;
 }
 
-// Keyingi/oldingi rasmga o'tish
 function slideImage(dir) {
+    if (currentProduct.images.length === 0) return;
     currentImageIndex = (currentImageIndex + dir + currentProduct.images.length) % currentProduct.images.length;
     updateImage();
 }
 
-// Chegirma taymerini ishga tushirish
 function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
     
     function tick() {
-        const end = new Date(currentProduct.discount_end).getTime();
+        const end = currentProduct.discount_end ? new Date(currentProduct.discount_end).getTime() : 0;
         const now = Date.now();
         const diff = Math.max(0, end - now);
         
@@ -108,7 +106,6 @@ function startCountdown() {
     countdownInterval = setInterval(tick, 1000);
 }
 
-// Buyurtmani yuborish
 function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
@@ -128,12 +125,9 @@ function submitOrder(event) {
         customer_phone: phone
     };
 
-    // Botga yuborish
     tg.sendData(JSON.stringify(orderData));
-
     tg.showAlert("Buyurtmangiz qabul qilindi! Tez orada siz bilan bog'lanamiz.");
     closeModal();
 }
 
-// Sahifa yuklanganda ishga tushadi
-renderProducts();
+loadProducts();
