@@ -4,11 +4,112 @@ tg.expand();
 
 const API_URL = "https://maximarketbot-production.up.railway.app";
 
+// ==================== BANNER RASMLARI ====================
+// Bu yerga 15 ta yoki ko'proq rasm URL manzillarini qo'ying
+const bannerImages = [
+    "https://via.placeholder.com/800x400/1565c0/ffffff?text=Banner+1",
+    "https://via.placeholder.com/800x400/42a5f5/ffffff?text=Banner+2",
+    "https://via.placeholder.com/800x400/1976d2/ffffff?text=Banner+3",
+    "https://via.placeholder.com/800x400/0d47a1/ffffff?text=Banner+4",
+    "https://via.placeholder.com/800x400/2196f3/ffffff?text=Banner+5",
+    "https://via.placeholder.com/800x400/1565c0/ffffff?text=Banner+6",
+    "https://via.placeholder.com/800x400/42a5f5/ffffff?text=Banner+7",
+    "https://via.placeholder.com/800x400/1976d2/ffffff?text=Banner+8",
+    "https://via.placeholder.com/800x400/0d47a1/ffffff?text=Banner+9",
+    "https://via.placeholder.com/800x400/2196f3/ffffff?text=Banner+10",
+    "https://via.placeholder.com/800x400/1565c0/ffffff?text=Banner+11",
+    "https://via.placeholder.com/800x400/42a5f5/ffffff?text=Banner+12",
+    "https://via.placeholder.com/800x400/1976d2/ffffff?text=Banner+13",
+    "https://via.placeholder.com/800x400/0d47a1/ffffff?text=Banner+14",
+    "https://via.placeholder.com/800x400/2196f3/ffffff?text=Banner+15"
+];
+
+let currentBannerIndex = 0;
+let bannerInterval = null;
+const BANNER_DELAY = 4000; // 4 sekund
+
 let products = [];
+let filteredProducts = [];
 let currentProduct = null;
 let currentImageIndex = 0;
 let countdownInterval = null;
 
+// ==================== BANNER ====================
+function initBanner() {
+    if (bannerImages.length === 0) return;
+    
+    const img = document.getElementById('banner-img');
+    img.src = bannerImages[0];
+    
+    // Dots
+    const dotsEl = document.getElementById('banner-dots');
+    dotsEl.innerHTML = bannerImages.map((_, i) => 
+        `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
+    ).join('');
+    
+    // Auto-slide
+    startBannerAutoSlide();
+}
+
+function startBannerAutoSlide() {
+    if (bannerInterval) clearInterval(bannerInterval);
+    bannerInterval = setInterval(() => slideBanner(1), BANNER_DELAY);
+}
+
+function slideBanner(dir) {
+    if (bannerImages.length === 0) return;
+    currentBannerIndex = (currentBannerIndex + dir + bannerImages.length) % bannerImages.length;
+    updateBanner();
+    startBannerAutoSlide(); // Reset timer
+}
+
+function goToBanner(index) {
+    currentBannerIndex = index;
+    updateBanner();
+    startBannerAutoSlide();
+}
+
+function updateBanner() {
+    const img = document.getElementById('banner-img');
+    img.style.opacity = '0';
+    setTimeout(() => {
+        img.src = bannerImages[currentBannerIndex];
+        img.style.opacity = '1';
+    }, 150);
+    
+    const dots = document.querySelectorAll('#banner-dots span');
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentBannerIndex);
+    });
+}
+
+// ==================== QIDIRUV ====================
+function filterProducts() {
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    const clearBtn = document.getElementById('search-clear');
+    
+    if (query) {
+        clearBtn.style.display = 'flex';
+        filteredProducts = products.filter(p => 
+            (p.title || '').toLowerCase().includes(query) ||
+            (p.description || '').toLowerCase().includes(query)
+        );
+    } else {
+        clearBtn.style.display = 'none';
+        filteredProducts = [...products];
+    }
+    
+    renderProducts();
+}
+
+function clearSearch() {
+    document.getElementById('search-input').value = '';
+    filteredProducts = [...products];
+    document.getElementById('search-clear').style.display = 'none';
+    renderProducts();
+}
+
+// ==================== MAHSULOTLAR ====================
 async function loadProducts() {
     const container = document.getElementById('products-container');
     container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
@@ -17,6 +118,7 @@ async function loadProducts() {
         const response = await fetch(`${API_URL}/api/products`);
         const data = await response.json();
         products = data.products || [];
+        filteredProducts = [...products];
         
         if (products.length === 0) {
             container.innerHTML = '<p class="loading">Hozircha mahsulotlar yo\'q</p>';
@@ -37,19 +139,30 @@ function getImageUrl(url) {
 
 function renderProducts() {
     const container = document.getElementById('products-container');
-    container.innerHTML = '<div class="product-grid">' + products.map(p => {
+    
+    if (filteredProducts.length === 0) {
+        container.innerHTML = '<p class="loading">🔍 Mahsulot topilmadi</p>';
+        return;
+    }
+    
+    container.innerHTML = '<div class="products-list">' + filteredProducts.map(p => {
         const discountPercent = p.price > 0 && p.discount_price > 0 
             ? Math.round((1 - p.discount_price / p.price) * 100) 
             : 0;
+        const shortDesc = (p.description || '').split('\n')[0].substring(0, 60);
+        
         return `
-        <div class="product-card-wrapper">
-            <div class="product-card" onclick="openModal(${p.id})">
-                ${discountPercent > 0 ? `<div class="discount-badge">-${discountPercent}%</div>` : ''}
+        <div class="product-card" onclick="openModal(${p.id})">
+            <div class="product-image-wrap">
                 <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/400x400?text=Rasm+yoq'">
-                <div class="card-body">
-                    <h3>${p.title || ''}</h3>
-                    ${p.price > p.discount_price ? `<p class="old-price">${p.price.toLocaleString()} UZS</p>` : ''}
-                    <p class="new-price">${(p.discount_price || 0).toLocaleString()} UZS</p>
+                ${discountPercent > 0 ? `<div class="discount-badge">-${discountPercent}%</div>` : ''}
+            </div>
+            <div class="product-info">
+                <h3 class="product-title">${p.title || ''}</h3>
+                ${shortDesc ? `<p class="product-desc">${shortDesc}...</p>` : ''}
+                <div class="price-row">
+                    ${p.price > p.discount_price ? `<span class="old-price">${p.price.toLocaleString()}</span>` : ''}
+                    <span class="new-price">${(p.discount_price || 0).toLocaleString()} UZS</span>
                 </div>
             </div>
         </div>
@@ -57,6 +170,7 @@ function renderProducts() {
     }).join('') + '</div>';
 }
 
+// ==================== MODAL ====================
 function formatDescription(text) {
     if (!text || !text.trim()) return '';
     return text
@@ -156,4 +270,6 @@ function submitOrder(event) {
     closeModal();
 }
 
+// ==================== START ====================
+initBanner();
 loadProducts();
