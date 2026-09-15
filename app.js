@@ -9,41 +9,50 @@ let currentProduct = null;
 let currentImageIndex = 0;
 let countdownInterval = null;
 
-// Mahsulotlarni API dan olish
 async function loadProducts() {
     const container = document.getElementById('products-container');
+    if (!container) {
+        console.error("products-container topilmadi!");
+        return;
+    }
     container.innerHTML = '<p style="text-align:center;padding:20px;">⏳ Yuklanmoqda...</p>';
     
     try {
+        console.log("API so'rov yuborilmoqda...");
         const response = await fetch(`${API_URL}/api/products`);
+        console.log("API javob:", response.status);
         const data = await response.json();
+        console.log("Ma'lumotlar:", data);
         products = data.products || [];
         
         if (products.length === 0) {
-            container.innerHTML = '<p style="text-align:center;padding:20px;">Hozircha mahsulotlar yo\\'q</p>';
+            container.innerHTML = '<p style="text-align:center;padding:20px;">Hozircha mahsulotlar yo\'q</p>';
             return;
         }
         
         renderProducts();
     } catch (error) {
         console.error("Xatolik:", error);
-        container.innerHTML = '<p style="text-align:center;padding:20px;">❌ Yuklashda xatolik</p>';
+        container.innerHTML = '<p style="text-align:center;padding:20px;color:red;">❌ Yuklashda xatolik: ' + error.message + '</p>';
     }
 }
 
-function getImageUrl(file_id) {
-    if (!file_id) return "https://via.placeholder.com/400x400?text=No+Image";
-    return `${API_URL}/api/image/${file_id}`;
+function getImageUrl(url) {
+    if (!url) return "https://via.placeholder.com/400x400?text=No+Image";
+    // Telegram post URL bo'lsa, to'g'ridan-to'g'ri ishlatib bo'lmaydi
+    // Lekin URL http bilan boshlansa, o'sha holicha qaytaramiz
+    if (url.startsWith('http')) return url;
+    return `${API_URL}/api/image/${url}`;
 }
 
 function renderProducts() {
     const container = document.getElementById('products-container');
     container.innerHTML = '<div class="product-grid">' + products.map(p => `
         <div class="product-card" onclick="openModal(${p.id})">
-            <img src="${getImageUrl(p.images[0])}" alt="${p.title}">
-            <h3>${p.title.substring(0, 40)}</h3>
-            <p class="old-price">${p.price.toLocaleString()} UZS</p>
-            <p class="new-price">${p.discount_price.toLocaleString()} UZS</p>
+            <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/400x400?text=Rasm+yoq'">
+            <h3>${(p.title || '').substring(0, 40)}</h3>
+            <p class="old-price">${(p.price || 0).toLocaleString()} UZS</p>
+            <p class="new-price">${(p.discount_price || 0).toLocaleString()} UZS</p>
         </div>
     `).join('') + '</div>';
 }
@@ -53,8 +62,8 @@ function openModal(id) {
     if (!currentProduct) return;
     
     currentImageIndex = 0;
-    document.getElementById('modal-title').innerText = currentProduct.title;
-    document.getElementById('modal-price').innerText = currentProduct.discount_price.toLocaleString();
+    document.getElementById('modal-title').innerText = currentProduct.title || '';
+    document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
     
     updateImage();
     startCountdown();
@@ -69,19 +78,19 @@ function closeModal() {
 
 function updateImage() {
     const img = document.getElementById('modal-image');
-    if (currentProduct.images.length > 0) {
+    if (currentProduct.images && currentProduct.images.length > 0) {
         img.src = getImageUrl(currentProduct.images[currentImageIndex]);
     } else {
         img.src = "https://via.placeholder.com/400x400?text=No+Image";
     }
-    const dots = currentProduct.images.map((_, i) => 
+    const dots = (currentProduct.images || []).map((_, i) => 
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`
     ).join('');
     document.getElementById('slider-dots').innerHTML = dots;
 }
 
 function slideImage(dir) {
-    if (currentProduct.images.length === 0) return;
+    if (!currentProduct.images || currentProduct.images.length === 0) return;
     currentImageIndex = (currentImageIndex + dir + currentProduct.images.length) % currentProduct.images.length;
     updateImage();
 }
@@ -126,7 +135,7 @@ function submitOrder(event) {
     };
 
     tg.sendData(JSON.stringify(orderData));
-    tg.showAlert("Buyurtmangiz qabul qilindi! Tez orada siz bilan bog'lanamiz.");
+    tg.showAlert("Buyurtmangiz qabul qilindi!");
     closeModal();
 }
 
