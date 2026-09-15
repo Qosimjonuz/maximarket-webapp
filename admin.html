@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxiMarket — Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding: 20px; max-width: 600px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 22px; }
+        .section {
+            background: #fff; border-radius: 12px;
+            padding: 16px; margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .section h2 { font-size: 16px; margin-top: 0; }
+        label { display: block; font-size: 13px; font-weight: bold; margin: 10px 0 4px; }
+        input, textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 14px; box-sizing: border-box;
+            font-family: inherit;
+        }
+        button {
+            width: 100%; background: #1565c0; color: #fff;
+            border: none; padding: 12px; border-radius: 8px;
+            font-size: 15px; font-weight: bold; margin-top: 12px;
+            cursor: pointer;
+        }
+        button:active { background: #0d47a1; }
+        button.danger { background: #e53935; }
+        button.danger:active { background: #c62828; }
+        .product-item {
+            background: #f5f5f5; padding: 10px;
+            border-radius: 8px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .product-item small { color: #666; }
+        .status { text-align: center; padding: 10px; font-size: 14px; margin-top: 8px; border-radius: 8px; }
+        .status.ok { background: #e8f5e9; color: #2e7d32; }
+        .status.err { background: #ffebee; color: #c62828; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>🔐 MaxiMarket Admin Panel</h1>
+
+    <!-- Login qismi -->
+    <div id="login-section" class="section">
+        <h2>Kirish</h2>
+        <label>Parol</label>
+        <input type="password" id="password-input" placeholder="Admin paroli">
+        <button onclick="login()">Kirish</button>
+        <div id="login-status"></div>
+    </div>
+
+    <!-- Asosiy panel -->
+    <div id="panel-section" class="hidden">
+        <!-- Mahsulot qo'shish -->
+        <div class="section">
+            <h2>➕ Yangi mahsulot qo'shish</h2>
+            <label>Nomi *</label>
+            <input type="text" id="p-title" placeholder="Mahsulot nomi">
+
+            <label>Tavsif</label>
+            <textarea id="p-description" rows="3" placeholder="Mahsulot haqida qisqacha"></textarea>
+
+            <label>Asl narxi (so'm) *</label>
+            <input type="number" id="p-price" placeholder="250000">
+
+            <label>Chegirma narxi (so'm) *</label>
+            <input type="number" id="p-discount" placeholder="199000">
+
+            <label>Chegirma tugash vaqti</label>
+            <input type="datetime-local" id="p-end">
+
+            <label>Rasm URL manzillari (4 tagacha, har biri yangi qatorda)</label>
+            <textarea id="p-images" rows="4" placeholder="https://example.com/rasm1.jpg&#10;https://example.com/rasm2.jpg"></textarea>
+
+            <button onclick="addProduct()">💾 Saqlash</button>
+            <div id="add-status"></div>
+        </div>
+
+        <!-- Mahsulotlar ro'yxati -->
+        <div class="section">
+            <h2>📦 Mavjud mahsulotlar</h2>
+            <div id="products-list">⏳ Yuklanmoqda...</div>
+            <button onclick="loadProducts()">🔄 Yangilash</button>
+        </div>
+
+        <button class="danger" onclick="logout()">🚪 Chiqish</button>
+    </div>
+
+    <script>
+        const API_URL = "https://maximarketbot-production.up.railway.app";
+        let adminPassword = "";
+
+        function login() {
+            const pwd = document.getElementById('password-input').value.trim();
+            if (!pwd) {
+                showStatus('login-status', "Parolni kiriting", 'err');
+                return;
+            }
+            adminPassword = pwd;
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('panel-section').classList.remove('hidden');
+            loadProducts();
+        }
+
+        function logout() {
+            adminPassword = "";
+            document.getElementById('password-input').value = "";
+            document.getElementById('panel-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        }
+
+        function showStatus(id, message, type) {
+            const el = document.getElementById(id);
+            el.innerText = message;
+            el.className = 'status ' + type;
+            setTimeout(() => { el.innerText = ''; el.className = ''; }, 4000);
+        }
+
+        async function loadProducts() {
+            const list = document.getElementById('products-list');
+            list.innerHTML = '⏳ Yuklanmoqda...';
+            try {
+                const res = await fetch(`${API_URL}/api/products`);
+                const data = await res.json();
+                const products = data.products || [];
+                if (products.length === 0) {
+                    list.innerHTML = '<p style="color:#999;">Mahsulotlar yo\'q</p>';
+                    return;
+                }
+                list.innerHTML = products.map(p => `
+                    <div class="product-item">
+                        <div>
+                            <b>${p.title}</b><br>
+                            <small>${p.discount_price.toLocaleString()} so'm (ID: ${p.id})</small>
+                        </div>
+                        <button class="danger" style="width:auto;padding:6px 12px;margin:0;" onclick="deleteProduct(${p.id})">🗑</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>';
+            }
+        }
+
+        async function addProduct() {
+            const title = document.getElementById('p-title').value.trim();
+            const description = document.getElementById('p-description').value.trim();
+            const price = parseInt(document.getElementById('p-price').value) || 0;
+            const discount = parseInt(document.getElementById('p-discount').value) || 0;
+            const end = document.getElementById('p-end').value;
+            const imagesRaw = document.getElementById('p-images').value.trim();
+            const images = imagesRaw ? imagesRaw.split('\\n').map(s => s.trim()).filter(Boolean) : [];
+
+            if (!title || !price || !discount) {
+                showStatus('add-status', "Nomi, narx va chegirma narxini kiriting", 'err');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/products`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        title, description, price,
+                        discount_price: discount,
+                        discount_end: end,
+                        images
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showStatus('add-status', "✅ Mahsulot qo'shildi!", 'ok');
+                    document.getElementById('p-title').value = '';
+                    document.getElementById('p-description').value = '';
+                    document.getElementById('p-price').value = '';
+                    document.getElementById('p-discount').value = '';
+                    document.getElementById('p-end').value = '';
+                    document.getElementById('p-images').value = '';
+                    loadProducts();
+                } else {
+                    showStatus('add-status', "❌ " + (data.error || "Xatolik"), 'err');
+                }
+            } catch (err) {
+                showStatus('add-status', "❌ " + err.message, 'err');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("Mahsulotni o'chirishni tasdiqlaysizmi?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/products/${id}`, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ password: adminPassword })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadProducts();
+                } else {
+                    alert("Xatolik: " + (data.error || ""));
+                }
+            } catch (err) {
+                alert("Xatolik: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
