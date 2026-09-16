@@ -19,12 +19,12 @@
         }
         .section h2 { font-size: 16px; margin: 0 0 14px; color: #333; }
         label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 5px; color: #444; }
-        input, textarea, select {
+        input, textarea {
             width: 100%; padding: 11px 14px;
             border: 1.5px solid #e0e0e0; border-radius: 10px;
             font-size: 14px; font-family: inherit; background: #fafafa;
         }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: #1565c0; background: #fff; }
+        input:focus, textarea:focus { outline: none; border-color: #1565c0; background: #fff; }
         input[type="file"] { padding: 8px; background: #fff; cursor: pointer; }
         button {
             width: 100%; background: #1565c0; color: #fff;
@@ -34,29 +34,12 @@
         button:active { background: #0d47a1; }
         button:disabled { background: #90a4ae; }
         button.danger { background: #e53935; }
-        button.success { background: #2e7d32; }
         button.small { width: auto; padding: 6px 12px; margin: 0; font-size: 12px; }
-        .btn-row { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-row button { margin-top: 0; }
         .info-note {
             background: #e3f2fd; color: #1565c0;
             padding: 10px 12px; border-radius: 8px;
             font-size: 12px; margin: 10px 0; line-height: 1.5;
         }
-        .categories-grid {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 8px; margin-top: 8px;
-        }
-        .category-item {
-            display: flex; align-items: center; gap: 6px;
-            background: #f8f9fa; padding: 8px 10px;
-            border-radius: 8px; font-size: 13px;
-            cursor: pointer; border: 2px solid transparent;
-        }
-        .category-item.selected {
-            background: #e3f2fd; border-color: #1565c0;
-        }
-        .category-item input { width: auto; margin: 0; }
         .image-preview {
             display: grid; grid-template-columns: repeat(4, 1fr);
             gap: 8px; margin-top: 8px;
@@ -85,7 +68,6 @@
         }
         .status.ok { background: #e8f5e9; color: #2e7d32; }
         .status.err { background: #ffebee; color: #c62828; }
-        .status.info { background: #e3f2fd; color: #1565c0; }
         .hidden { display: none; }
         .loader {
             display: inline-block; width: 14px; height: 14px;
@@ -103,23 +85,20 @@
         <h2>🔑 Kirish</h2>
         <label>Admin paroli</label>
         <input type="password" id="password-input" placeholder="Parolni kiriting">
-        <button onclick="login()">Kirish</button>
-        <div id="login-status"></div>
+        <button id="login-btn">Kirish</button>
+        <div id="login-status" class="status"></div>
     </div>
 
     <div id="panel-section" class="hidden">
         <div class="section">
-            <h2 id="form-title">➕ Yangi mahsulot qo'shish</h2>
-
-            <div class="info-note">
-                ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi.
-            </div>
+            <h2>➕ Yangi mahsulot qo'shish</h2>
+            <div class="info-note">ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi.</div>
 
             <label>Mahsulot nomi *</label>
-            <input type="text" id="p-title" placeholder="Masalan: Bluetooth ko'zoynak">
+            <input type="text" id="p-title" placeholder="Mahsulot nomi">
 
             <label>Tavsif</label>
-            <textarea id="p-description" rows="5" placeholder="Har bir xususiyatni yangi qatorda yozing"></textarea>
+            <textarea id="p-description" rows="4" placeholder="Har bir xususiyatni yangi qatorda yozing"></textarea>
 
             <label>Asl narxi (so'm) *</label>
             <input type="number" id="p-price" placeholder="199000" inputmode="numeric">
@@ -130,11 +109,8 @@
             <label>Ombordagi soni (dona)</label>
             <input type="number" id="p-stock" placeholder="10" inputmode="numeric">
 
-            <label>📂 Kategoriyalar (1 yoki 2 ta tanlang)</label>
-            <div class="categories-grid" id="categories-grid"></div>
-
             <label>📷 Rasmlar (4 tagacha)</label>
-            <input type="file" id="p-images" accept="image/*" multiple onchange="previewImages(event)">
+            <input type="file" id="p-images" accept="image/*" multiple>
             <div class="image-preview" id="image-preview">
                 <div class="empty">📷</div>
                 <div class="empty">📷</div>
@@ -142,299 +118,256 @@
                 <div class="empty">📷</div>
             </div>
 
-            <button onclick="addProduct()" id="add-btn">💾 Saqlash</button>
-            <button onclick="cancelEdit()" id="cancel-btn" class="danger hidden">❌ Tahrirlashni bekor qilish</button>
-            <div id="add-status"></div>
+            <button id="add-btn">💾 Saqlash</button>
+            <div id="add-status" class="status"></div>
         </div>
 
         <div class="section">
             <h2>📦 Mavjud mahsulotlar</h2>
             <div id="products-list">⏳ Yuklanmoqda...</div>
-            <button onclick="loadProducts()">🔄 Yangilash</button>
+            <button id="refresh-btn">🔄 Yangilash</button>
         </div>
 
-        <button class="danger" onclick="logout()">🚪 Chiqish</button>
+        <button class="danger" id="logout-btn">🚪 Chiqish</button>
     </div>
 
     <script>
-        const API_URL = "https://maximarketbot-production.up.railway.app";
-        const IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
-        const MAX_IMAGES = 4;
-        const MAX_CATEGORIES = 2;
+        var API_URL = "https://maximarketbot-production.up.railway.app";
+        var IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
+        var adminPassword = "";
+        var selectedFiles = [];
 
-        const CATEGORIES = [
-            { id: "elektronika", name: "Elektronika", emoji: "📱" },
-            { id: "kiyim", name: "Kiyim", emoji: "👕" },
-            { id: "maishiy", name: "Maishiy texnika", emoji: "🏠" },
-            { id: "gozallik", name: "Go'zallik", emoji: "💄" },
-            { id: "salomatlik", name: "Salomatlik", emoji: "❤️" },
-            { id: "bolalar", name: "Bolalar", emoji: "🧸" },
-            { id: "sport", name: "Sport", emoji: "⚽" },
-            { id: "kitoblar", name: "Kitoblar", emoji: "📚" },
-            { id: "avto", name: "Avto", emoji: "🚗" },
-            { id: "uy", name: "Uy uchun", emoji: "🏡" },
-            { id: "sovga", name: "Sovg'alar", emoji: "🎁" },
-            { id: "boshqa", name: "Boshqa", emoji: "📦" }
-        ];
-
-        let adminPassword = "";
-        let selectedFiles = [];
-        let selectedCategories = [];
-        let editingProductId = null;
-
-        function login() {
-            const pwd = document.getElementById('password-input').value.trim();
-            if (!pwd) { showStatus('login-status', "Parolni kiriting", 'err'); return; }
+        // ============ LOGIN ============
+        document.getElementById('login-btn').addEventListener('click', function() {
+            var pwd = document.getElementById('password-input').value.trim();
+            var status = document.getElementById('login-status');
+            
+            if (!pwd) {
+                status.innerText = "Parolni kiriting!";
+                status.className = "status err";
+                return;
+            }
+            
             adminPassword = pwd;
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('panel-section').classList.remove('hidden');
-            renderCategoriesGrid();
             loadProducts();
-        }
+        });
 
-        function logout() {
-            adminPassword = ""; selectedFiles = []; selectedCategories = []; editingProductId = null;
+        // Enter tugmasi bilan kirish
+        document.getElementById('password-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('login-btn').click();
+            }
+        });
+
+        // ============ LOGOUT ============
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            adminPassword = "";
+            selectedFiles = [];
             document.getElementById('password-input').value = "";
             document.getElementById('panel-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
-        }
+        });
 
-        function showStatus(id, message, type, persist = false) {
-            const el = document.getElementById(id);
-            el.innerText = message;
-            el.className = 'status ' + type;
-            if (!persist) setTimeout(() => { el.innerText = ''; el.className = ''; }, 5000);
-        }
-
-        function renderCategoriesGrid() {
-            const grid = document.getElementById('categories-grid');
-            grid.innerHTML = CATEGORIES.map(cat => `
-                <label class="category-item ${selectedCategories.includes(cat.id) ? 'selected' : ''}" data-cat="${cat.id}">
-                    <input type="checkbox" ${selectedCategories.includes(cat.id) ? 'checked' : ''} onchange="toggleCategory('${cat.id}')">
-                    <span>${cat.emoji} ${cat.name}</span>
-                </label>
-            `).join('');
-        }
-
-        function toggleCategory(catId) {
-            const idx = selectedCategories.indexOf(catId);
-            if (idx > -1) {
-                selectedCategories.splice(idx, 1);
-            } else {
-                if (selectedCategories.length >= MAX_CATEGORIES) {
-                    alert(`Faqat ${MAX_CATEGORIES} ta kategoriya tanlash mumkin!`);
-                    return;
-                }
-                selectedCategories.push(catId);
-            }
-            renderCategoriesGrid();
-        }
-
-        function previewImages(event) {
-            const files = Array.from(event.target.files).slice(0, MAX_IMAGES);
-            selectedFiles = files;
-            const preview = document.getElementById('image-preview');
+        // ============ RASM PREVIEW ============
+        document.getElementById('p-images').addEventListener('change', function(e) {
+            selectedFiles = Array.from(e.target.files).slice(0, 4);
+            var preview = document.getElementById('image-preview');
             preview.innerHTML = '';
-            for (let i = 0; i < MAX_IMAGES; i++) {
-                if (files[i]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        preview.appendChild(img);
-                    };
-                    reader.readAsDataURL(files[i]);
+            
+            for (var i = 0; i < 4; i++) {
+                if (selectedFiles[i]) {
+                    (function(file) {
+                        var reader = new FileReader();
+                        reader.onload = function(ev) {
+                            var img = document.createElement('img');
+                            img.src = ev.target.result;
+                            preview.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    })(selectedFiles[i]);
                 } else {
-                    const div = document.createElement('div');
+                    var div = document.createElement('div');
                     div.className = 'empty';
                     div.innerText = '📷';
                     preview.appendChild(div);
                 }
             }
-        }
+        });
 
-        async function uploadToImgBB(file) {
-            const formData = new FormData();
+        // ============ IMGBB YUKLASH ============
+        function uploadToImgBB(file, callback) {
+            var formData = new FormData();
             formData.append('image', file);
-            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
-                method: 'POST', body: formData
-            });
-            const data = await res.json();
-            if (data.success && data.data && data.data.url) return data.data.url;
-            throw new Error(data.error?.message || 'Rasm yuklanmadi');
+            fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success && data.data && data.data.url) {
+                    callback(data.data.url);
+                } else {
+                    callback(null);
+                }
+            })
+            .catch(function() { callback(null); });
         }
 
-        async function uploadAllImages() {
-            if (selectedFiles.length === 0) return [];
-            const urls = [];
-            for (let i = 0; i < selectedFiles.length; i++) {
-                showStatus('add-status', `⏳ Rasm yuklanmoqda... (${i + 1}/${selectedFiles.length})`, 'info', true);
-                try {
-                    const url = await uploadToImgBB(selectedFiles[i]);
-                    urls.push(url);
-                } catch (e) { console.error('Rasm xatolik:', e); }
-            }
-            return urls;
-        }
-
-        async function addProduct() {
-            const title = document.getElementById('p-title').value.trim();
-            const description = document.getElementById('p-description').value.trim();
-            const price = parseInt(document.getElementById('p-price').value) || 0;
-            const discount = parseInt(document.getElementById('p-discount').value) || 0;
-            const stock = parseInt(document.getElementById('p-stock').value) || 0;
+        // ============ MAHSULOT QO'SHISH ============
+        document.getElementById('add-btn').addEventListener('click', function() {
+            var title = document.getElementById('p-title').value.trim();
+            var description = document.getElementById('p-description').value.trim();
+            var price = parseInt(document.getElementById('p-price').value) || 0;
+            var discount = parseInt(document.getElementById('p-discount').value) || 0;
+            var stock = parseInt(document.getElementById('p-stock').value) || 0;
+            var statusEl = document.getElementById('add-status');
+            var btn = document.getElementById('add-btn');
 
             if (!title || !price || !discount) {
-                showStatus('add-status', "❗ Nomi, narx va chegirma narxini kiriting", 'err');
+                statusEl.innerText = "❗ Nomi, narx va chegirma narxini kiriting";
+                statusEl.className = "status err";
                 return;
             }
 
-            const btn = document.getElementById('add-btn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span> Saqlanmoqda...';
+            btn.innerText = 'Saqlanmoqda...';
+            statusEl.innerText = '';
 
-            try {
-                let imageUrls = [];
-                if (selectedFiles.length > 0) {
-                    imageUrls = await uploadAllImages();
+            // Rasmlarni yuklash
+            var imageUrls = [];
+            var pending = selectedFiles.length;
+
+            if (pending === 0) {
+                sendProduct(imageUrls);
+            } else {
+                for (var i = 0; i < selectedFiles.length; i++) {
+                    (function(idx) {
+                        statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (idx+1) + '/' + pending + ')';
+                        statusEl.className = "status ok";
+                        uploadToImgBB(selectedFiles[idx], function(url) {
+                            if (url) imageUrls.push(url);
+                            if (idx === selectedFiles.length - 1 || imageUrls.length + (selectedFiles.length - idx - 1) === 0) {
+                                // Oxirgi rasm
+                                if (idx === selectedFiles.length - 1) sendProduct(imageUrls);
+                            } else if (idx === selectedFiles.length - 1) {
+                                sendProduct(imageUrls);
+                            }
+                        });
+                    })(i);
                 }
-
-                const body = {
-                    password: adminPassword,
-                    title, description, price,
-                    discount_price: discount,
-                    stock,
-                    categories: selectedCategories,
-                    images: imageUrls
-                };
-
-                let res;
-                if (editingProductId) {
-                    // Tahrirlash
-                    res = await fetch(`${API_URL}/api/products/${editingProductId}`, {
-                        method: 'PUT',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(body)
-                    });
-                } else {
-                    // Yangi qo'shish
-                    if (imageUrls.length === 0 && !editingProductId) {
-                        // Rasm yo'q, lekin yangi qo'shish - rasm shart emas
-                    }
-                    res = await fetch(`${API_URL}/api/products`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(body)
-                    });
-                }
-
-                const data = await res.json();
-                if (data.success) {
-                    showStatus('add-status', editingProductId ? "✅ Mahsulot yangilandi!" : "✅ Mahsulot qo'shildi!", 'ok');
-                    resetForm();
-                    loadProducts();
-                } else {
-                    showStatus('add-status', "❌ " + (data.error || "Xatolik"), 'err');
-                }
-            } catch (err) {
-                showStatus('add-status', "❌ " + err.message, 'err');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '💾 Saqlash';
             }
-        }
 
-        function resetForm() {
-            document.getElementById('p-title').value = '';
-            document.getElementById('p-description').value = '';
-            document.getElementById('p-price').value = '';
-            document.getElementById('p-discount').value = '';
-            document.getElementById('p-stock').value = '';
-            document.getElementById('p-images').value = '';
-            selectedFiles = [];
-            selectedCategories = [];
-            editingProductId = null;
-            previewImages({target: {files: []}});
-            renderCategoriesGrid();
-            document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
-            document.getElementById('cancel-btn').classList.add('hidden');
-        }
+            function sendProduct(urls) {
+                fetch(API_URL + '/api/products', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        title: title,
+                        description: description,
+                        price: price,
+                        discount_price: discount,
+                        stock: stock,
+                        images: urls
+                    })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        statusEl.innerText = "✅ Mahsulot qo'shildi!";
+                        statusEl.className = "status ok";
+                        document.getElementById('p-title').value = '';
+                        document.getElementById('p-description').value = '';
+                        document.getElementById('p-price').value = '';
+                        document.getElementById('p-discount').value = '';
+                        document.getElementById('p-stock').value = '';
+                        document.getElementById('p-images').value = '';
+                        selectedFiles = [];
+                        document.getElementById('image-preview').innerHTML = 
+                            '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
+                        loadProducts();
+                    } else {
+                        statusEl.innerText = "❌ " + (data.error || "Xatolik");
+                        statusEl.className = "status err";
+                    }
+                })
+                .catch(function(err) {
+                    statusEl.innerText = "❌ " + err.message;
+                    statusEl.className = "status err";
+                })
+                .finally(function() {
+                    btn.disabled = false;
+                    btn.innerText = '💾 Saqlash';
+                });
+            }
+        });
 
-        function cancelEdit() {
-            resetForm();
-            showStatus('add-status', "Tahrirlash bekor qilindi", 'info');
-        }
-
-        async function loadProducts() {
-            const list = document.getElementById('products-list');
+        // ============ MAHSULOTLAR RO'YXATI ============
+        function loadProducts() {
+            var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
-            try {
-                const res = await fetch(`${API_URL}/api/products`);
-                const data = await res.json();
-                const products = data.products || [];
+            
+            fetch(API_URL + '/api/products')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                var products = data.products || [];
                 if (products.length === 0) {
                     list.innerHTML = '<p style="color:#999;text-align:center;">Mahsulotlar yo\'q</p>';
                     return;
                 }
-                list.innerHTML = products.map(p => `
-                    <div class="product-item">
-                        <div class="product-item-info">
-                            <b>${p.title}</b>
-                            <small>💰 ${p.discount_price.toLocaleString()} so'm | 📦 ${p.stock || 0} dona</small>
-                            <small>📂 ${(p.categories || []).map(c => CATEGORIES.find(x => x.id === c)?.name || c).join(', ') || 'Kategoriya yo\\'q'}</small>
-                        </div>
-                        <div class="btn-row">
-                            <button class="small success" onclick="editProduct('${p.id}')">✏️</button>
-                            <button class="small danger" onclick="deleteProduct('${p.id}')">🗑</button>
-                        </div>
-                    </div>
-                `).join('');
                 
-                // Products'ni global saqlash
-                window.__products = products;
-            } catch (err) {
-                list.innerHTML = '<p style="color:#c62828;text-align:center;">Xatolik: ' + err.message + '</p>';
-            }
-        }
-
-        function editProduct(id) {
-            const product = (window.__products || []).find(p => String(p.id) === String(id));
-            if (!product) return;
-            
-            editingProductId = id;
-            document.getElementById('p-title').value = product.title || '';
-            document.getElementById('p-description').value = product.description || '';
-            document.getElementById('p-price').value = product.price || '';
-            document.getElementById('p-discount').value = product.discount_price || '';
-            document.getElementById('p-stock').value = product.stock || 0;
-            selectedCategories = product.categories || [];
-            selectedFiles = []; // Yangi rasm yuklash shart emas
-            renderCategoriesGrid();
-            previewImages({target: {files: []}});
-            
-            document.getElementById('form-title').innerText = "✏️ Mahsulotni tahrirlash";
-            document.getElementById('cancel-btn').classList.remove('hidden');
-            
-            // Sahifani yuqoriga surish
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-
-        async function deleteProduct(id) {
-            if (!confirm("Mahsulotni o'chirishni tasdiqlaysizmi?")) return;
-            try {
-                const res = await fetch(`${API_URL}/api/products/${id}`, {
-                    method: 'DELETE',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ password: adminPassword })
+                var html = '';
+                products.forEach(function(p) {
+                    html += '<div class="product-item">' +
+                        '<div class="product-item-info">' +
+                        '<b>' + (p.title || '') + '</b>' +
+                        '<small>💰 ' + (p.discount_price || 0).toLocaleString() + ' so\'m | 📦 ' + (p.stock || 0) + ' dona</small>' +
+                        '</div>' +
+                        '<button class="danger small" data-id="' + p.id + '">🗑</button>' +
+                        '</div>';
                 });
-                const data = await res.json();
-                if (data.success) loadProducts();
-                else alert("Xatolik: " + (data.error || ""));
-            } catch (err) { alert("Xatolik: " + err.message); }
+                list.innerHTML = html;
+                
+                // O'chirish tugmalariga event
+                var btns = list.querySelectorAll('button.danger');
+                for (var i = 0; i < btns.length; i++) {
+                    btns[i].addEventListener('click', function() {
+                        var id = this.getAttribute('data-id');
+                        if (confirm("Mahsulotni o'chirishni tasdiqlaysizmi?")) {
+                            deleteProduct(id);
+                        }
+                    });
+                }
+            })
+            .catch(function(err) {
+                list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>';
+            });
         }
 
-        // Boshlang'ich renderCategories
-        renderCategoriesGrid();
+        // ============ O'CHIRISH ============
+        function deleteProduct(id) {
+            fetch(API_URL + '/api/products/' + id, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: adminPassword })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    loadProducts();
+                } else {
+                    alert("Xatolik: " + (data.error || ""));
+                }
+            })
+            .catch(function(err) {
+                alert("Xatolik: " + err.message);
+            });
+        }
+
+        // ============ YANGILASH ============
+        document.getElementById('refresh-btn').addEventListener('click', loadProducts);
     </script>
 </body>
 </html>
