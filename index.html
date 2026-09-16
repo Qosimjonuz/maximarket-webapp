@@ -8,11 +8,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>🛍 MaxiMarket</h1>
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="header-left">
+            <img src="LOGO_URL" alt="MaxiMarket" class="logo-img" onerror="this.style.display='none'">
+            <span class="brand-text">MaxiMarket</span>
+        </div>
+        <button class="profile-btn" onclick="openProfile()">
+            <span>👤</span>
+        </button>
     </header>
 
-    <!-- BANNER -->
+    <!-- BANNER (35% smaller) -->
     <div class="banner-carousel" id="banner-carousel">
         <div class="banner-slide" id="banner-slide">
             <div class="banner-emoji" id="banner-emoji">🎁</div>
@@ -32,90 +39,71 @@
     </div>
 
     <!-- KATEGORIYALAR -->
-    <div class="categories-scroll" id="categories-scroll">
-        <!-- JS orqali to'ldiriladi -->
-    </div>
+    <div class="categories-scroll" id="categories-scroll"></div>
 
     <!-- MAHSULOTLAR -->
     <main id="products-container"></main>
 
-    <!-- BOTTOM NAVIGATION -->
-    <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="showPage('home')">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Bosh sahifa</span>
-        </button>
-        <button class="nav-btn" onclick="showPage('catalog')">
-            <span class="nav-icon">📋</span>
-            <span class="nav-label">Katalog</span>
-        </button>
-        <button class="nav-btn" onclick="showPage('profile')">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Profil</span>
-        </button>
-    </nav>
+    <!-- PROFIL OYNASI -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content profile-content">
+            <button class="modal-close" onclick="closeProfile()">✕</button>
 
-    <!-- PROFIL SAHIFASI (yashirin) -->
-    <div id="profile-page" class="page-overlay">
-        <div class="profile-header">
-            <button class="back-btn" onclick="showPage('home')">←</button>
-            <h2>Profil</h2>
-        </div>
-        <div class="profile-content">
-            <div class="profile-avatar" id="profile-avatar">👤</div>
-            <h3 id="profile-name">Foydalanuvchi</h3>
-            <p id="profile-username">@username</p>
-            
+            <div class="profile-header-icon">
+                <div class="profile-avatar" id="profile-avatar">👤</div>
+            </div>
+
+            <div class="profile-number" id="profile-number">#---</div>
+
             <div class="profile-form">
                 <label>Ism Familiya</label>
-                <input type="text" id="profile-fullname" placeholder="Ismingizni kiriting">
-                
+                <input type="text" id="profile-fullname" placeholder="Ism Familiyangizni kiriting">
+
                 <label>Telefon raqam</label>
                 <input type="tel" id="profile-phone" placeholder="+998 90 000 00 00">
-                
+
+                <label>Profil rasmi (ixtiyoriy)</label>
+                <input type="file" id="profile-photo" accept="image/*" onchange="previewProfilePhoto(event)">
+                <div class="profile-photo-preview" id="profile-photo-preview"></div>
+
+                <label>Ro'yxatdan o'tgan sana</label>
+                <input type="text" id="profile-date" readonly>
+
                 <button class="save-btn" onclick="saveProfile()">💾 Saqlash</button>
+                <div id="profile-status" class="status"></div>
             </div>
         </div>
     </div>
 
-    <!-- Buyurtma oynasi -->
+    <!-- BUYURTMA OYNASI -->
     <div id="order-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal()">✕</button>
-            
             <div class="slider">
                 <button class="slider-btn prev" onclick="slideImage(-1)">‹</button>
                 <img id="modal-image" src="" alt="Mahsulot rasmi">
                 <button class="slider-btn next" onclick="slideImage(1)">›</button>
                 <div class="slider-dots" id="slider-dots"></div>
             </div>
-
             <h2 id="modal-title"></h2>
             <div class="stock-badge" id="modal-stock"></div>
             <div id="modal-description" class="modal-description"></div>
-
             <p class="aksiya-badge">❗ AKSIYA NARXIDA ❗</p>
             <p class="modal-price">💵 <span id="modal-price"></span> SO'M</p>
-            
             <p class="countdown-label">👉 Bugungi aksiya tugashiga</p>
-            <div class="countdown" id="countdown">
+            <div class="countdown">
                 <div><span id="cd-hours">00</span><small>SOAT</small></div>
                 <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
                 <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
             </div>
-
             <p class="info-label">Ma'lumotlaringizni yozib qoldiring ⬇️</p>
-
             <form id="order-form" onsubmit="submitOrder(event)">
                 <label>ISMINGIZ *</label>
                 <input type="text" id="order-name" placeholder="Ismingizni kiriting" required>
-
                 <label>TELEFON RAQAMINGIZ *</label>
                 <input type="tel" id="order-phone" placeholder="+998 90 000 00 00" value="+998 " required>
-
                 <button type="submit" class="order-btn">🛒 Buyurtma berish</button>
             </form>
-
             <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
         </div>
     </div>
