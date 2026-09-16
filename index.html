@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MaxiMarket Do'koni</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -12,7 +12,7 @@
         <h1>🛍 MaxiMarket</h1>
     </header>
 
-    <!-- BANNER CAROUSEL -->
+    <!-- BANNER -->
     <div class="banner-carousel" id="banner-carousel">
         <div class="banner-slide" id="banner-slide">
             <div class="banner-emoji" id="banner-emoji">🎁</div>
@@ -31,8 +31,52 @@
         <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none;">✕</button>
     </div>
 
+    <!-- KATEGORIYALAR -->
+    <div class="categories-scroll" id="categories-scroll">
+        <!-- JS orqali to'ldiriladi -->
+    </div>
+
     <!-- MAHSULOTLAR -->
     <main id="products-container"></main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="showPage('home')">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Bosh sahifa</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('catalog')">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Katalog</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('profile')">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profil</span>
+        </button>
+    </nav>
+
+    <!-- PROFIL SAHIFASI (yashirin) -->
+    <div id="profile-page" class="page-overlay">
+        <div class="profile-header">
+            <button class="back-btn" onclick="showPage('home')">←</button>
+            <h2>Profil</h2>
+        </div>
+        <div class="profile-content">
+            <div class="profile-avatar" id="profile-avatar">👤</div>
+            <h3 id="profile-name">Foydalanuvchi</h3>
+            <p id="profile-username">@username</p>
+            
+            <div class="profile-form">
+                <label>Ism Familiya</label>
+                <input type="text" id="profile-fullname" placeholder="Ismingizni kiriting">
+                
+                <label>Telefon raqam</label>
+                <input type="tel" id="profile-phone" placeholder="+998 90 000 00 00">
+                
+                <button class="save-btn" onclick="saveProfile()">💾 Saqlash</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Buyurtma oynasi -->
     <div id="order-modal" class="modal-overlay">
@@ -47,6 +91,7 @@
             </div>
 
             <h2 id="modal-title"></h2>
+            <div class="stock-badge" id="modal-stock"></div>
             <div id="modal-description" class="modal-description"></div>
 
             <p class="aksiya-badge">❗ AKSIYA NARXIDA ❗</p>
