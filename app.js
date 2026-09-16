@@ -22,7 +22,7 @@ const CATEGORIES = [
 const banners = [
     { emoji: "🎁", title: "MaxiMarket", subtitle: "Yangi mahsulotlar", bg: "linear-gradient(135deg, #1565c0, #42a5f5)" },
     { emoji: "🔥", title: "CHEGIRMALAR", subtitle: "70% gacha arzonlashuv", bg: "linear-gradient(135deg, #e53935, #ff6f00)" },
-    { emoji: "🚚", title: "Bepul yetkazib berish", subtitle: "O'zbekiston bo'ylab", bg: "linear-gradient(135deg, #2e7d32, #66bb6a)" },
+    { emoji: "🚚", title: "Bepul yetkazish", subtitle: "O'zbekiston bo'ylab", bg: "linear-gradient(135deg, #2e7d32, #66bb6a)" },
     { emoji: "💎", title: "Premium sifat", subtitle: "Eng yaxshi brendlar", bg: "linear-gradient(135deg, #6a1b9a, #ab47bc)" },
     { emoji: "⚡", title: "Tezkor xizmat", subtitle: "24/7 ishlaymiz", bg: "linear-gradient(135deg, #f57c00, #ffb74d)" },
     { emoji: "🎯", title: "Kafolatlangan", subtitle: "Sifat kafolati", bg: "linear-gradient(135deg, #0d47a1, #1976d2)" },
@@ -31,9 +31,6 @@ const banners = [
     { emoji: "📱", title: "Elektronika", subtitle: "Zamonaviy texnika", bg: "linear-gradient(135deg, #0277bd, #29b6f6)" },
     { emoji: "👗", title: "Kiyimlar", subtitle: "Yangi kolleksiya", bg: "linear-gradient(135deg, #6a1b9a, #8e24aa)" },
     { emoji: "🏠", title: "Uy uchun", subtitle: "Qulaylik yaratuvchi", bg: "linear-gradient(135deg, #ef6c00, #fb8c00)" },
-    { emoji: "🎮", title: "O'yinchoqlar", subtitle: "Bolalar uchun", bg: "linear-gradient(135deg, #283593, #3f51b5)" },
-    { emoji: "💄", title: "Go'zallik", subtitle: "Kosmetika mahsulotlari", bg: "linear-gradient(135deg, #c2185b, #f06292)" },
-    { emoji: "🍔", title: "Oziq-ovqat", subtitle: "Mazali mahsulotlar", bg: "linear-gradient(135deg, #d84315, #ff7043)" },
     { emoji: "⭐", title: "Sizning tanlovingiz", subtitle: "Eng ko'p sotilgan", bg: "linear-gradient(135deg, #1565c0, #1e88e5)" }
 ];
 
@@ -48,7 +45,10 @@ let currentImageIndex = 0;
 let countdownInterval = null;
 let activeCategory = "all";
 
-// ==================== BANNER ====================
+let currentUser = null;
+let profilePhotoUrl = "";
+
+// ============ BANNER ============
 function initBanner() {
     updateBanner();
     const dotsEl = document.getElementById('banner-dots');
@@ -91,17 +91,15 @@ function updateBanner() {
     });
 }
 
-// ==================== KATEGORIYALAR ====================
+// ============ KATEGORIYALAR ============
 function renderCategories() {
     const scroll = document.getElementById('categories-scroll');
     let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">
-        <span class="cat-emoji">🌐</span>
-        <span class="cat-name">Barchasi</span>
+        <span class="cat-emoji">🌐</span><span class="cat-name">Barchasi</span>
     </button>`;
     CATEGORIES.forEach(cat => {
         html += `<button class="category-btn ${activeCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')">
-            <span class="cat-emoji">${cat.emoji}</span>
-            <span class="cat-name">${cat.name}</span>
+            <span class="cat-emoji">${cat.emoji}</span><span class="cat-name">${cat.name}</span>
         </button>`;
     });
     scroll.innerHTML = html;
@@ -113,11 +111,10 @@ function setCategory(catId) {
     filterProducts();
 }
 
-// ==================== QIDIRUV ====================
+// ============ QIDIRUV ============
 function filterProducts() {
     const query = document.getElementById('search-input').value.trim().toLowerCase();
     const clearBtn = document.getElementById('search-clear');
-    
     filteredProducts = products.filter(p => {
         const matchesSearch = !query || 
             (p.title || '').toLowerCase().includes(query) ||
@@ -126,7 +123,6 @@ function filterProducts() {
             (p.categories && p.categories.includes(activeCategory));
         return matchesSearch && matchesCategory;
     });
-    
     clearBtn.style.display = query ? 'flex' : 'none';
     shuffleProducts();
     renderProducts();
@@ -137,14 +133,12 @@ function clearSearch() {
     filterProducts();
 }
 
-// ==================== SHUFFLE (20-25 daqiqada) ====================
+// ============ SHUFFLE (22 daqiqa) ============
 function shuffleProducts() {
     const lastShuffle = localStorage.getItem('lastShuffle');
     const now = Date.now();
-    const SHUFFLE_INTERVAL = 22 * 60 * 1000; // 22 daqiqa
-    
+    const SHUFFLE_INTERVAL = 22 * 60 * 1000;
     if (!lastShuffle || now - parseInt(lastShuffle) > SHUFFLE_INTERVAL) {
-        // Fisher-Yates shuffle
         for (let i = filteredProducts.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [filteredProducts[i], filteredProducts[j]] = [filteredProducts[j], filteredProducts[i]];
@@ -153,7 +147,7 @@ function shuffleProducts() {
     }
 }
 
-// ==================== MAHSULOTLAR ====================
+// ============ MAHSULOTLAR ============
 async function loadProducts() {
     const container = document.getElementById('products-container');
     container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
@@ -180,10 +174,9 @@ function getImageUrl(url) {
 }
 
 function getStockText(stock) {
-    if (stock === undefined || stock === null || stock === 0) return '';
+    if (!stock || stock === 0) return '';
     if (stock > 0 && stock <= 5) return `⚠️ Faqat ${stock} ta qoldi!`;
-    if (stock > 5) return `✅ Mavjud: ${stock} ta`;
-    return '';
+    return `✅ Mavjud: ${stock} ta`;
 }
 
 function renderProducts() {
@@ -192,14 +185,10 @@ function renderProducts() {
         container.innerHTML = '<p class="loading">🔍 Mahsulot topilmadi</p>';
         return;
     }
-    
-    // Gorizontal scroll qatorlar - har bir qatorda 10 ta
     let html = '<div class="products-horizontal">';
     filteredProducts.forEach(p => {
         const discountPercent = p.price > 0 && p.discount_price > 0 
-            ? Math.round((1 - p.discount_price / p.price) * 100) 
-            : 0;
-        const stockText = getStockText(p.stock);
+            ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
         html += `
         <div class="product-card-h" data-id="${String(p.id)}">
             <div class="product-image-h">
@@ -211,22 +200,16 @@ function renderProducts() {
                 ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
                 <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
             </div>
-            ${stockText ? `<div class="product-stock-h">${stockText}</div>` : ''}
-        </div>
-        `;
+        </div>`;
     });
     html += '</div>';
     container.innerHTML = html;
-    
     document.querySelectorAll('.product-card-h').forEach(card => {
-        card.addEventListener('click', () => {
-            const id = card.getAttribute('data-id');
-            openModal(id);
-        });
+        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
 }
 
-// ==================== MODAL ====================
+// ============ MODAL ============
 function formatDescription(text) {
     if (!text || !text.trim()) return '';
     return text.split('\n').map(l => l.trim()).filter(l => l).map(l => `<p>${l}</p>`).join('');
@@ -235,27 +218,17 @@ function formatDescription(text) {
 function openModal(id) {
     currentProduct = products.find(p => String(p.id) === String(id));
     if (!currentProduct) return;
-    
     currentImageIndex = 0;
     document.getElementById('modal-title').innerText = currentProduct.title || '';
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
-    
     const stockEl = document.getElementById('modal-stock');
     const stockText = getStockText(currentProduct.stock);
-    if (stockText) {
-        stockEl.innerText = stockText;
-        stockEl.style.display = 'block';
-    } else {
-        stockEl.style.display = 'none';
-    }
-    
+    if (stockText) { stockEl.innerText = stockText; stockEl.style.display = 'block'; }
+    else { stockEl.style.display = 'none'; }
     const descEl = document.getElementById('modal-description');
-    if (descEl) {
-        const formatted = formatDescription(currentProduct.description);
-        descEl.innerHTML = formatted;
-        descEl.style.display = formatted ? 'block' : 'none';
-    }
-    
+    const formatted = formatDescription(currentProduct.description);
+    descEl.innerHTML = formatted;
+    descEl.style.display = formatted ? 'block' : 'none';
     updateImage();
     startCountdown();
     document.getElementById('order-modal').classList.add('active');
@@ -268,14 +241,11 @@ function closeModal() {
 
 function updateImage() {
     const img = document.getElementById('modal-image');
-    if (currentProduct.images && currentProduct.images.length > 0) {
-        img.src = getImageUrl(currentProduct.images[currentImageIndex]);
-    } else {
-        img.src = "https://via.placeholder.com/400x400?text=No+Image";
-    }
+    img.src = (currentProduct.images && currentProduct.images.length > 0)
+        ? getImageUrl(currentProduct.images[currentImageIndex])
+        : "https://via.placeholder.com/400x400?text=No+Image";
     const dots = (currentProduct.images || []).map((_, i) => 
-        `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`
-    ).join('');
+        `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
 }
 
@@ -306,57 +276,126 @@ function submitOrder(event) {
         tg.showAlert("Iltimos, ism va telefon raqamni to'g'ri kiriting!");
         return;
     }
-    const orderData = {
+    tg.sendData(JSON.stringify({
         action: 'order',
         product_id: currentProduct.id,
         product_title: currentProduct.title,
         price: currentProduct.discount_price,
         customer_name: name,
         customer_phone: phone
-    };
-    tg.sendData(JSON.stringify(orderData));
+    }));
     tg.showAlert("Buyurtmangiz qabul qilindi!");
     closeModal();
 }
 
-// ==================== SAHIFALAR ====================
-function showPage(page) {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.nav-btn')[page === 'home' ? 0 : page === 'catalog' ? 1 : 2].classList.add('active');
+// ============ PROFIL ============
+async function openProfile() {
+    document.getElementById('profile-modal').classList.add('active');
     
-    const profilePage = document.getElementById('profile-page');
-    if (page === 'profile') {
-        profilePage.classList.add('active');
-        loadProfile();
-    } else {
-        profilePage.classList.remove('active');
-        if (page === 'catalog') {
-            setCategory('all');
-        }
-    }
-}
-
-// ==================== PROFIL ====================
-function loadProfile() {
+    // Foydalanuvchini bazaga ro'yxatdan o'tkazish
     const user = tg.initDataUnsafe?.user;
-    if (user) {
-        document.getElementById('profile-name').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-        document.getElementById('profile-username').innerText = user.username ? '@' + user.username : 'Username yo\'q';
-        document.getElementById('profile-fullname').value = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+    if (!user) {
+        document.getElementById('profile-status').innerText = "Telegram ma'lumotlari topilmadi";
+        document.getElementById('profile-status').className = "status err";
+        return;
     }
-    const savedPhone = localStorage.getItem('userPhone');
-    if (savedPhone) document.getElementById('profile-phone').value = savedPhone;
+    
+    try {
+        const res = await fetch(`${API_URL}/api/register_user`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                user_id: user.id,
+                username: user.username || "",
+                tg_name: user.first_name + (user.last_name ? ' ' + user.last_name : '')
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = data;
+            document.getElementById('profile-number').innerText = '#' + data.user_number;
+            document.getElementById('profile-fullname').value = data.full_name || (user.first_name + (user.last_name ? ' ' + user.last_name : ''));
+            document.getElementById('profile-phone').value = data.phone || '';
+            document.getElementById('profile-date').value = data.registered_at ? 
+                new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
+            
+            if (data.photo) {
+                profilePhotoUrl = data.photo;
+                document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            }
+        }
+    } catch (err) {
+        document.getElementById('profile-status').innerText = "Xatolik: " + err.message;
+        document.getElementById('profile-status').className = "status err";
+    }
 }
 
-function saveProfile() {
-    const phone = document.getElementById('profile-phone').value.trim();
+function closeProfile() {
+    document.getElementById('profile-modal').classList.remove('active');
+}
+
+function previewProfilePhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('profile-avatar').innerHTML = 
+            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    };
+    reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+    if (!currentUser) return;
     const fullname = document.getElementById('profile-fullname').value.trim();
-    localStorage.setItem('userPhone', phone);
-    localStorage.setItem('userFullName', fullname);
-    tg.showAlert("✅ Profil saqlandi!");
+    const phone = document.getElementById('profile-phone').value.trim();
+    const statusEl = document.getElementById('profile-status');
+    const fileInput = document.getElementById('profile-photo');
+    
+    statusEl.innerText = "⏳ Saqlanmoqda...";
+    statusEl.className = "status ok";
+    
+    try {
+        let photoUrl = profilePhotoUrl;
+        
+        // Rasm yuklash
+        if (fileInput.files[0]) {
+            const IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+                method: 'POST', body: formData
+            });
+            const data = await res.json();
+            if (data.success && data.data) photoUrl = data.data.url;
+        }
+        
+        const res = await fetch(`${API_URL}/api/update_user`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                user_id: tg.initDataUnsafe.user.id,
+                full_name: fullname,
+                phone: phone,
+                photo: photoUrl
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            statusEl.innerText = "✅ Profil saqlandi!";
+            statusEl.className = "status ok";
+            profilePhotoUrl = photoUrl;
+        } else {
+            statusEl.innerText = "❌ " + (data.error || "Xatolik");
+            statusEl.className = "status err";
+        }
+    } catch (err) {
+        statusEl.innerText = "❌ " + err.message;
+        statusEl.className = "status err";
+    }
 }
 
-// ==================== START ====================
+// ============ START ============
 initBanner();
 renderCategories();
 loadProducts();
