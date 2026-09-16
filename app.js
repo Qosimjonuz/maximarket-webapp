@@ -5,8 +5,6 @@ tg.expand();
 const API_URL = "https://maximarketbot-production.up.railway.app";
 
 // ==================== BANNERLAR ====================
-// Har bir banner: emoji, sarlavha, subtitle va fon rangi
-// Xohlagancha qo'shishingiz mumkin (15 ta tayyor)
 const banners = [
     { emoji: "🎁", title: "MaxiMarket", subtitle: "Yangi mahsulotlar", bg: "linear-gradient(135deg, #1565c0, #42a5f5)" },
     { emoji: "🔥", title: "CHEGIRMALAR", subtitle: "70% gacha arzonlashuv", bg: "linear-gradient(135deg, #e53935, #ff6f00)" },
@@ -38,12 +36,10 @@ let countdownInterval = null;
 // ==================== BANNER ====================
 function initBanner() {
     updateBanner();
-    
     const dotsEl = document.getElementById('banner-dots');
     dotsEl.innerHTML = banners.map((_, i) => 
         `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
     ).join('');
-    
     startBannerAutoSlide();
 }
 
@@ -67,7 +63,6 @@ function goToBanner(index) {
 function updateBanner() {
     const banner = banners[currentBannerIndex];
     const slide = document.getElementById('banner-slide');
-    
     slide.style.opacity = '0';
     setTimeout(() => {
         slide.style.background = banner.bg;
@@ -76,7 +71,6 @@ function updateBanner() {
         document.getElementById('banner-subtitle').innerText = banner.subtitle;
         slide.style.opacity = '1';
     }, 200);
-    
     document.querySelectorAll('#banner-dots span').forEach((dot, i) => {
         dot.classList.toggle('active', i === currentBannerIndex);
     });
@@ -86,7 +80,6 @@ function updateBanner() {
 function filterProducts() {
     const query = document.getElementById('search-input').value.trim().toLowerCase();
     const clearBtn = document.getElementById('search-clear');
-    
     if (query) {
         clearBtn.style.display = 'flex';
         filteredProducts = products.filter(p => 
@@ -97,7 +90,6 @@ function filterProducts() {
         clearBtn.style.display = 'none';
         filteredProducts = [...products];
     }
-    
     renderProducts();
 }
 
@@ -112,28 +104,18 @@ function clearSearch() {
 async function loadProducts() {
     const container = document.getElementById('products-container');
     container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
-    
     try {
-        console.log("API so'rov:", `${API_URL}/api/products`);
         const response = await fetch(`${API_URL}/api/products`);
-        console.log("API javob statusi:", response.status);
-        
         const data = await response.json();
-        console.log("API ma'lumotlar:", data);
-        
         products = data.products || [];
         filteredProducts = [...products];
-        
-        console.log("Mahsulotlar soni:", products.length);
-        
         if (products.length === 0) {
             container.innerHTML = '<p class="loading">📦 Hozircha mahsulotlar yo\'q</p>';
             return;
         }
-        
         renderProducts();
     } catch (error) {
-        console.error("Yuklash xatosi:", error);
+        console.error("Xatolik:", error);
         container.innerHTML = '<p class="loading">❌ Xatolik: ' + error.message + '</p>';
     }
 }
@@ -146,20 +128,21 @@ function getImageUrl(url) {
 
 function renderProducts() {
     const container = document.getElementById('products-container');
-    
     if (filteredProducts.length === 0) {
         container.innerHTML = '<p class="loading">🔍 Mahsulot topilmadi</p>';
         return;
     }
     
-    container.innerHTML = '<div class="products-list">' + filteredProducts.map(p => {
+    let html = '<div class="products-list">';
+    filteredProducts.forEach(p => {
         const discountPercent = p.price > 0 && p.discount_price > 0 
             ? Math.round((1 - p.discount_price / p.price) * 100) 
             : 0;
         const shortDesc = (p.description || '').split('\n')[0].substring(0, 60);
+        const productId = String(p.id);
         
-        return `
-        <div class="product-card" onclick="openModal('${p.id}')">
+        html += `
+        <div class="product-card" data-id="${productId}">
             <div class="product-image-wrap">
                 <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
                 ${discountPercent > 0 ? `<div class="discount-badge">-${discountPercent}%</div>` : ''}
@@ -174,7 +157,17 @@ function renderProducts() {
             </div>
         </div>
         `;
-    }).join('') + '</div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    
+    // Event listener'larni qo'shish
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const id = card.getAttribute('data-id');
+            openModal(id);
+        });
+    });
 }
 
 // ==================== MODAL ====================
@@ -189,8 +182,14 @@ function formatDescription(text) {
 }
 
 function openModal(id) {
-    currentProduct = products.find(p => p.id === id);
-    if (!currentProduct) return;
+    console.log("openModal chaqirildi, ID:", id);
+    currentProduct = products.find(p => String(p.id) === String(id));
+    console.log("Topilgan mahsulot:", currentProduct);
+    
+    if (!currentProduct) {
+        alert("Mahsulot topilmadi!");
+        return;
+    }
     
     currentImageIndex = 0;
     document.getElementById('modal-title').innerText = currentProduct.title || '';
@@ -205,7 +204,6 @@ function openModal(id) {
     
     updateImage();
     startCountdown();
-    
     document.getElementById('order-modal').classList.add('active');
 }
 
@@ -235,16 +233,13 @@ function slideImage(dir) {
 
 function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
-    
     function tick() {
         const end = currentProduct.discount_end ? new Date(currentProduct.discount_end).getTime() : 0;
         const now = Date.now();
         const diff = Math.max(0, end - now);
-        
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-        
         document.getElementById('cd-hours').innerText = String(h).padStart(2, '0');
         document.getElementById('cd-minutes').innerText = String(m).padStart(2, '0');
         document.getElementById('cd-seconds').innerText = String(s).padStart(2, '0');
