@@ -159,7 +159,7 @@ function renderProducts() {
         const shortDesc = (p.description || '').split('\n')[0].substring(0, 60);
         
         return `
-        <div class="product-card" onclick="openModal(${p.id})">
+        <div class="product-card" onclick="openModal('${p.id}')">
             <div class="product-image-wrap">
                 <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
                 ${discountPercent > 0 ? `<div class="discount-badge">-${discountPercent}%</div>` : ''}
