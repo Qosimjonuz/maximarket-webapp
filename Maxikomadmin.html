@@ -38,6 +38,7 @@
         .status.ok { background: #e8f5e9; color: #2e7d32; }
         .status.err { background: #ffebee; color: #c62828; }
         .hidden { display: none; }
+        .session-info { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -52,6 +53,8 @@
     </div>
 
     <div id="panel-section" class="hidden">
+        <div class="session-info">✅ Tizimga kirdingiz (24 soat)</div>
+
         <div class="section">
             <h2 id="form-title">➕ Yangi mahsulot qo'shish</h2>
             <div class="info-note">ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi.</div>
@@ -100,17 +103,11 @@
 
     <script>
         var API_URL = "https://maximarketbot-production.up.railway.app";
+        var TOKEN_KEY = "maximarket_admin_token";
         var MAX_CATEGORIES = 2;
         var MAX_SIZES = 4;
 
-        // PAROL TEKSHIRUVI
-        var CORRECT_PASSWORD = "shodmak@bk.ru";
-        var MAX_ATTEMPTS = 5;
-        var BLOCK_TIME = 15 * 60 * 1000;
-        var ATTEMPTS_KEY = "admin_attempts";
-        var BLOCK_UNTIL_KEY = "admin_block_until";
-
-        var adminPassword = "";
+        var adminToken = "";
         var selectedFiles = [];
         var selectedCategories = [];
         var selectedSizes = [];
@@ -137,48 +134,46 @@
 
         var SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "Universal"];
 
-        // RATE LIMIT
-        function checkBlock() {
-            var blockUntil = localStorage.getItem(BLOCK_UNTIL_KEY);
-            if (blockUntil) {
-                var now = Date.now();
-                if (now < parseInt(blockUntil)) {
-                    return Math.ceil((parseInt(blockUntil) - now) / 60000);
-                } else {
-                    localStorage.removeItem(BLOCK_UNTIL_KEY);
-                    localStorage.removeItem(ATTEMPTS_KEY);
-                }
-            }
-            return 0;
+        // ============ TOKEN ============
+        function saveToken(token) {
+            adminToken = token;
+            localStorage.setItem(TOKEN_KEY, token);
         }
 
-        function addAttempt() {
-            var attempts = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0") + 1;
-            localStorage.setItem(ATTEMPTS_KEY, attempts.toString());
-            if (attempts >= MAX_ATTEMPTS) {
-                localStorage.setItem(BLOCK_UNTIL_KEY, (Date.now() + BLOCK_TIME).toString());
-                localStorage.removeItem(ATTEMPTS_KEY);
-                return true;
-            }
+        function loadToken() {
+            var saved = localStorage.getItem(TOKEN_KEY);
+            if (saved) { adminToken = saved; return true; }
             return false;
         }
 
-        function resetAttempts() {
-            localStorage.removeItem(ATTEMPTS_KEY);
-            localStorage.removeItem(BLOCK_UNTIL_KEY);
+        function clearToken() {
+            adminToken = "";
+            localStorage.removeItem(TOKEN_KEY);
         }
 
-        // LOGIN
-        document.getElementById('login-btn').addEventListener('click', function() {
+        function handleAuthError() {
+            clearToken();
+            alert("⚠️ Sessiya muddati tugagan. Qaytadan kiring.");
+            document.getElementById('panel-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        }
+
+        // ============ AVTOMATIK KIRISH ============
+        window.addEventListener('DOMContentLoaded', function() {
+            if (loadToken()) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('panel-section').classList.remove('hidden');
+                renderCategories();
+                renderSizes();
+                loadProducts();
+            }
+        });
+
+        // ============ LOGIN ============
+        document.getElementById('login-btn').addEventListener('click', async function() {
             var pwd = document.getElementById('password-input').value.trim();
             var statusEl = document.getElementById('login-status');
-
-            var blockRemaining = checkBlock();
-            if (blockRemaining > 0) {
-                statusEl.innerText = "🚫 Juda ko'p urinish. " + blockRemaining + " daqiqadan keyin qayta urinib ko'ring.";
-                statusEl.className = "status err";
-                return;
-            }
+            var btn = document.getElementById('login-btn');
 
             if (!pwd) {
                 statusEl.innerText = "Parolni kiriting!";
@@ -186,27 +181,39 @@
                 return;
             }
 
-            if (pwd === CORRECT_PASSWORD) {
-                resetAttempts();
-                adminPassword = pwd;
-                document.getElementById('password-input').value = '';
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('panel-section').classList.remove('hidden');
-                statusEl.innerText = '';
-                statusEl.className = '';
-                renderCategories();
-                renderSizes();
-                loadProducts();
-            } else {
-                var isBlocked = addAttempt();
-                if (isBlocked) {
-                    statusEl.innerText = "🚫 5 marta xato! 15 daqiqaga bloklandingiz.";
+            btn.disabled = true;
+            btn.innerText = 'Tekshirilmoqda...';
+            statusEl.innerText = '';
+            statusEl.className = '';
+
+            try {
+                var res = await fetch(API_URL + '/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ password: pwd })
+                });
+                var data = await res.json();
+
+                if (data.success && data.token) {
+                    saveToken(data.token);
+                    document.getElementById('password-input').value = '';
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('panel-section').classList.remove('hidden');
+                    statusEl.innerText = '';
+                    statusEl.className = '';
+                    renderCategories();
+                    renderSizes();
+                    loadProducts();
                 } else {
-                    var remaining = MAX_ATTEMPTS - parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
-                    statusEl.innerText = "❌ Parol xato! Qolgan urinish: " + remaining;
+                    statusEl.innerText = "❌ " + (data.error || "Xatolik");
+                    statusEl.className = "status err";
                 }
+            } catch (err) {
+                statusEl.innerText = "❌ Server xatoligi: " + err.message;
                 statusEl.className = "status err";
-                document.getElementById('password-input').value = '';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Kirish';
             }
         });
 
@@ -214,15 +221,16 @@
             if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
+        // ============ LOGOUT ============
         document.getElementById('logout-btn').addEventListener('click', function() {
-            adminPassword = "";
+            clearToken();
             selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
             document.getElementById('password-input').value = "";
             document.getElementById('panel-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
         });
 
-        // KATEGORIYALAR
+        // ============ KATEGORIYALAR ============
         function renderCategories() {
             var grid = document.getElementById('categories-grid');
             var html = '';
@@ -264,7 +272,7 @@
             }
         }
 
-        // RASM PREVIEW
+        // ============ RASM PREVIEW ============
         document.getElementById('p-images').addEventListener('change', function(e) {
             selectedFiles = Array.from(e.target.files).slice(0, 4);
             var preview = document.getElementById('image-preview');
@@ -289,11 +297,12 @@
             }
         });
 
-        // RASM YUKLASH (BACKEND ORQALI)
+        // ============ RASM YUKLASH ============
         function uploadImage(file) {
             return new Promise(function(resolve) {
                 var formData = new FormData();
                 formData.append('image', file);
+                formData.append('token', adminToken);
                 fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData })
                     .then(function(r) { return r.json(); })
                     .then(function(d) { resolve(d.success ? d.url : null); })
@@ -301,7 +310,7 @@
             });
         }
 
-        // SAQLASH
+        // ============ SAQLASH ============
         document.getElementById('add-btn').addEventListener('click', async function() {
             var title = document.getElementById('p-title').value.trim();
             var description = document.getElementById('p-description').value.trim();
@@ -333,7 +342,7 @@
                 }
 
                 var body = {
-                    password: adminPassword,
+                    token: adminToken,
                     title: title, description: description,
                     price: price, discount_price: discount,
                     stock: stock, categories: selectedCategories,
@@ -350,6 +359,8 @@
                         method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
                     });
                 }
+
+                if (res.status === 401) { handleAuthError(); return; }
                 data = await res.json();
 
                 if (data.success) {
@@ -390,6 +401,7 @@
             document.getElementById('add-status').className = "status ok";
         });
 
+        // ============ TAHRIRLASH ============
         function editProduct(id) {
             var product = null;
             for (var i = 0; i < allProducts.length; i++) {
@@ -413,6 +425,7 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
+        // ============ MAHSULOTLAR ============
         function loadProducts() {
             var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
@@ -452,10 +465,16 @@
         function deleteProduct(id) {
             fetch(API_URL + '/api/products/' + id, {
                 method: 'DELETE', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ password: adminPassword })
+                body: JSON.stringify({ token: adminToken })
             })
-            .then(function(r) { return r.json(); })
-            .then(function(data) { if (data.success) loadProducts(); else alert("Xatolik: " + (data.error || "")); })
+            .then(function(r) {
+                if (r.status === 401) { handleAuthError(); return; }
+                return r.json();
+            })
+            .then(function(data) {
+                if (data && data.success) loadProducts();
+                else if (data) alert("Xatolik: " + (data.error || ""));
+            })
             .catch(function(err) { alert("Xatolik: " + err.message); });
         }
 
