@@ -22,7 +22,6 @@ const CATEGORIES = [
     { id: "boshqa", name: "Boshqa", emoji: "📦" }
 ];
 
-// BANNERLAR — 2 ta rasm + gradientlar
 const banners = [
     { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
     { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
@@ -49,7 +48,7 @@ let shuffleTimer = null;
 let currentUser = null;
 let profilePhotoUrl = "";
 
-// ============ BANNER ============
+// BANNER
 function initBanner() {
     updateBanner();
     const dotsEl = document.getElementById('banner-dots');
@@ -99,7 +98,7 @@ function updateBanner() {
     });
 }
 
-// ============ KATEGORIYALAR ============
+// KATEGORIYALAR
 function renderCategories() {
     const scroll = document.getElementById('categories-scroll');
     let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">
@@ -119,7 +118,7 @@ function setCategory(catId) {
     filterProducts();
 }
 
-// ============ QIDIRUV ============
+// QIDIRUV
 function filterProducts() {
     const query = document.getElementById('search-input').value.trim().toLowerCase();
     const clearBtn = document.getElementById('search-clear');
@@ -141,7 +140,7 @@ function clearSearch() {
     filterProducts();
 }
 
-// ============ SHUFFLE (25 daqiqa) ============
+// SHUFFLE
 const SHUFFLE_INTERVAL = 25 * 60 * 1000;
 
 function shuffleArray(arr) {
@@ -176,7 +175,7 @@ function startAutoShuffle() {
     }, 60 * 1000);
 }
 
-// ============ MAHSULOTLAR ============
+// MAHSULOTLAR
 async function loadProducts() {
     const container = document.getElementById('products-container');
     container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
@@ -248,7 +247,7 @@ function renderProducts() {
     });
 }
 
-// ============ MODAL ============
+// MODAL
 function formatDescription(text) {
     if (!text || !text.trim()) return '';
     return text.split('\n').map(l => l.trim()).filter(l => l).map(l => `<p>${l}</p>`).join('');
@@ -339,7 +338,7 @@ function submitOrder(event) {
     closeModal();
 }
 
-// ============ PROFIL ============
+// PROFIL
 async function openProfile() {
     document.getElementById('profile-modal').classList.add('active');
     const user = tg.initDataUnsafe?.user;
@@ -386,6 +385,18 @@ function previewProfilePhoto(event) {
     reader.readAsDataURL(file);
 }
 
+// RASM YUKLASH (BACKEND ORQALI)
+function uploadImageToServer(file) {
+    return new Promise(function(resolve) {
+        var formData = new FormData();
+        formData.append('image', file);
+        fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(d) { resolve(d.success ? d.url : null); })
+            .catch(function() { resolve(null); });
+    });
+}
+
 async function saveProfile() {
     if (!currentUser) return;
     const fullname = document.getElementById('profile-fullname').value.trim();
@@ -399,14 +410,8 @@ async function saveProfile() {
     try {
         let photoUrl = profilePhotoUrl;
         if (fileInput.files[0]) {
-            const IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
-            const formData = new FormData();
-            formData.append('image', fileInput.files[0]);
-            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
-                method: 'POST', body: formData
-            });
-            const data = await res.json();
-            if (data.success && data.data) photoUrl = data.data.url;
+            photoUrl = await uploadImageToServer(fileInput.files[0]);
+            if (!photoUrl) photoUrl = profilePhotoUrl;
         }
         
         const res = await fetch(`${API_URL}/api/update_user`, {
@@ -434,7 +439,7 @@ async function saveProfile() {
     }
 }
 
-// ============ START ============
+// START
 initBanner();
 renderCategories();
 loadProducts();
