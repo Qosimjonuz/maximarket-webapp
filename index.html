@@ -11,21 +11,19 @@
     <!-- HEADER -->
     <header class="app-header">
         <div class="header-left">
-            <img src="LOGO_URL" alt="MaxiMarket" class="logo-img" onerror="this.style.display='none'">
-            <span class="brand-text">MaxiMarket</span>
+            <img src="https://i.ibb.co/9k8t621d/IMG-20260916-104211-663.jpg" alt="MaxiMarket" class="logo-img" onerror="this.style.display='none'">
+            <span class="brand-text">
+                <span class="brand-maxi">Maxi</span><span class="brand-market">Market</span>
+            </span>
         </div>
         <button class="profile-btn" onclick="openProfile()">
             <span>👤</span>
         </button>
     </header>
 
-    <!-- BANNER (35% smaller) -->
+    <!-- BANNER -->
     <div class="banner-carousel" id="banner-carousel">
-        <div class="banner-slide" id="banner-slide">
-            <div class="banner-emoji" id="banner-emoji">🎁</div>
-            <div class="banner-title" id="banner-title">MaxiMarket</div>
-            <div class="banner-subtitle" id="banner-subtitle">Yangi mahsulotlar</div>
-        </div>
+        <div class="banner-slide" id="banner-slide"></div>
         <button class="banner-nav prev" onclick="slideBanner(-1)">‹</button>
         <button class="banner-nav next" onclick="slideBanner(1)">›</button>
         <div class="banner-dots" id="banner-dots"></div>
@@ -48,27 +46,19 @@
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-content profile-content">
             <button class="modal-close" onclick="closeProfile()">✕</button>
-
             <div class="profile-header-icon">
                 <div class="profile-avatar" id="profile-avatar">👤</div>
             </div>
-
             <div class="profile-number" id="profile-number">#---</div>
-
             <div class="profile-form">
                 <label>Ism Familiya</label>
                 <input type="text" id="profile-fullname" placeholder="Ism Familiyangizni kiriting">
-
                 <label>Telefon raqam</label>
                 <input type="tel" id="profile-phone" placeholder="+998 90 000 00 00">
-
                 <label>Profil rasmi (ixtiyoriy)</label>
                 <input type="file" id="profile-photo" accept="image/*" onchange="previewProfilePhoto(event)">
-                <div class="profile-photo-preview" id="profile-photo-preview"></div>
-
                 <label>Ro'yxatdan o'tgan sana</label>
                 <input type="text" id="profile-date" readonly>
-
                 <button class="save-btn" onclick="saveProfile()">💾 Saqlash</button>
                 <div id="profile-status" class="status"></div>
             </div>
