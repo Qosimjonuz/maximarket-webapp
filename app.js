@@ -1,420 +1,379 @@
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-const API_URL = "https://maximarketbot-production.up.railway.app";
-
-const CATEGORIES = [
-    { id: "elektronika", name: "Elektronika", emoji: "📱" },
-    { id: "kiyim", name: "Kiyim", emoji: "👕" },
-    { id: "poyabzallar", name: "Poyabzallar", emoji: "👟" },
-    { id: "aksessuarlar", name: "Aksessuarlar", emoji: "👜" },
-    { id: "parfyumeriya", name: "Parfyumeriya", emoji: "🌸" },
-    { id: "gozallik", name: "Go'zallik", emoji: "💄" },
-    { id: "maishiy", name: "Maishiy texnika", emoji: "🏠" },
-    { id: "salomatlik", name: "Salomatlik", emoji: "❤️" },
-    { id: "bolalar", name: "Bolalar", emoji: "🧸" },
-    { id: "sport", name: "Sport", emoji: "⚽" },
-    { id: "kitoblar", name: "Kitoblar", emoji: "📚" },
-    { id: "avto", name: "Avto", emoji: "🚗" },
-    { id: "uy", name: "Uy uchun", emoji: "🏡" },
-    { id: "sovga", name: "Sovg'alar", emoji: "🎁" },
-    { id: "boshqa", name: "Boshqa", emoji: "📦" }
-];
-
-// BANNERLAR — rasmli va gradientli
-const banners = [
-    { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
-    { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
-    { emoji: "🔥", title: "CHEGIRMALAR", subtitle: "70% gacha arzonlashuv", bg: "linear-gradient(135deg, #e53935, #ff6f00)" },
-    { emoji: "🚚", title: "Bepul yetkazish", subtitle: "O'zbekiston bo'ylab", bg: "linear-gradient(135deg, #2e7d32, #66bb6a)" },
-    { emoji: "💎", title: "Premium sifat", subtitle: "Eng yaxshi brendlar", bg: "linear-gradient(135deg, #6a1b9a, #ab47bc)" },
-    { emoji: "⚡", title: "Tezkor xizmat", subtitle: "24/7 ishlaymiz", bg: "linear-gradient(135deg, #f57c00, #ffb74d)" },
-    { emoji: "🎯", title: "Kafolatlangan", subtitle: "Sifat kafolati", bg: "linear-gradient(135deg, #0d47a1, #1976d2)" },
-    { emoji: "🏆", title: "Eng yaxshi narxlar", subtitle: "Bozordagi eng arzon", bg: "linear-gradient(135deg, #c62828, #e53935)" }
-];
-
-let currentBannerIndex = 0;
-let bannerInterval = null;
-const BANNER_DELAY = 4000;
-
-let products = [];
-let filteredProducts = [];
-let currentProduct = null;
-let currentImageIndex = 0;
-let countdownInterval = null;
-let activeCategory = "all";
-
-let currentUser = null;
-let profilePhotoUrl = "";
-
-// ============ BANNER ============
-function initBanner() {
-    updateBanner();
-    const dotsEl = document.getElementById('banner-dots');
-    dotsEl.innerHTML = banners.map((_, i) => 
-        `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
-    ).join('');
-    startBannerAutoSlide();
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: url("https://i.ibb.co/KpwYv3qV/Screenshot-20260917-104619.jpg") center/cover no-repeat fixed;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0 0 20px 0;
+    min-height: 100vh;
 }
 
-function startBannerAutoSlide() {
-    if (bannerInterval) clearInterval(bannerInterval);
-    bannerInterval = setInterval(() => slideBanner(1), BANNER_DELAY);
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(227, 242, 253, 0.55);
+    z-index: -1;
 }
 
-function slideBanner(dir) {
-    currentBannerIndex = (currentBannerIndex + dir + banners.length) % banners.length;
-    updateBanner();
-    startBannerAutoSlide();
+/* HEADER */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px 6px;
+    gap: 8px;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+.logo-img {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    background: #fff;
+}
+.brand-text {
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.brand-maxi {
+    color: #e53935;
+    -webkit-text-stroke: 0.7px #ffffff;
+    text-shadow: 
+        1.5px 1.5px 0 #fff,
+        -1.5px -1.5px 0 #fff,
+        1.5px -1.5px 0 #fff,
+        -1.5px 1.5px 0 #fff,
+        0 3px 6px rgba(0,0,0,0.35);
+}
+.brand-market {
+    color: #1565c0;
+    -webkit-text-stroke: 0.7px #ffffff;
+    text-shadow: 
+        1.5px 1.5px 0 #fff,
+        -1.5px -1.5px 0 #fff,
+        1.5px -1.5px 0 #fff,
+        -1.5px 1.5px 0 #fff,
+        0 3px 6px rgba(0,0,0,0.35);
+}
+.profile-btn {
+    background: #fff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-function goToBanner(index) {
-    currentBannerIndex = index;
-    updateBanner();
-    startBannerAutoSlide();
+/* BANNER */
+.banner-carousel {
+    position: relative;
+    width: calc(100% - 24px);
+    margin: 4px 12px 10px;
+    height: 130px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    background: #1565c0;
+}
+.banner-slide {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; transition: opacity 0.3s;
+    padding: 8px; text-align: center;
+    background-size: cover;
+    background-position: center;
+}
+.banner-emoji { font-size: 28px; margin-bottom: 4px; }
+.banner-title { font-size: 16px; font-weight: 800; margin-bottom: 2px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.banner-subtitle { font-size: 11px; opacity: 0.95; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.banner-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.9); border: none;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 16px; cursor: pointer; color: #1565c0;
+    font-weight: 700; z-index: 3; display: flex;
+    align-items: center; justify-content: center;
+}
+.banner-nav.prev { left: 6px; }
+.banner-nav.next { right: 6px; }
+.banner-dots { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; z-index: 3; }
+.banner-dots span {
+    display: inline-block; width: 6px; height: 6px;
+    background: rgba(255,255,255,0.5); border-radius: 50%;
+    margin: 0 2px; cursor: pointer;
+}
+.banner-dots span.active { background: #fff; transform: scale(1.3); }
+
+/* QIDIRUV */
+.search-box {
+    display: flex; align-items: center;
+    background: #fff; border-radius: 10px;
+    padding: 3px 12px; margin: 0 12px 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.search-icon { font-size: 14px; margin-right: 7px; color: #888; }
+.search-box input {
+    flex: 1; border: none; outline: none;
+    padding: 8px 0; font-size: 13px; background: transparent;
+}
+.search-clear {
+    background: #e0e0e0; border: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    cursor: pointer; font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
 }
 
-function updateBanner() {
-    const banner = banners[currentBannerIndex];
-    const slide = document.getElementById('banner-slide');
-    slide.style.opacity = '0';
-    setTimeout(() => {
-        if (banner.image) {
-            // Rasmli banner
-            slide.style.background = `url("${banner.image}") center/cover no-repeat`;
-            slide.innerHTML = '';
-        } else {
-            // Gradient banner
-            slide.style.background = banner.bg;
-            slide.innerHTML = `
-                <div class="banner-emoji">${banner.emoji}</div>
-                <div class="banner-title">${banner.title}</div>
-                <div class="banner-subtitle">${banner.subtitle}</div>
-            `;
-        }
-        slide.style.opacity = '1';
-    }, 200);
-    document.querySelectorAll('#banner-dots span').forEach((dot, i) => {
-        dot.classList.toggle('active', i === currentBannerIndex);
-    });
+/* KATEGORIYALAR */
+.categories-scroll {
+    display: flex; gap: 8px;
+    overflow-x: auto; padding: 0 12px 10px;
+    scrollbar-width: none;
+}
+.categories-scroll::-webkit-scrollbar { display: none; }
+.category-btn {
+    flex-shrink: 0; background: #fff;
+    border: 2px solid transparent; border-radius: 12px;
+    padding: 8px 12px; display: flex;
+    flex-direction: column; align-items: center;
+    gap: 4px; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    min-width: 70px; transition: all 0.15s;
+}
+.category-btn.active { border-color: #1565c0; background: #e3f2fd; }
+.cat-emoji { font-size: 20px; }
+.cat-name { font-size: 10px; font-weight: 600; color: #333; white-space: nowrap; }
+
+/* MAHSULOTLAR */
+#products-container { padding: 0 12px; }
+.products-horizontal {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 172px;
+    grid-template-rows: repeat(3, auto);
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.products-horizontal::-webkit-scrollbar { display: none; }
+
+.product-card-h {
+    background: #fff; border-radius: 12px;
+    padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer; display: flex;
+    flex-direction: column; gap: 6px;
+    transition: transform 0.15s;
+}
+.product-card-h:active { transform: scale(0.97); }
+.product-image-h {
+    position: relative; width: 100%;
+    height: 163px; border-radius: 8px;
+    overflow: hidden; background: #f5f5f5;
+}
+.product-image-h img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.discount-badge-h {
+    position: absolute; top: 6px; left: 6px;
+    background: linear-gradient(135deg, #ff6f00, #e53935);
+    color: #fff; font-size: 10px; font-weight: 700;
+    padding: 3px 6px; border-radius: 5px;
+}
+.product-title-h {
+    font-size: 12px; font-weight: 600; color: #222;
+    line-height: 1.3; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; min-height: 32px;
+}
+.product-price-h { display: flex; flex-direction: column; gap: 1px; }
+.old-price-h { font-size: 10px; color: #999; text-decoration: line-through; }
+.new-price-h { font-size: 13px; font-weight: 700; color: #e53935; }
+
+.buy-btn-h {
+    width: 100%;
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    color: #fff;
+    border: none;
+    padding: 9px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: auto;
+    transition: all 0.15s;
+    box-shadow: 0 2px 6px rgba(46,125,50,0.3);
+}
+.buy-btn-h:active {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32);
+    transform: scale(0.97);
 }
 
-// ============ KATEGORIYALAR ============
-function renderCategories() {
-    const scroll = document.getElementById('categories-scroll');
-    let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">
-        <span class="cat-emoji">🌐</span><span class="cat-name">Barchasi</span>
-    </button>`;
-    CATEGORIES.forEach(cat => {
-        html += `<button class="category-btn ${activeCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')">
-            <span class="cat-emoji">${cat.emoji}</span><span class="cat-name">${cat.name}</span>
-        </button>`;
-    });
-    scroll.innerHTML = html;
+.loading {
+    text-align: center; padding: 40px 20px;
+    color: #333; font-size: 14px;
+    font-weight: 600;
 }
 
-function setCategory(catId) {
-    activeCategory = catId;
-    renderCategories();
-    filterProducts();
+/* MODAL */
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 999;
+    justify-content: center; align-items: flex-start;
+    overflow-y: auto; padding: 12px;
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+    background: #fff; border-radius: 16px;
+    padding: 16px; max-width: 480px;
+    width: 100%; position: relative; margin: auto;
+}
+.modal-close {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.6); color: #fff;
+    border: none; border-radius: 50%;
+    width: 34px; height: 34px; font-size: 18px;
+    cursor: pointer; z-index: 10;
+}
+.slider { position: relative; margin-bottom: 14px; }
+.slider img {
+    width: 100%; height: 300px;
+    object-fit: cover; border-radius: 12px; background: #f5f5f5;
+}
+.slider-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.95); border: none;
+    width: 40px; height: 40px; border-radius: 50%;
+    font-size: 22px; cursor: pointer; color: #1565c0; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+.slider-btn.prev { left: 10px; }
+.slider-btn.next { right: 10px; }
+.slider-dots { text-align: center; margin-top: 8px; }
+.slider-dots span {
+    display: inline-block; width: 8px; height: 8px;
+    background: #ccc; border-radius: 50%; margin: 0 3px;
+}
+.slider-dots span.active { background: #1565c0; }
+
+#modal-title {
+    font-size: 17px; text-align: center;
+    margin: 12px 0 6px; color: #1565c0; font-weight: 700;
+}
+.stock-badge {
+    text-align: center; font-size: 12px; font-weight: 600;
+    color: #f57c00; background: #fff3e0;
+    padding: 6px 10px; border-radius: 8px;
+    margin: 0 auto 10px; width: fit-content;
+}
+.modal-description {
+    background: #f8f9fa; border-left: 4px solid #1565c0;
+    border-radius: 8px; padding: 12px 14px; margin: 12px 0;
+    font-size: 13px; line-height: 1.7; color: #444;
+    max-height: 200px; overflow-y: auto;
+}
+.modal-description p { margin: 0 0 8px; }
+.modal-description p:last-child { margin-bottom: 0; }
+
+.aksiya-badge { text-align: center; color: #e53935; font-weight: 700; font-size: 14px; margin: 6px 0; }
+.modal-price { text-align: center; font-size: 26px; font-weight: 700; color: #2e7d32; margin: 10px 0; }
+.countdown-label { text-align: center; font-size: 13px; margin: 10px 0 6px; color: #555; }
+.countdown { display: flex; justify-content: center; gap: 16px; margin-bottom: 16px; }
+.countdown div { text-align: center; }
+.countdown span { font-size: 28px; font-weight: 700; color: #1565c0; display: block; }
+.countdown small { font-size: 10px; color: #888; letter-spacing: 1px; }
+.info-label { text-align: center; font-size: 13px; margin: 14px 0 6px; color: #333; }
+
+#order-form label { font-size: 12px; font-weight: 700; display: block; margin: 10px 0 5px; color: #333; }
+#order-form input {
+    width: 100%; padding: 13px 14px;
+    border: 1.5px solid #ddd; border-radius: 10px;
+    font-size: 15px; background: #fafafa;
+}
+.order-btn {
+    width: 100%; background: #1565c0; color: #fff;
+    border: none; padding: 15px; border-radius: 10px;
+    font-size: 16px; font-weight: 700;
+    margin-top: 16px; cursor: pointer;
+}
+.delivery-info {
+    text-align: center; font-size: 11px;
+    color: #666; margin-top: 14px; padding: 10px;
+    background: #f5f5f5; border-radius: 8px; line-height: 1.5;
 }
 
-// ============ QIDIRUV ============
-function filterProducts() {
-    const query = document.getElementById('search-input').value.trim().toLowerCase();
-    const clearBtn = document.getElementById('search-clear');
-    filteredProducts = products.filter(p => {
-        const matchesSearch = !query || 
-            (p.title || '').toLowerCase().includes(query) ||
-            (p.description || '').toLowerCase().includes(query);
-        const matchesCategory = activeCategory === 'all' || 
-            (p.categories && p.categories.includes(activeCategory));
-        return matchesSearch && matchesCategory;
-    });
-    clearBtn.style.display = query ? 'flex' : 'none';
-    shuffleProducts();
-    renderProducts();
+/* PROFIL */
+.profile-content { padding-top: 30px; }
+.profile-header-icon { text-align: center; margin-bottom: 8px; }
+.profile-avatar {
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, #1565c0, #42a5f5);
+    color: #fff; border-radius: 50%;
+    font-size: 45px; display: flex;
+    align-items: center; justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 4px 14px rgba(21,101,192,0.35);
+    overflow: hidden;
 }
-
-function clearSearch() {
-    document.getElementById('search-input').value = '';
-    filterProducts();
+.profile-number {
+    text-align: center; font-size: 16px;
+    font-weight: 800; color: #1565c0;
+    margin: 8px 0 16px; letter-spacing: 1px;
 }
-
-// ============ SHUFFLE ============
-function shuffleProducts() {
-    const lastShuffle = localStorage.getItem('lastShuffle');
-    const now = Date.now();
-    const SHUFFLE_INTERVAL = 22 * 60 * 1000;
-    if (!lastShuffle || now - parseInt(lastShuffle) > SHUFFLE_INTERVAL) {
-        for (let i = filteredProducts.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [filteredProducts[i], filteredProducts[j]] = [filteredProducts[j], filteredProducts[i]];
-        }
-        localStorage.setItem('lastShuffle', now.toString());
-    }
+.profile-form { text-align: left; }
+.profile-form label {
+    display: block; font-size: 12px;
+    font-weight: 700; margin: 12px 0 5px; color: #333;
 }
-
-// ============ MAHSULOTLAR ============
-async function loadProducts() {
-    const container = document.getElementById('products-container');
-    container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
-    try {
-        const response = await fetch(`${API_URL}/api/products`);
-        const data = await response.json();
-        products = data.products || [];
-        filteredProducts = [...products];
-        if (products.length === 0) {
-            container.innerHTML = '<p class="loading">📦 Hozircha mahsulotlar yo\'q</p>';
-            return;
-        }
-        shuffleProducts();
-        renderProducts();
-    } catch (error) {
-        container.innerHTML = '<p class="loading">❌ Xatolik</p>';
-    }
+.profile-form input {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid #ddd; border-radius: 10px;
+    font-size: 15px; background: #fafafa;
+    font-family: inherit;
 }
-
-function getImageUrl(url) {
-    if (!url) return "https://via.placeholder.com/200x200?text=📦";
-    if (url.startsWith('http')) return url;
-    return `${API_URL}/api/image/${url}`;
+.profile-form input[readonly] { background: #f0f0f0; color: #666; cursor: not-allowed; }
+.profile-form input[type="file"] { padding: 8px; background: #fff; cursor: pointer; }
+.save-btn {
+    width: 100%; background: #2e7d32; color: #fff;
+    border: none; padding: 14px; border-radius: 10px;
+    font-size: 15px; font-weight: 700;
+    margin-top: 16px; cursor: pointer;
 }
+.save-btn:active { background: #1b5e20; }
 
-function getStockText(stock) {
-    if (!stock || stock === 0) return '';
-    if (stock > 0 && stock <= 5) return `⚠️ Faqat ${stock} ta qoldi!`;
-    return `✅ Mavjud: ${stock} ta`;
+.status {
+    text-align: center; padding: 10px;
+    font-size: 13px; margin-top: 10px;
+    border-radius: 8px; font-weight: 500;
+    display: none;
 }
+.status.ok, .status.err { display: block; }
+.status.ok { background: #e8f5e9; color: #2e7d32; }
+.status.err { background: #ffebee; color: #c62828; }
 
-function renderProducts() {
-    const container = document.getElementById('products-container');
-    if (filteredProducts.length === 0) {
-        container.innerHTML = '<p class="loading">🔍 Mahsulot topilmadi</p>';
-        return;
-    }
-    let html = '<div class="products-horizontal">';
-    filteredProducts.forEach(p => {
-        const discountPercent = p.price > 0 && p.discount_price > 0 
-            ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
-        const productId = String(p.id);
-        html += `
-        <div class="product-card-h" data-id="${productId}">
-            <div class="product-image-h">
-                <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
-                ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
-            </div>
-            <div class="product-title-h">${(p.title || '').substring(0, 40)}</div>
-            <div class="product-price-h">
-                ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
-                <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
-            </div>
-            <button class="buy-btn-h" data-buy="${productId}">🛒 Sotib olish</button>
-        </div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-    
-    document.querySelectorAll('.product-card-h').forEach(card => {
-        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
-    });
-    
-    document.querySelectorAll('.buy-btn-h').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openModal(btn.getAttribute('data-buy'));
-        });
-    });
+@media (max-width: 360px) {
+    .products-horizontal { grid-auto-columns: 155px; }
+    .product-image-h { height: 145px; }
+    .buy-btn-h { font-size: 12px; padding: 8px; }
+    .slider img { height: 240px; }
+    .banner-carousel { height: 115px; }
+    .brand-text { font-size: 17px; }
 }
-
-// ============ MODAL ============
-function formatDescription(text) {
-    if (!text || !text.trim()) return '';
-    return text.split('\n').map(l => l.trim()).filter(l => l).map(l => `<p>${l}</p>`).join('');
-}
-
-async function openModal(id) {
-    currentProduct = products.find(p => String(p.id) === String(id));
-    if (!currentProduct) return;
-    
-    currentImageIndex = 0;
-    document.getElementById('modal-title').innerText = currentProduct.title || '';
-    document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
-    
-    const stockEl = document.getElementById('modal-stock');
-    const stockText = getStockText(currentProduct.stock);
-    if (stockText) { stockEl.innerText = stockText; stockEl.style.display = 'block'; }
-    else { stockEl.style.display = 'none'; }
-    
-    const descEl = document.getElementById('modal-description');
-    const formatted = formatDescription(currentProduct.description);
-    descEl.innerHTML = formatted;
-    descEl.style.display = formatted ? 'block' : 'none';
-    
-    updateImage();
-    startCountdown();
-    document.getElementById('order-modal').classList.add('active');
-    
-    try {
-        await fetch(`${API_URL}/api/increment_view`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ product_id: String(currentProduct.id) })
-        });
-    } catch (e) { console.log("View increment xatolik:", e); }
-}
-
-function closeModal() {
-    document.getElementById('order-modal').classList.remove('active');
-    if (countdownInterval) clearInterval(countdownInterval);
-}
-
-function updateImage() {
-    const img = document.getElementById('modal-image');
-    img.src = (currentProduct.images && currentProduct.images.length > 0)
-        ? getImageUrl(currentProduct.images[currentImageIndex])
-        : "https://via.placeholder.com/400x400?text=No+Image";
-    const dots = (currentProduct.images || []).map((_, i) => 
-        `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
-    document.getElementById('slider-dots').innerHTML = dots;
-}
-
-function slideImage(dir) {
-    if (!currentProduct.images || currentProduct.images.length === 0) return;
-    currentImageIndex = (currentImageIndex + dir + currentProduct.images.length) % currentProduct.images.length;
-    updateImage();
-}
-
-function startCountdown() {
-    if (countdownInterval) clearInterval(countdownInterval);
-    function tick() {
-        const end = currentProduct.discount_end ? new Date(currentProduct.discount_end).getTime() : 0;
-        const diff = Math.max(0, end - Date.now());
-        document.getElementById('cd-hours').innerText = String(Math.floor(diff / 3600000)).padStart(2, '0');
-        document.getElementById('cd-minutes').innerText = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-        document.getElementById('cd-seconds').innerText = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    }
-    tick();
-    countdownInterval = setInterval(tick, 1000);
-}
-
-function submitOrder(event) {
-    event.preventDefault();
-    const name = document.getElementById('order-name').value.trim();
-    const phone = document.getElementById('order-phone').value.trim();
-    if (!name || !phone || phone.length < 10) {
-        tg.showAlert("Iltimos, ism va telefon raqamni to'g'ri kiriting!");
-        return;
-    }
-    tg.sendData(JSON.stringify({
-        action: 'order',
-        product_id: String(currentProduct.id),
-        product_title: currentProduct.title,
-        price: currentProduct.discount_price,
-        customer_name: name,
-        customer_phone: phone
-    }));
-    tg.showAlert("Buyurtmangiz qabul qilindi!");
-    closeModal();
-}
-
-// ============ PROFIL ============
-async function openProfile() {
-    document.getElementById('profile-modal').classList.add('active');
-    const user = tg.initDataUnsafe?.user;
-    if (!user) return;
-    
-    try {
-        const res = await fetch(`${API_URL}/api/register_user`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                user_id: user.id,
-                username: user.username || "",
-                tg_name: user.first_name + (user.last_name ? ' ' + user.last_name : '')
-            })
-        });
-        const data = await res.json();
-        if (data.success) {
-            currentUser = data;
-            document.getElementById('profile-number').innerText = '#' + data.user_number;
-            document.getElementById('profile-fullname').value = data.full_name || (user.first_name + (user.last_name ? ' ' + user.last_name : ''));
-            document.getElementById('profile-phone').value = data.phone || '';
-            document.getElementById('profile-date').value = data.registered_at ? 
-                new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
-            if (data.photo) {
-                profilePhotoUrl = data.photo;
-                document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-            }
-        }
-    } catch (err) { console.log("Profil xatolik:", err); }
-}
-
-function closeProfile() {
-    document.getElementById('profile-modal').classList.remove('active');
-}
-
-function previewProfilePhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        document.getElementById('profile-avatar').innerHTML = 
-            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    };
-    reader.readAsDataURL(file);
-}
-
-async function saveProfile() {
-    if (!currentUser) return;
-    const fullname = document.getElementById('profile-fullname').value.trim();
-    const phone = document.getElementById('profile-phone').value.trim();
-    const statusEl = document.getElementById('profile-status');
-    const fileInput = document.getElementById('profile-photo');
-    
-    statusEl.innerText = "⏳ Saqlanmoqda...";
-    statusEl.className = "status ok";
-    
-    try {
-        let photoUrl = profilePhotoUrl;
-        if (fileInput.files[0]) {
-            const IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
-            const formData = new FormData();
-            formData.append('image', fileInput.files[0]);
-            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
-                method: 'POST', body: formData
-            });
-            const data = await res.json();
-            if (data.success && data.data) photoUrl = data.data.url;
-        }
-        
-        const res = await fetch(`${API_URL}/api/update_user`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                user_id: tg.initDataUnsafe.user.id,
-                full_name: fullname,
-                phone: phone,
-                photo: photoUrl
-            })
-        });
-        const data = await res.json();
-        if (data.success) {
-            statusEl.innerText = "✅ Profil saqlandi!";
-            statusEl.className = "status ok";
-            profilePhotoUrl = photoUrl;
-        } else {
-            statusEl.innerText = "❌ " + (data.error || "Xatolik");
-            statusEl.className = "status err";
-        }
-    } catch (err) {
-        statusEl.innerText = "❌ " + err.message;
-        statusEl.className = "status err";
-    }
-}
-
-// ============ START ============
-initBanner();
-renderCategories();
-loadProducts();
