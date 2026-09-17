@@ -2,23 +2,41 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(180deg, #42a5f5 0%, #90caf9 40%, #e3f2fd 100%);
-    background-attachment: fixed;
+    background: #e3f2fd;
     color: #1a1a1a;
     margin: 0;
     padding: 0 0 20px 0;
     min-height: 100vh;
+    position: relative;
 }
 
-/* ============ HEADER ============ */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("https://i.ibb.co/KpwYv3qV/Screenshot-20260917-104619.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.35;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* HEADER */
 .app-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 14px 6px;
     gap: 8px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 8px;
 }
-
 .header-left {
     display: flex;
     align-items: center;
@@ -26,53 +44,65 @@ body {
     flex: 1;
     min-width: 0;
 }
-
 .logo-img {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 8px;
     object-fit: cover;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     background: #fff;
 }
-
 .brand-text {
-    font-size: 18px;
-    font-weight: 800;
-    background: linear-gradient(90deg, #2196f3, #9c27b0, #ff5722);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: 0.3px;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: 'Segoe UI', Arial, sans-serif;
 }
-
+.brand-maxi {
+    color: #e53935;
+    text-shadow: 
+        -1px -1px 0 #fff, -1px 0 0 #fff, -1px 1px 0 #fff,
+        0 -1px 0 #fff, 0 1px 0 #fff,
+        1px -1px 0 #fff, 1px 0 0 #fff, 1px 1px 0 #fff,
+        2px 2px 4px rgba(0,0,0,0.3);
+}
+.brand-market {
+    color: #1565c0;
+    text-shadow: 
+        -1px -1px 0 #fff, -1px 0 0 #fff, -1px 1px 0 #fff,
+        0 -1px 0 #fff, 0 1px 0 #fff,
+        1px -1px 0 #fff, 1px 0 0 #fff, 1px 1px 0 #fff,
+        2px 2px 4px rgba(0,0,0,0.3);
+}
 .profile-btn {
-    background: #fff;
+    background: #1565c0;
     border: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     font-size: 20px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 8px rgba(21,101,192,0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    color: #fff;
 }
 
-/* ============ BANNER ============ */
+/* BANNER */
 .banner-carousel {
     position: relative;
     width: calc(100% - 24px);
     margin: 4px 12px 10px;
-    height: 100px;
+    height: 130px;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    background: #1565c0;
 }
 .banner-slide {
     width: 100%; height: 100%;
@@ -80,29 +110,32 @@ body {
     align-items: center; justify-content: center;
     color: #fff; transition: opacity 0.3s;
     padding: 8px; text-align: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
-.banner-emoji { font-size: 24px; margin-bottom: 2px; }
-.banner-title { font-size: 15px; font-weight: 800; margin-bottom: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-.banner-subtitle { font-size: 10px; opacity: 0.95; }
+.banner-emoji { font-size: 28px; margin-bottom: 4px; }
+.banner-title { font-size: 16px; font-weight: 800; margin-bottom: 2px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.banner-subtitle { font-size: 11px; opacity: 0.95; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
 .banner-nav {
     position: absolute; top: 50%; transform: translateY(-50%);
     background: rgba(255,255,255,0.9); border: none;
-    width: 26px; height: 26px; border-radius: 50%;
+    width: 28px; height: 28px; border-radius: 50%;
     font-size: 16px; cursor: pointer; color: #1565c0;
     font-weight: 700; z-index: 3; display: flex;
     align-items: center; justify-content: center;
 }
 .banner-nav.prev { left: 6px; }
 .banner-nav.next { right: 6px; }
-.banner-dots { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; }
+.banner-dots { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; z-index: 3; }
 .banner-dots span {
-    display: inline-block; width: 5px; height: 5px;
+    display: inline-block; width: 6px; height: 6px;
     background: rgba(255,255,255,0.5); border-radius: 50%;
-    margin: 0 1.5px; cursor: pointer;
+    margin: 0 2px; cursor: pointer;
 }
 .banner-dots span.active { background: #fff; transform: scale(1.3); }
 
-/* ============ QIDIRUV (15% kichik) ============ */
+/* QIDIRUV */
 .search-box {
     display: flex; align-items: center;
     background: #fff; border-radius: 10px;
@@ -121,7 +154,7 @@ body {
     display: flex; align-items: center; justify-content: center;
 }
 
-/* ============ KATEGORIYALAR ============ */
+/* KATEGORIYALAR */
 .categories-scroll {
     display: flex; gap: 8px;
     overflow-x: auto; padding: 0 12px 10px;
@@ -141,18 +174,21 @@ body {
 .cat-emoji { font-size: 20px; }
 .cat-name { font-size: 10px; font-weight: 600; color: #333; white-space: nowrap; }
 
-/* ============ MAHSULOTLAR (15% keng, 25% uzun) ============ */
+/* MAHSULOTLAR - 3 QATORLI GRID */
 #products-container { padding: 0 12px; }
+
 .products-horizontal {
     display: grid;
+    grid-template-rows: repeat(3, auto);
     grid-auto-flow: column;
     grid-auto-columns: 172px;
-    grid-template-rows: repeat(3, auto);
     gap: 10px;
     overflow-x: auto;
+    overflow-y: hidden;
     padding-bottom: 10px;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
 }
 .products-horizontal::-webkit-scrollbar { display: none; }
 
@@ -162,6 +198,7 @@ body {
     cursor: pointer; display: flex;
     flex-direction: column; gap: 6px;
     transition: transform 0.15s;
+    height: fit-content;
 }
 .product-card-h:active { transform: scale(0.97); }
 .product-image-h {
@@ -186,7 +223,6 @@ body {
 .old-price-h { font-size: 10px; color: #999; text-decoration: line-through; }
 .new-price-h { font-size: 13px; font-weight: 700; color: #e53935; }
 
-/* Sotib olish tugmasi */
 .buy-btn-h {
     width: 100%;
     background: linear-gradient(135deg, #2e7d32, #43a047);
@@ -208,11 +244,11 @@ body {
 
 .loading {
     text-align: center; padding: 40px 20px;
-    color: #fff; font-size: 14px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    color: #333; font-size: 14px;
+    font-weight: 600;
 }
 
-/* ============ MODAL ============ */
+/* MODAL */
 .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.75); z-index: 999;
@@ -232,7 +268,6 @@ body {
     width: 34px; height: 34px; font-size: 18px;
     cursor: pointer; z-index: 10;
 }
-
 .slider { position: relative; margin-bottom: 14px; }
 .slider img {
     width: 100%; height: 300px;
@@ -300,7 +335,7 @@ body {
     background: #f5f5f5; border-radius: 8px; line-height: 1.5;
 }
 
-/* ============ PROFIL ============ */
+/* PROFIL */
 .profile-content { padding-top: 30px; }
 .profile-header-icon { text-align: center; margin-bottom: 8px; }
 .profile-avatar {
@@ -314,12 +349,9 @@ body {
     overflow: hidden;
 }
 .profile-number {
-    text-align: center;
-    font-size: 16px;
-    font-weight: 800;
-    color: #1565c0;
-    margin: 8px 0 16px;
-    letter-spacing: 1px;
+    text-align: center; font-size: 16px;
+    font-weight: 800; color: #1565c0;
+    margin: 8px 0 16px; letter-spacing: 1px;
 }
 .profile-form { text-align: left; }
 .profile-form label {
@@ -334,12 +366,6 @@ body {
 }
 .profile-form input[readonly] { background: #f0f0f0; color: #666; cursor: not-allowed; }
 .profile-form input[type="file"] { padding: 8px; background: #fff; cursor: pointer; }
-.profile-photo-preview { margin-top: 8px; }
-.profile-photo-preview img {
-    width: 80px; height: 80px;
-    object-fit: cover; border-radius: 50%;
-    border: 3px solid #1565c0;
-}
 .save-btn {
     width: 100%; background: #2e7d32; color: #fff;
     border: none; padding: 14px; border-radius: 10px;
@@ -363,5 +389,6 @@ body {
     .product-image-h { height: 145px; }
     .buy-btn-h { font-size: 12px; padding: 8px; }
     .slider img { height: 240px; }
-    .banner-carousel { height: 90px; }
+    .banner-carousel { height: 115px; }
+    .brand-text { font-size: 17px; }
 }
