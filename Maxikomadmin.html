@@ -104,6 +104,24 @@
         var MAX_CATEGORIES = 2;
         var MAX_SIZES = 4;
 
+        // ============ PAROL TEKSHIRUVI ============
+        // ⚠️ FAQAT SHU PAROL TO'G'RI
+        var CORRECT_PASSWORD = "shodmak@bk.ru";
+
+        // Rate limit — 5 marta xato → 15 daqiqa blok
+        var MAX_ATTEMPTS = 5;
+        var BLOCK_TIME = 15 * 60 * 1000; // 15 daqiqa
+        var ATTEMPTS_KEY = "admin_attempts";
+        var BLOCK_UNTIL_KEY = "admin_block_until";
+
+        // ============ STATE ============
+        var adminPassword = "";
+        var selectedFiles = [];
+        var selectedCategories = [];
+        var selectedSizes = [];
+        var editingProductId = null;
+        var allProducts = [];
+
         var CATEGORIES = [
             { id: "elektronika", name: "Elektronika", emoji: "📱" },
             { id: "kiyim", name: "Kiyim", emoji: "👕" },
@@ -124,37 +142,102 @@
 
         var SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "Universal"];
 
-        var adminPassword = "";
-        var selectedFiles = [];
-        var selectedCategories = [];
-        var selectedSizes = [];
-        var editingProductId = null;
-        var allProducts = [];
+        // ============ RATE LIMIT ============
+        function checkBlock() {
+            var blockUntil = localStorage.getItem(BLOCK_UNTIL_KEY);
+            if (blockUntil) {
+                var now = Date.now();
+                if (now < parseInt(blockUntil)) {
+                    var remaining = Math.ceil((parseInt(blockUntil) - now) / 60000);
+                    return remaining;
+                } else {
+                    // Blok tugadi — tozalash
+                    localStorage.removeItem(BLOCK_UNTIL_KEY);
+                    localStorage.removeItem(ATTEMPTS_KEY);
+                }
+            }
+            return 0;
+        }
 
-        // LOGIN
+        function addAttempt() {
+            var attempts = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0") + 1;
+            localStorage.setItem(ATTEMPTS_KEY, attempts.toString());
+            
+            if (attempts >= MAX_ATTEMPTS) {
+                var blockUntil = Date.now() + BLOCK_TIME;
+                localStorage.setItem(BLOCK_UNTIL_KEY, blockUntil.toString());
+                localStorage.removeItem(ATTEMPTS_KEY);
+                return true; // blok
+            }
+            return false;
+        }
+
+        function resetAttempts() {
+            localStorage.removeItem(ATTEMPTS_KEY);
+            localStorage.removeItem(BLOCK_UNTIL_KEY);
+        }
+
+        // ============ LOGIN ============
         document.getElementById('login-btn').addEventListener('click', function() {
             var pwd = document.getElementById('password-input').value.trim();
-            if (!pwd) { alert("Parolni kiriting!"); return; }
-            adminPassword = pwd;
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('panel-section').classList.remove('hidden');
-            renderCategories();
-            renderSizes();
-            loadProducts();
+            var statusEl = document.getElementById('login-status');
+
+            // Blok tekshiruvi
+            var blockRemaining = checkBlock();
+            if (blockRemaining > 0) {
+                statusEl.innerText = "🚫 Juda ko'p urinish. " + blockRemaining + " daqiqadan keyin qayta urinib ko'ring.";
+                statusEl.className = "status err";
+                return;
+            }
+
+            if (!pwd) {
+                statusEl.innerText = "Parolni kiriting!";
+                statusEl.className = "status err";
+                return;
+            }
+
+            // PAROL TEKSHIRUVI
+            if (pwd === CORRECT_PASSWORD) {
+                // ✅ To'g'ri parol
+                resetAttempts();
+                adminPassword = pwd;
+                document.getElementById('password-input').value = '';
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('panel-section').classList.remove('hidden');
+                statusEl.innerText = '';
+                statusEl.className = '';
+                renderCategories();
+                renderSizes();
+                loadProducts();
+            } else {
+                // ❌ Xato parol
+                var isBlocked = addAttempt();
+                
+                if (isBlocked) {
+                    statusEl.innerText = "🚫 5 marta xato! 15 daqiqaga bloklandingiz.";
+                } else {
+                    var remaining = MAX_ATTEMPTS - parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
+                    statusEl.innerText = "❌ Parol xato! Qolgan urinish: " + remaining;
+                }
+                statusEl.className = "status err";
+                document.getElementById('password-input').value = '';
+            }
         });
 
         document.getElementById('password-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
+        // ============ LOGOUT ============
         document.getElementById('logout-btn').addEventListener('click', function() {
-            adminPassword = ""; selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
+            adminPassword = "";
+            selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
             document.getElementById('password-input').value = "";
             document.getElementById('panel-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
         });
 
-        // KATEGORIYALAR
+        // ============ KATEGORIYALAR ============
         function renderCategories() {
             var grid = document.getElementById('categories-grid');
             var html = '';
@@ -167,7 +250,6 @@
             bindChipEvents(grid, '.chip[data-cat]', 'data-cat', selectedCategories, MAX_CATEGORIES, renderCategories);
         }
 
-        // SIZES
         function renderSizes() {
             var grid = document.getElementById('sizes-grid');
             var html = '';
@@ -197,7 +279,7 @@
             }
         }
 
-        // RASM PREVIEW
+        // ============ RASM PREVIEW ============
         document.getElementById('p-images').addEventListener('change', function(e) {
             selectedFiles = Array.from(e.target.files).slice(0, 4);
             var preview = document.getElementById('image-preview');
@@ -222,7 +304,7 @@
             }
         });
 
-        // IMGBB
+        // ============ IMGBB ============
         function uploadToImgBB(file) {
             return new Promise(function(resolve) {
                 var formData = new FormData();
@@ -234,7 +316,7 @@
             });
         }
 
-        // SAQLASH
+        // ============ SAQLASH ============
         document.getElementById('add-btn').addEventListener('click', async function() {
             var title = document.getElementById('p-title').value.trim();
             var description = document.getElementById('p-description').value.trim();
@@ -323,7 +405,7 @@
             document.getElementById('add-status').className = "status ok";
         });
 
-        // TAHRIRLASH
+        // ============ TAHRIRLASH ============
         function editProduct(id) {
             var product = null;
             for (var i = 0; i < allProducts.length; i++) {
@@ -347,7 +429,7 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // MAHSULOTLAR
+        // ============ MAHSULOTLAR ============
         function loadProducts() {
             var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
