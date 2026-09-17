@@ -22,19 +22,16 @@ const CATEGORIES = [
     { id: "boshqa", name: "Boshqa", emoji: "📦" }
 ];
 
+// BANNERLAR — rasmli va gradientli
 const banners = [
-    { emoji: "🎁", title: "MaxiMarket", subtitle: "Yangi mahsulotlar", bg: "linear-gradient(135deg, #1565c0, #42a5f5)" },
+    { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
+    { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
     { emoji: "🔥", title: "CHEGIRMALAR", subtitle: "70% gacha arzonlashuv", bg: "linear-gradient(135deg, #e53935, #ff6f00)" },
     { emoji: "🚚", title: "Bepul yetkazish", subtitle: "O'zbekiston bo'ylab", bg: "linear-gradient(135deg, #2e7d32, #66bb6a)" },
     { emoji: "💎", title: "Premium sifat", subtitle: "Eng yaxshi brendlar", bg: "linear-gradient(135deg, #6a1b9a, #ab47bc)" },
     { emoji: "⚡", title: "Tezkor xizmat", subtitle: "24/7 ishlaymiz", bg: "linear-gradient(135deg, #f57c00, #ffb74d)" },
     { emoji: "🎯", title: "Kafolatlangan", subtitle: "Sifat kafolati", bg: "linear-gradient(135deg, #0d47a1, #1976d2)" },
-    { emoji: "🏆", title: "Eng yaxshi narxlar", subtitle: "Bozordagi eng arzon", bg: "linear-gradient(135deg, #c62828, #e53935)" },
-    { emoji: "💝", title: "Sovg'alar", subtitle: "Yaqinlaringizga", bg: "linear-gradient(135deg, #ad1457, #ec407a)" },
-    { emoji: "📱", title: "Elektronika", subtitle: "Zamonaviy texnika", bg: "linear-gradient(135deg, #0277bd, #29b6f6)" },
-    { emoji: "👗", title: "Kiyimlar", subtitle: "Yangi kolleksiya", bg: "linear-gradient(135deg, #6a1b9a, #8e24aa)" },
-    { emoji: "🏠", title: "Uy uchun", subtitle: "Qulaylik yaratuvchi", bg: "linear-gradient(135deg, #ef6c00, #fb8c00)" },
-    { emoji: "⭐", title: "Sizning tanlovingiz", subtitle: "Eng ko'p sotilgan", bg: "linear-gradient(135deg, #1565c0, #1e88e5)" }
+    { emoji: "🏆", title: "Eng yaxshi narxlar", subtitle: "Bozordagi eng arzon", bg: "linear-gradient(135deg, #c62828, #e53935)" }
 ];
 
 let currentBannerIndex = 0;
@@ -83,10 +80,19 @@ function updateBanner() {
     const slide = document.getElementById('banner-slide');
     slide.style.opacity = '0';
     setTimeout(() => {
-        slide.style.background = banner.bg;
-        document.getElementById('banner-emoji').innerText = banner.emoji;
-        document.getElementById('banner-title').innerText = banner.title;
-        document.getElementById('banner-subtitle').innerText = banner.subtitle;
+        if (banner.image) {
+            // Rasmli banner
+            slide.style.background = `url("${banner.image}") center/cover no-repeat`;
+            slide.innerHTML = '';
+        } else {
+            // Gradient banner
+            slide.style.background = banner.bg;
+            slide.innerHTML = `
+                <div class="banner-emoji">${banner.emoji}</div>
+                <div class="banner-title">${banner.title}</div>
+                <div class="banner-subtitle">${banner.subtitle}</div>
+            `;
+        }
         slide.style.opacity = '1';
     }, 200);
     document.querySelectorAll('#banner-dots span').forEach((dot, i) => {
@@ -136,7 +142,7 @@ function clearSearch() {
     filterProducts();
 }
 
-// ============ SHUFFLE (22 daqiqa) ============
+// ============ SHUFFLE ============
 function shuffleProducts() {
     const lastShuffle = localStorage.getItem('lastShuffle');
     const now = Date.now();
@@ -211,9 +217,7 @@ function renderProducts() {
     container.innerHTML = html;
     
     document.querySelectorAll('.product-card-h').forEach(card => {
-        card.addEventListener('click', () => {
-            openModal(card.getAttribute('data-id'));
-        });
+        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
     
     document.querySelectorAll('.buy-btn-h').forEach(btn => {
@@ -258,9 +262,7 @@ async function openModal(id) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ product_id: String(currentProduct.id) })
         });
-    } catch (e) {
-        console.log("View increment xatolik:", e);
-    }
+    } catch (e) { console.log("View increment xatolik:", e); }
 }
 
 function closeModal() {
@@ -346,9 +348,7 @@ async function openProfile() {
                 document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
             }
         }
-    } catch (err) {
-        console.log("Profil xatolik:", err);
-    }
+    } catch (err) { console.log("Profil xatolik:", err); }
 }
 
 function closeProfile() {
