@@ -7,8 +7,11 @@ const API_URL = "https://maximarketbot-production.up.railway.app";
 const CATEGORIES = [
     { id: "elektronika", name: "Elektronika", emoji: "📱" },
     { id: "kiyim", name: "Kiyim", emoji: "👕" },
-    { id: "maishiy", name: "Maishiy texnika", emoji: "🏠" },
+    { id: "poyabzallar", name: "Poyabzallar", emoji: "👟" },
+    { id: "aksessuarlar", name: "Aksessuarlar", emoji: "👜" },
+    { id: "parfyumeriya", name: "Parfyumeriya", emoji: "🌸" },
     { id: "gozallik", name: "Go'zallik", emoji: "💄" },
+    { id: "maishiy", name: "Maishiy texnika", emoji: "🏠" },
     { id: "salomatlik", name: "Salomatlik", emoji: "❤️" },
     { id: "bolalar", name: "Bolalar", emoji: "🧸" },
     { id: "sport", name: "Sport", emoji: "⚽" },
@@ -189,8 +192,9 @@ function renderProducts() {
     filteredProducts.forEach(p => {
         const discountPercent = p.price > 0 && p.discount_price > 0 
             ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
+        const productId = String(p.id);
         html += `
-        <div class="product-card-h" data-id="${String(p.id)}">
+        <div class="product-card-h" data-id="${productId}">
             <div class="product-image-h">
                 <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
                 ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
@@ -200,12 +204,23 @@ function renderProducts() {
                 ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
                 <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
             </div>
+            <button class="buy-btn-h" data-buy="${productId}">🛒 Sotib olish</button>
         </div>`;
     });
     html += '</div>';
     container.innerHTML = html;
+    
     document.querySelectorAll('.product-card-h').forEach(card => {
-        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
+        card.addEventListener('click', () => {
+            openModal(card.getAttribute('data-id'));
+        });
+    });
+    
+    document.querySelectorAll('.buy-btn-h').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(btn.getAttribute('data-buy'));
+        });
     });
 }
 
@@ -215,23 +230,37 @@ function formatDescription(text) {
     return text.split('\n').map(l => l.trim()).filter(l => l).map(l => `<p>${l}</p>`).join('');
 }
 
-function openModal(id) {
+async function openModal(id) {
     currentProduct = products.find(p => String(p.id) === String(id));
     if (!currentProduct) return;
+    
     currentImageIndex = 0;
     document.getElementById('modal-title').innerText = currentProduct.title || '';
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
+    
     const stockEl = document.getElementById('modal-stock');
     const stockText = getStockText(currentProduct.stock);
     if (stockText) { stockEl.innerText = stockText; stockEl.style.display = 'block'; }
     else { stockEl.style.display = 'none'; }
+    
     const descEl = document.getElementById('modal-description');
     const formatted = formatDescription(currentProduct.description);
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
+    
     updateImage();
     startCountdown();
     document.getElementById('order-modal').classList.add('active');
+    
+    try {
+        await fetch(`${API_URL}/api/increment_view`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ product_id: String(currentProduct.id) })
+        });
+    } catch (e) {
+        console.log("View increment xatolik:", e);
+    }
 }
 
 function closeModal() {
@@ -278,7 +307,7 @@ function submitOrder(event) {
     }
     tg.sendData(JSON.stringify({
         action: 'order',
-        product_id: currentProduct.id,
+        product_id: String(currentProduct.id),
         product_title: currentProduct.title,
         price: currentProduct.discount_price,
         customer_name: name,
@@ -291,14 +320,8 @@ function submitOrder(event) {
 // ============ PROFIL ============
 async function openProfile() {
     document.getElementById('profile-modal').classList.add('active');
-    
-    // Foydalanuvchini bazaga ro'yxatdan o'tkazish
     const user = tg.initDataUnsafe?.user;
-    if (!user) {
-        document.getElementById('profile-status').innerText = "Telegram ma'lumotlari topilmadi";
-        document.getElementById('profile-status').className = "status err";
-        return;
-    }
+    if (!user) return;
     
     try {
         const res = await fetch(`${API_URL}/api/register_user`, {
@@ -318,15 +341,13 @@ async function openProfile() {
             document.getElementById('profile-phone').value = data.phone || '';
             document.getElementById('profile-date').value = data.registered_at ? 
                 new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
-            
             if (data.photo) {
                 profilePhotoUrl = data.photo;
                 document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
             }
         }
     } catch (err) {
-        document.getElementById('profile-status').innerText = "Xatolik: " + err.message;
-        document.getElementById('profile-status').className = "status err";
+        console.log("Profil xatolik:", err);
     }
 }
 
@@ -357,8 +378,6 @@ async function saveProfile() {
     
     try {
         let photoUrl = profilePhotoUrl;
-        
-        // Rasm yuklash
         if (fileInput.files[0]) {
             const IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
             const formData = new FormData();
