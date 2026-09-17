@@ -6,80 +6,42 @@
     <title>MaxiMarket — Admin Panel</title>
     <style>
         * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5; color: #1a1a1a;
-            margin: 0; padding: 16px; max-width: 600px; margin: 0 auto;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a1a; margin: 0; padding: 16px; max-width: 600px; margin: 0 auto; }
         h1 { text-align: center; font-size: 22px; color: #1565c0; margin: 8px 0 20px; }
-        .section {
-            background: #fff; border-radius: 14px;
-            padding: 18px; margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+        .section { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .section h2 { font-size: 16px; margin: 0 0 14px; color: #333; }
         label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 5px; color: #444; }
-        input, textarea {
-            width: 100%; padding: 11px 14px;
-            border: 1.5px solid #e0e0e0; border-radius: 10px;
-            font-size: 14px; font-family: inherit; background: #fafafa;
-        }
+        input, textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 14px; font-family: inherit; background: #fafafa; }
         input:focus, textarea:focus { outline: none; border-color: #1565c0; background: #fff; }
         input[type="file"] { padding: 8px; background: #fff; cursor: pointer; }
-        button {
-            width: 100%; background: #1565c0; color: #fff;
-            border: none; padding: 13px; border-radius: 10px;
-            font-size: 15px; font-weight: 600; margin-top: 14px; cursor: pointer;
-        }
+        button { width: 100%; background: #1565c0; color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 600; margin-top: 14px; cursor: pointer; }
         button:active { background: #0d47a1; }
         button:disabled { background: #90a4ae; }
         button.danger { background: #e53935; }
-        button.small { width: auto; padding: 6px 12px; margin: 0; font-size: 12px; }
-        .info-note {
-            background: #e3f2fd; color: #1565c0;
-            padding: 10px 12px; border-radius: 8px;
-            font-size: 12px; margin: 10px 0; line-height: 1.5;
-        }
-        .image-preview {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 8px; margin-top: 8px;
-        }
-        .image-preview img {
-            width: 100%; height: 70px; object-fit: cover;
-            border-radius: 8px; border: 2px solid #e0e0e0;
-        }
-        .image-preview .empty {
-            background: #f5f5f5; border: 2px dashed #ddd;
-            border-radius: 8px; height: 70px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: #bbb;
-        }
-        .product-item {
-            background: #f8f9fa; padding: 12px; border-radius: 10px;
-            margin-bottom: 10px; display: flex; justify-content: space-between;
-            align-items: center; gap: 8px;
-        }
+        button.success { background: #2e7d32; }
+        button.small { width: auto; padding: 6px 10px; margin: 0; font-size: 12px; }
+        .btn-row { display: flex; gap: 6px; }
+        .info-note { background: #e3f2fd; color: #1565c0; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin: 10px 0; line-height: 1.5; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+        .chip { display: flex; align-items: center; gap: 6px; background: #f8f9fa; padding: 8px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+        .chip.selected { background: #e3f2fd; border-color: #1565c0; }
+        .chip input { width: auto; margin: 0; }
+        .image-preview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+        .image-preview img { width: 100%; height: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0; }
+        .image-preview .empty { background: #f5f5f5; border: 2px dashed #ddd; border-radius: 8px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #bbb; }
+        .product-item { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .product-item-info { flex: 1; min-width: 0; }
         .product-item-info b { display: block; font-size: 14px; margin-bottom: 3px; word-break: break-word; }
-        .product-item-info small { color: #777; font-size: 12px; display: block; }
-        .status {
-            text-align: center; padding: 10px; font-size: 13px;
-            margin-top: 10px; border-radius: 8px; font-weight: 500;
-        }
+        .product-item-info small { color: #777; font-size: 11px; display: block; }
+        .status { text-align: center; padding: 10px; font-size: 13px; margin-top: 10px; border-radius: 8px; font-weight: 500; }
         .status.ok { background: #e8f5e9; color: #2e7d32; }
         .status.err { background: #ffebee; color: #c62828; }
         .hidden { display: none; }
-        .loader {
-            display: inline-block; width: 14px; height: 14px;
-            border: 2px solid #fff; border-top-color: transparent;
-            border-radius: 50%; animation: spin 0.7s linear infinite;
-            vertical-align: middle; margin-right: 6px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <h1>🔐 MaxiMarket Admin Panel</h1>
+    <h1>🔐 MaxiMarket Admin</h1>
 
     <div id="login-section" class="section">
         <h2>🔑 Kirish</h2>
@@ -91,7 +53,7 @@
 
     <div id="panel-section" class="hidden">
         <div class="section">
-            <h2>➕ Yangi mahsulot qo'shish</h2>
+            <h2 id="form-title">➕ Yangi mahsulot qo'shish</h2>
             <div class="info-note">ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi.</div>
 
             <label>Mahsulot nomi *</label>
@@ -109,16 +71,21 @@
             <label>Ombordagi soni (dona)</label>
             <input type="number" id="p-stock" placeholder="10" inputmode="numeric">
 
+            <label>📂 Kategoriyalar (2 tagacha)</label>
+            <div class="grid-2" id="categories-grid"></div>
+
+            <label>📏 O'lchamlar / Razmerlar (4 tagacha)</label>
+            <div class="grid-3" id="sizes-grid"></div>
+
             <label>📷 Rasmlar (4 tagacha)</label>
             <input type="file" id="p-images" accept="image/*" multiple>
             <div class="image-preview" id="image-preview">
-                <div class="empty">📷</div>
-                <div class="empty">📷</div>
-                <div class="empty">📷</div>
-                <div class="empty">📷</div>
+                <div class="empty">📷</div><div class="empty">📷</div>
+                <div class="empty">📷</div><div class="empty">📷</div>
             </div>
 
             <button id="add-btn">💾 Saqlash</button>
+            <button id="cancel-btn" class="danger hidden">❌ Tahrirlashni bekor qilish</button>
             <div id="add-status" class="status"></div>
         </div>
 
@@ -134,48 +101,104 @@
     <script>
         var API_URL = "https://maximarketbot-production.up.railway.app";
         var IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
+        var MAX_CATEGORIES = 2;
+        var MAX_SIZES = 4;
+
+        var CATEGORIES = [
+            { id: "elektronika", name: "Elektronika", emoji: "📱" },
+            { id: "kiyim", name: "Kiyim", emoji: "👕" },
+            { id: "maishiy", name: "Maishiy texnika", emoji: "🏠" },
+            { id: "gozallik", name: "Go'zallik", emoji: "💄" },
+            { id: "salomatlik", name: "Salomatlik", emoji: "❤️" },
+            { id: "bolalar", name: "Bolalar", emoji: "🧸" },
+            { id: "sport", name: "Sport", emoji: "⚽" },
+            { id: "kitoblar", name: "Kitoblar", emoji: "📚" },
+            { id: "avto", name: "Avto", emoji: "🚗" },
+            { id: "uy", name: "Uy uchun", emoji: "🏡" },
+            { id: "sovga", name: "Sovg'alar", emoji: "🎁" },
+            { id: "boshqa", name: "Boshqa", emoji: "📦" }
+        ];
+
+        var SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "Universal"];
+
         var adminPassword = "";
         var selectedFiles = [];
+        var selectedCategories = [];
+        var selectedSizes = [];
+        var editingProductId = null;
+        var allProducts = [];
 
-        // ============ LOGIN ============
+        // LOGIN
         document.getElementById('login-btn').addEventListener('click', function() {
             var pwd = document.getElementById('password-input').value.trim();
-            var status = document.getElementById('login-status');
-            
-            if (!pwd) {
-                status.innerText = "Parolni kiriting!";
-                status.className = "status err";
-                return;
-            }
-            
+            if (!pwd) { alert("Parolni kiriting!"); return; }
             adminPassword = pwd;
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('panel-section').classList.remove('hidden');
+            renderCategories();
+            renderSizes();
             loadProducts();
         });
 
-        // Enter tugmasi bilan kirish
         document.getElementById('password-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('login-btn').click();
-            }
+            if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
-        // ============ LOGOUT ============
         document.getElementById('logout-btn').addEventListener('click', function() {
-            adminPassword = "";
-            selectedFiles = [];
+            adminPassword = ""; selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
             document.getElementById('password-input').value = "";
             document.getElementById('panel-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
         });
 
-        // ============ RASM PREVIEW ============
+        // KATEGORIYALAR
+        function renderCategories() {
+            var grid = document.getElementById('categories-grid');
+            var html = '';
+            for (var i = 0; i < CATEGORIES.length; i++) {
+                var cat = CATEGORIES[i];
+                var isSel = selectedCategories.indexOf(cat.id) > -1;
+                html += '<label class="chip' + (isSel ? ' selected' : '') + '" data-cat="' + cat.id + '"><input type="checkbox"' + (isSel ? ' checked' : '') + '><span>' + cat.emoji + ' ' + cat.name + '</span></label>';
+            }
+            grid.innerHTML = html;
+            bindChipEvents(grid, '.chip[data-cat]', 'data-cat', selectedCategories, MAX_CATEGORIES, renderCategories);
+        }
+
+        // SIZES
+        function renderSizes() {
+            var grid = document.getElementById('sizes-grid');
+            var html = '';
+            for (var i = 0; i < SIZES.length; i++) {
+                var sz = SIZES[i];
+                var isSel = selectedSizes.indexOf(sz) > -1;
+                html += '<label class="chip' + (isSel ? ' selected' : '') + '" data-size="' + sz + '"><input type="checkbox"' + (isSel ? ' checked' : '') + '><span>' + sz + '</span></label>';
+            }
+            grid.innerHTML = html;
+            bindChipEvents(grid, '.chip[data-size]', 'data-size', selectedSizes, MAX_SIZES, renderSizes);
+        }
+
+        function bindChipEvents(grid, selector, attr, arr, max, rerender) {
+            var items = grid.querySelectorAll(selector);
+            for (var i = 0; i < items.length; i++) {
+                items[i].addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var val = this.getAttribute(attr);
+                    var idx = arr.indexOf(val);
+                    if (idx > -1) { arr.splice(idx, 1); }
+                    else {
+                        if (arr.length >= max) { alert("Faqat " + max + " ta tanlash mumkin!"); return; }
+                        arr.push(val);
+                    }
+                    rerender();
+                });
+            }
+        }
+
+        // RASM PREVIEW
         document.getElementById('p-images').addEventListener('change', function(e) {
             selectedFiles = Array.from(e.target.files).slice(0, 4);
             var preview = document.getElementById('image-preview');
             preview.innerHTML = '';
-            
             for (var i = 0; i < 4; i++) {
                 if (selectedFiles[i]) {
                     (function(file) {
@@ -196,27 +219,20 @@
             }
         });
 
-        // ============ IMGBB YUKLASH ============
-        function uploadToImgBB(file, callback) {
-            var formData = new FormData();
-            formData.append('image', file);
-            fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, {
-                method: 'POST',
-                body: formData
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.success && data.data && data.data.url) {
-                    callback(data.data.url);
-                } else {
-                    callback(null);
-                }
-            })
-            .catch(function() { callback(null); });
+        // IMGBB
+        function uploadToImgBB(file) {
+            return new Promise(function(resolve) {
+                var formData = new FormData();
+                formData.append('image', file);
+                fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: formData })
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) { resolve(d.success && d.data ? d.data.url : null); })
+                    .catch(function() { resolve(null); });
+            });
         }
 
-        // ============ MAHSULOT QO'SHISH ============
-        document.getElementById('add-btn').addEventListener('click', function() {
+        // SAQLASH
+        document.getElementById('add-btn').addEventListener('click', async function() {
             var title = document.getElementById('p-title').value.trim();
             var description = document.getElementById('p-description').value.trim();
             var price = parseInt(document.getElementById('p-price').value) || 0;
@@ -235,138 +251,146 @@
             btn.innerText = 'Saqlanmoqda...';
             statusEl.innerText = '';
 
-            // Rasmlarni yuklash
-            var imageUrls = [];
-            var pending = selectedFiles.length;
-
-            if (pending === 0) {
-                sendProduct(imageUrls);
-            } else {
-                for (var i = 0; i < selectedFiles.length; i++) {
-                    (function(idx) {
-                        statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (idx+1) + '/' + pending + ')';
+            try {
+                var imageUrls = [];
+                if (selectedFiles.length > 0) {
+                    for (var i = 0; i < selectedFiles.length; i++) {
+                        statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (i+1) + '/' + selectedFiles.length + ')';
                         statusEl.className = "status ok";
-                        uploadToImgBB(selectedFiles[idx], function(url) {
-                            if (url) imageUrls.push(url);
-                            if (idx === selectedFiles.length - 1 || imageUrls.length + (selectedFiles.length - idx - 1) === 0) {
-                                // Oxirgi rasm
-                                if (idx === selectedFiles.length - 1) sendProduct(imageUrls);
-                            } else if (idx === selectedFiles.length - 1) {
-                                sendProduct(imageUrls);
-                            }
-                        });
-                    })(i);
-                }
-            }
-
-            function sendProduct(urls) {
-                fetch(API_URL + '/api/products', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        password: adminPassword,
-                        title: title,
-                        description: description,
-                        price: price,
-                        discount_price: discount,
-                        stock: stock,
-                        images: urls
-                    })
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (data.success) {
-                        statusEl.innerText = "✅ Mahsulot qo'shildi!";
-                        statusEl.className = "status ok";
-                        document.getElementById('p-title').value = '';
-                        document.getElementById('p-description').value = '';
-                        document.getElementById('p-price').value = '';
-                        document.getElementById('p-discount').value = '';
-                        document.getElementById('p-stock').value = '';
-                        document.getElementById('p-images').value = '';
-                        selectedFiles = [];
-                        document.getElementById('image-preview').innerHTML = 
-                            '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
-                        loadProducts();
-                    } else {
-                        statusEl.innerText = "❌ " + (data.error || "Xatolik");
-                        statusEl.className = "status err";
+                        var url = await uploadToImgBB(selectedFiles[i]);
+                        if (url) imageUrls.push(url);
                     }
-                })
-                .catch(function(err) {
-                    statusEl.innerText = "❌ " + err.message;
+                }
+
+                var body = {
+                    password: adminPassword,
+                    title: title, description: description,
+                    price: price, discount_price: discount,
+                    stock: stock, categories: selectedCategories,
+                    sizes: selectedSizes, images: imageUrls
+                };
+
+                var res, data;
+                if (editingProductId) {
+                    res = await fetch(API_URL + '/api/products/' + editingProductId, {
+                        method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+                    });
+                } else {
+                    res = await fetch(API_URL + '/api/products', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+                    });
+                }
+                data = await res.json();
+
+                if (data.success) {
+                    statusEl.innerText = editingProductId ? "✅ Mahsulot yangilandi!" : "✅ Mahsulot qo'shildi!";
+                    statusEl.className = "status ok";
+                    resetForm();
+                    loadProducts();
+                } else {
+                    statusEl.innerText = "❌ " + (data.error || "Xatolik");
                     statusEl.className = "status err";
-                })
-                .finally(function() {
-                    btn.disabled = false;
-                    btn.innerText = '💾 Saqlash';
-                });
+                }
+            } catch (err) {
+                statusEl.innerText = "❌ " + err.message;
+                statusEl.className = "status err";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '💾 Saqlash';
             }
         });
 
-        // ============ MAHSULOTLAR RO'YXATI ============
+        function resetForm() {
+            document.getElementById('p-title').value = '';
+            document.getElementById('p-description').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-discount').value = '';
+            document.getElementById('p-stock').value = '';
+            document.getElementById('p-images').value = '';
+            selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
+            document.getElementById('image-preview').innerHTML = '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
+            renderCategories(); renderSizes();
+            document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
+            document.getElementById('cancel-btn').classList.add('hidden');
+        }
+
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            resetForm();
+            document.getElementById('add-status').innerText = "Tahrirlash bekor qilindi";
+            document.getElementById('add-status').className = "status ok";
+        });
+
+        // TAHRIRLASH
+        function editProduct(id) {
+            var product = null;
+            for (var i = 0; i < allProducts.length; i++) {
+                if (String(allProducts[i].id) === String(id)) { product = allProducts[i]; break; }
+            }
+            if (!product) return;
+
+            editingProductId = id;
+            document.getElementById('p-title').value = product.title || '';
+            document.getElementById('p-description').value = product.description || '';
+            document.getElementById('p-price').value = product.price || '';
+            document.getElementById('p-discount').value = product.discount_price || '';
+            document.getElementById('p-stock').value = product.stock || 0;
+            selectedCategories = product.categories || [];
+            selectedSizes = product.sizes || [];
+            selectedFiles = [];
+            renderCategories(); renderSizes();
+            document.getElementById('image-preview').innerHTML = '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
+            document.getElementById('form-title').innerText = "✏️ Mahsulotni tahrirlash";
+            document.getElementById('cancel-btn').classList.remove('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // MAHSULOTLAR
         function loadProducts() {
             var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
-            
             fetch(API_URL + '/api/products')
-            .then(function(res) { return res.json(); })
+            .then(function(r) { return r.json(); })
             .then(function(data) {
-                var products = data.products || [];
-                if (products.length === 0) {
+                allProducts = data.products || [];
+                if (allProducts.length === 0) {
                     list.innerHTML = '<p style="color:#999;text-align:center;">Mahsulotlar yo\'q</p>';
                     return;
                 }
-                
                 var html = '';
-                products.forEach(function(p) {
+                allProducts.forEach(function(p) {
+                    var sizes = (p.sizes || []).join(', ');
                     html += '<div class="product-item">' +
                         '<div class="product-item-info">' +
                         '<b>' + (p.title || '') + '</b>' +
-                        '<small>💰 ' + (p.discount_price || 0).toLocaleString() + ' so\'m | 📦 ' + (p.stock || 0) + ' dona</small>' +
+                        '<small>💰 ' + (p.discount_price || 0).toLocaleString() + ' so\'m | 📦 ' + (p.stock || 0) + ' dona | 👁 ' + (p.views || 0) + '</small>' +
+                        (sizes ? '<small>📏 ' + sizes + '</small>' : '') +
                         '</div>' +
-                        '<button class="danger small" data-id="' + p.id + '">🗑</button>' +
-                        '</div>';
+                        '<div class="btn-row">' +
+                        '<button class="success small" data-edit="' + p.id + '">✏️</button>' +
+                        '<button class="danger small" data-del="' + p.id + '">🗑</button>' +
+                        '</div></div>';
                 });
                 list.innerHTML = html;
-                
-                // O'chirish tugmalariga event
-                var btns = list.querySelectorAll('button.danger');
-                for (var i = 0; i < btns.length; i++) {
-                    btns[i].addEventListener('click', function() {
-                        var id = this.getAttribute('data-id');
-                        if (confirm("Mahsulotni o'chirishni tasdiqlaysizmi?")) {
-                            deleteProduct(id);
-                        }
-                    });
-                }
+                var eb = list.querySelectorAll('[data-edit]');
+                for (var i = 0; i < eb.length; i++) eb[i].addEventListener('click', function() { editProduct(this.getAttribute('data-edit')); });
+                var db = list.querySelectorAll('[data-del]');
+                for (var j = 0; j < db.length; j++) db[j].addEventListener('click', function() {
+                    if (confirm("O'chirishni tasdiqlaysizmi?")) deleteProduct(this.getAttribute('data-del'));
+                });
             })
-            .catch(function(err) {
-                list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>';
-            });
+            .catch(function(err) { list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>'; });
         }
 
-        // ============ O'CHIRISH ============
         function deleteProduct(id) {
             fetch(API_URL + '/api/products/' + id, {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'},
+                method: 'DELETE', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ password: adminPassword })
             })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    loadProducts();
-                } else {
-                    alert("Xatolik: " + (data.error || ""));
-                }
-            })
-            .catch(function(err) {
-                alert("Xatolik: " + err.message);
-            });
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (data.success) loadProducts(); else alert("Xatolik: " + (data.error || "")); })
+            .catch(function(err) { alert("Xatolik: " + err.message); });
         }
 
-        // ============ YANGILASH ============
         document.getElementById('refresh-btn').addEventListener('click', loadProducts);
     </script>
 </body>
