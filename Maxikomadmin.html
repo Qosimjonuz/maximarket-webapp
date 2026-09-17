@@ -100,21 +100,16 @@
 
     <script>
         var API_URL = "https://maximarketbot-production.up.railway.app";
-        var IMGBB_KEY = "11c314fa4eb34efe25677c6be08c5277";
         var MAX_CATEGORIES = 2;
         var MAX_SIZES = 4;
 
-        // ============ PAROL TEKSHIRUVI ============
-        // ⚠️ FAQAT SHU PAROL TO'G'RI
+        // PAROL TEKSHIRUVI
         var CORRECT_PASSWORD = "shodmak@bk.ru";
-
-        // Rate limit — 5 marta xato → 15 daqiqa blok
         var MAX_ATTEMPTS = 5;
-        var BLOCK_TIME = 15 * 60 * 1000; // 15 daqiqa
+        var BLOCK_TIME = 15 * 60 * 1000;
         var ATTEMPTS_KEY = "admin_attempts";
         var BLOCK_UNTIL_KEY = "admin_block_until";
 
-        // ============ STATE ============
         var adminPassword = "";
         var selectedFiles = [];
         var selectedCategories = [];
@@ -142,16 +137,14 @@
 
         var SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "Universal"];
 
-        // ============ RATE LIMIT ============
+        // RATE LIMIT
         function checkBlock() {
             var blockUntil = localStorage.getItem(BLOCK_UNTIL_KEY);
             if (blockUntil) {
                 var now = Date.now();
                 if (now < parseInt(blockUntil)) {
-                    var remaining = Math.ceil((parseInt(blockUntil) - now) / 60000);
-                    return remaining;
+                    return Math.ceil((parseInt(blockUntil) - now) / 60000);
                 } else {
-                    // Blok tugadi — tozalash
                     localStorage.removeItem(BLOCK_UNTIL_KEY);
                     localStorage.removeItem(ATTEMPTS_KEY);
                 }
@@ -162,12 +155,10 @@
         function addAttempt() {
             var attempts = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0") + 1;
             localStorage.setItem(ATTEMPTS_KEY, attempts.toString());
-            
             if (attempts >= MAX_ATTEMPTS) {
-                var blockUntil = Date.now() + BLOCK_TIME;
-                localStorage.setItem(BLOCK_UNTIL_KEY, blockUntil.toString());
+                localStorage.setItem(BLOCK_UNTIL_KEY, (Date.now() + BLOCK_TIME).toString());
                 localStorage.removeItem(ATTEMPTS_KEY);
-                return true; // blok
+                return true;
             }
             return false;
         }
@@ -177,12 +168,11 @@
             localStorage.removeItem(BLOCK_UNTIL_KEY);
         }
 
-        // ============ LOGIN ============
+        // LOGIN
         document.getElementById('login-btn').addEventListener('click', function() {
             var pwd = document.getElementById('password-input').value.trim();
             var statusEl = document.getElementById('login-status');
 
-            // Blok tekshiruvi
             var blockRemaining = checkBlock();
             if (blockRemaining > 0) {
                 statusEl.innerText = "🚫 Juda ko'p urinish. " + blockRemaining + " daqiqadan keyin qayta urinib ko'ring.";
@@ -196,9 +186,7 @@
                 return;
             }
 
-            // PAROL TEKSHIRUVI
             if (pwd === CORRECT_PASSWORD) {
-                // ✅ To'g'ri parol
                 resetAttempts();
                 adminPassword = pwd;
                 document.getElementById('password-input').value = '';
@@ -210,9 +198,7 @@
                 renderSizes();
                 loadProducts();
             } else {
-                // ❌ Xato parol
                 var isBlocked = addAttempt();
-                
                 if (isBlocked) {
                     statusEl.innerText = "🚫 5 marta xato! 15 daqiqaga bloklandingiz.";
                 } else {
@@ -228,7 +214,6 @@
             if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
-        // ============ LOGOUT ============
         document.getElementById('logout-btn').addEventListener('click', function() {
             adminPassword = "";
             selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
@@ -237,7 +222,7 @@
             document.getElementById('login-section').classList.remove('hidden');
         });
 
-        // ============ KATEGORIYALAR ============
+        // KATEGORIYALAR
         function renderCategories() {
             var grid = document.getElementById('categories-grid');
             var html = '';
@@ -279,7 +264,7 @@
             }
         }
 
-        // ============ RASM PREVIEW ============
+        // RASM PREVIEW
         document.getElementById('p-images').addEventListener('change', function(e) {
             selectedFiles = Array.from(e.target.files).slice(0, 4);
             var preview = document.getElementById('image-preview');
@@ -304,19 +289,19 @@
             }
         });
 
-        // ============ IMGBB ============
-        function uploadToImgBB(file) {
+        // RASM YUKLASH (BACKEND ORQALI)
+        function uploadImage(file) {
             return new Promise(function(resolve) {
                 var formData = new FormData();
                 formData.append('image', file);
-                fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: formData })
+                fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData })
                     .then(function(r) { return r.json(); })
-                    .then(function(d) { resolve(d.success && d.data ? d.data.url : null); })
+                    .then(function(d) { resolve(d.success ? d.url : null); })
                     .catch(function() { resolve(null); });
             });
         }
 
-        // ============ SAQLASH ============
+        // SAQLASH
         document.getElementById('add-btn').addEventListener('click', async function() {
             var title = document.getElementById('p-title').value.trim();
             var description = document.getElementById('p-description').value.trim();
@@ -342,7 +327,7 @@
                     for (var i = 0; i < selectedFiles.length; i++) {
                         statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (i+1) + '/' + selectedFiles.length + ')';
                         statusEl.className = "status ok";
-                        var url = await uploadToImgBB(selectedFiles[i]);
+                        var url = await uploadImage(selectedFiles[i]);
                         if (url) imageUrls.push(url);
                     }
                 }
@@ -405,7 +390,6 @@
             document.getElementById('add-status').className = "status ok";
         });
 
-        // ============ TAHRIRLASH ============
         function editProduct(id) {
             var product = null;
             for (var i = 0; i < allProducts.length; i++) {
@@ -429,7 +413,6 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // ============ MAHSULOTLAR ============
         function loadProducts() {
             var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
