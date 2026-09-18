@@ -63,70 +63,27 @@
     <!-- BUYURTMA OYNASI -->
     <div id="order-modal" class="modal-overlay">
         <div class="order-modal-content">
+            <!-- HEADER -->
             <div class="order-modal-header">
                 <button class="back-btn" onclick="closeModal()">←</button>
                 <div class="order-modal-title">Buyurtma berish</div>
-                <div style="width:40px;"></div>
+                <div class="header-spacer"></div>
             </div>
 
+            <!-- BODY -->
             <div class="order-modal-body">
-                <!-- Rasm slayder -->
-                <div class="slider">
-                    <button class="slider-btn prev" onclick="slideImage(-1)">‹</button>
-                    <img id="modal-image" src="" alt="Mahsulot rasmi">
-                    <button class="slider-btn next" onclick="slideImage(1)">›</button>
-                    <div class="slider-dots" id="slider-dots"></div>
-                </div>
-
-                <!-- Mahsulot nomi -->
-                <h2 id="modal-title" class="order-title"></h2>
-
-                <!-- Narx -->
-                <div class="order-price-block">
-                    <span class="order-old-price" id="modal-old-price"></span>
-                    <span class="order-new-price"><span id="modal-price"></span> so'm</span>
-                    <span class="order-discount-badge" id="modal-discount-badge"></span>
-                </div>
-
-                <!-- Ombordagi va sotilgan -->
-                <div class="order-stats">
-                    <div class="stat-item" id="stock-stat">
-                        <span class="stat-icon">📦</span>
-                        <span class="stat-text">Omborda: <b id="modal-stock">0</b> dona</span>
-                    </div>
-                    <div class="stat-item" id="sold-stat">
-                        <span class="stat-icon">✅</span>
-                        <span class="stat-text">Sotilgan: <b id="modal-sold">0</b> dona</span>
-                    </div>
-                </div>
-
-                <!-- Tavsif -->
-                <div id="modal-description" class="order-description"></div>
-
-                <!-- Razmer tanlash -->
-                <div id="size-section" class="order-option-section" style="display:none;">
-                    <div class="option-label">📏 O'lchamni tanlang:</div>
-                    <div class="option-list" id="modal-sizes"></div>
-                </div>
-
-                <!-- Rang tanlash -->
-                <div id="color-section" class="order-option-section" style="display:none;">
-                    <div class="option-label">🎨 Rangni tanlang:</div>
-                    <div class="option-list" id="modal-colors"></div>
-                </div>
-
-                <!-- Countdown -->
-                <div class="countdown-block">
-                    <p class="countdown-label">⏰ Aksiya tugashiga:</p>
-                    <div class="countdown">
-                        <div><span id="cd-hours">00</span><small>SOAT</small></div>
-                        <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
-                        <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
-                    </div>
-                </div>
-
-                <!-- Forma -->
                 <form id="order-form" onsubmit="submitOrder(event)">
+                    <!-- 1. COUNTDOWN -->
+                    <div class="countdown-block">
+                        <p class="countdown-label">⏰ Aksiya tugashiga:</p>
+                        <div class="countdown">
+                            <div><span id="cd-hours">00</span><small>SOAT</small></div>
+                            <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
+                            <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. NAME + PHONE -->
                     <label class="form-label">To'liq ismi sharif *</label>
                     <input type="text" id="order-name" placeholder="To'liq ismi sharif" required minlength="4">
 
@@ -135,10 +92,62 @@
 
                     <div id="order-status" class="status"></div>
 
-                    <button type="submit" class="order-submit-btn">Tasdiqlash</button>
-                </form>
+                    <!-- 3. PRODUCT IMAGE -->
+                    <div class="slider">
+                        <button type="button" class="slider-btn prev" onclick="slideImage(-1)">‹</button>
+                        <img id="modal-image" src="" alt="Mahsulot rasmi">
+                        <button type="button" class="slider-btn next" onclick="slideImage(1)">›</button>
+                        <div class="slider-dots" id="slider-dots"></div>
+                    </div>
 
-                <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
+                    <!-- 4. TITLE + PRICE + STOCK + SOLD -->
+                    <h2 id="modal-title" class="order-title"></h2>
+
+                    <div class="order-price-block">
+                        <span class="order-old-price" id="modal-old-price"></span>
+                        <span class="order-new-price"><span id="modal-price"></span> so'm</span>
+                        <span class="order-discount-badge" id="modal-discount-badge"></span>
+                    </div>
+
+                    <div class="order-stats">
+                        <div class="stat-item">
+                            <span class="stat-icon">📦</span>
+                            <span class="stat-text">Omborda: <b id="modal-stock">0</b> dona</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">✅</span>
+                            <span class="stat-text">Sotilgan: <b id="modal-sold">0</b> dona</span>
+                        </div>
+                    </div>
+
+                    <!-- 5. DESCRIPTION -->
+                    <div id="modal-description" class="order-description"></div>
+
+                    <!-- 6. SIZES -->
+                    <div id="size-section" class="order-option-section" style="display:none;">
+                        <div class="option-label">📏 O'lchamni tanlang:</div>
+                        <div class="option-list" id="modal-sizes"></div>
+                    </div>
+
+                    <!-- 7. COLORS -->
+                    <div id="color-section" class="order-option-section" style="display:none;">
+                        <div class="option-label">🎨 Rangni tanlang:</div>
+                        <div class="option-list" id="modal-colors"></div>
+                    </div>
+
+                    <!-- 8. SUBMIT -->
+                    <button type="submit" class="order-submit-btn">Tasdiqlash</button>
+
+                    <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
+                </form>
+            </div>
+
+            <!-- BOTTOM MENU -->
+            <div class="order-bottom-menu">
+                <button type="button" onclick="closeModal()">
+                    <span class="bottom-icon">🏠</span>
+                    <span class="bottom-label">Bosh sahifa</span>
+                </button>
             </div>
         </div>
     </div>
