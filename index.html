@@ -63,36 +63,39 @@
     <!-- BUYURTMA OYNASI -->
     <div id="order-modal" class="modal-overlay">
         <div class="order-modal-content">
-            <!-- HEADER -->
             <div class="order-modal-header">
                 <button class="back-btn" onclick="closeModal()">←</button>
                 <div class="order-modal-title">Buyurtma berish</div>
                 <div class="header-spacer"></div>
             </div>
 
-            <!-- BODY -->
             <div class="order-modal-body">
                 <form id="order-form" onsubmit="submitOrder(event)">
-                    <!-- 1. COUNTDOWN -->
+                    <!-- 1. COUNTDOWN (kun + soat + daqiqa + soniya) -->
                     <div class="countdown-block">
                         <p class="countdown-label">⏰ Aksiya tugashiga:</p>
                         <div class="countdown">
+                            <div><span id="cd-days">03</span><small>KUN</small></div>
                             <div><span id="cd-hours">00</span><small>SOAT</small></div>
                             <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
                             <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
                         </div>
                     </div>
 
-                    <!-- 2. NAME + PHONE -->
+                    <!-- 2. NAME -->
                     <label class="form-label">To'liq ismi sharif *</label>
                     <input type="text" id="order-name" placeholder="To'liq ismi sharif" required minlength="4">
 
+                    <!-- 3. PHONE -->
                     <label class="form-label">Telefon raqamingiz *</label>
                     <input type="tel" id="order-phone" placeholder="+998(__)-___-__-__" required>
 
                     <div id="order-status" class="status"></div>
 
-                    <!-- 3. PRODUCT IMAGE -->
+                    <!-- 4. SUBMIT (rasmdan OLDIN) -->
+                    <button type="submit" class="order-submit-btn">Tasdiqlash</button>
+
+                    <!-- 5. IMAGE (submitdan KEYIN) -->
                     <div class="slider">
                         <button type="button" class="slider-btn prev" onclick="slideImage(-1)">‹</button>
                         <img id="modal-image" src="" alt="Mahsulot rasmi">
@@ -100,7 +103,7 @@
                         <div class="slider-dots" id="slider-dots"></div>
                     </div>
 
-                    <!-- 4. TITLE + PRICE + STOCK + SOLD -->
+                    <!-- 6. TITLE + PRICE + STOCK + SOLD -->
                     <h2 id="modal-title" class="order-title"></h2>
 
                     <div class="order-price-block">
@@ -120,29 +123,25 @@
                         </div>
                     </div>
 
-                    <!-- 5. DESCRIPTION -->
+                    <!-- 7. DESCRIPTION -->
                     <div id="modal-description" class="order-description"></div>
 
-                    <!-- 6. SIZES -->
+                    <!-- 8. SIZES -->
                     <div id="size-section" class="order-option-section" style="display:none;">
                         <div class="option-label">📏 O'lchamni tanlang:</div>
                         <div class="option-list" id="modal-sizes"></div>
                     </div>
 
-                    <!-- 7. COLORS -->
+                    <!-- 9. COLORS -->
                     <div id="color-section" class="order-option-section" style="display:none;">
                         <div class="option-label">🎨 Rangni tanlang:</div>
                         <div class="option-list" id="modal-colors"></div>
                     </div>
 
-                    <!-- 8. SUBMIT -->
-                    <button type="submit" class="order-submit-btn">Tasdiqlash</button>
-
                     <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
                 </form>
             </div>
 
-            <!-- BOTTOM MENU -->
             <div class="order-bottom-menu">
                 <button type="button" onclick="closeModal()">
                     <span class="bottom-icon">🏠</span>
