@@ -392,3 +392,127 @@ body::before {
     .banner-carousel { height: 115px; }
     .brand-text { font-size: 17px; }
 }
+/* ============ RANG TANLASH ============ */
+.product-colors-mini {
+    display: flex;
+    gap: 3px;
+    margin: 4px 0;
+}
+.product-colors-mini span {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.modal-colors-wrap {
+    margin: 12px 0;
+}
+
+.modal-colors {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.modal-colors-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.modal-colors-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.modal-color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: #fff;
+    transition: all 0.15s;
+    min-width: 50px;
+}
+
+.modal-color-item.selected {
+    border-color: #1565c0;
+    background: #e3f2fd;
+}
+
+.modal-color-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.modal-color-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Admin panelda */
+.color-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+}
+.color-chip.selected {
+    border-color: #1565c0;
+    background: #e3f2fd;
+}
+.color-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.color-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Parol ko'zchasi */
+.password-box {
+    position: relative;
+}
+.password-box input {
+    padding-right: 45px;
+}
+.eye-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    margin: 0;
+    width: auto;
+    color: #666;
+}
+.eye-btn:hover {
+    color: #1565c0;
+}
