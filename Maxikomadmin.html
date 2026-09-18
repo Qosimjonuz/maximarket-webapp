@@ -36,7 +36,7 @@
         .password-box input { padding-right: 45px; }
         .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; margin: 0; width: auto; color: #666; }
         
-        /* IMAGE PREVIEW - YANGI */
+        /* IMAGE PREVIEW */
         .image-preview {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -95,8 +95,6 @@
             background: rgba(229,57,53,0.95);
             color: #fff;
             border: none;
-            width: 22px;
-            height: 22px;
             border-radius: 50%;
             font-size: 12px;
             cursor: pointer;
@@ -107,6 +105,7 @@
             align-items: center;
             justify-content: center;
             width: 22px;
+            height: 22px;
         }
         .image-slot .uploading-overlay {
             position: absolute;
@@ -116,11 +115,13 @@
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             z-index: 4;
             flex-direction: column;
             gap: 4px;
+            text-align: center;
+            padding: 4px;
         }
         .image-slot .uploading-overlay .spinner {
             width: 20px;
@@ -152,6 +153,7 @@
         .status { text-align: center; padding: 10px; font-size: 13px; margin-top: 10px; border-radius: 8px; font-weight: 500; }
         .status.ok { background: #e8f5e9; color: #2e7d32; }
         .status.err { background: #ffebee; color: #c62828; }
+        .status.warn { background: #fff3e0; color: #e65100; }
         .hidden { display: none; }
         .session-info { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; }
         
@@ -247,10 +249,10 @@
                 <div class="grid-4" id="colors-grid"></div>
             </div>
 
-            <!-- RASM YUKLASH -->
             <label>📷 Rasmlar (4 tagacha)</label>
             <div class="main-image-note">
-                ⭐ <b>Asosiy rasm</b> — birinchi slotdagi rasm mahsulotning asosiy ko'rinishi bo'ladi (katalog va qidiruvda ko'rinadi).
+                ⭐ <b>Asosiy rasm</b> — 1-slotdagi rasm katalogda ko'rinadi. <br>
+                💡 Internet sekin bo'lsa, rasmlar avtomatik siqiladi (kichraytiriladi).
             </div>
             <input type="file" id="p-images" accept="image/*" multiple>
             <div class="image-preview" id="image-preview"></div>
@@ -322,9 +324,11 @@
         var MAX_COLORS = 10;
         var PER_PAGE = 10;
         var MAX_IMAGES = 4;
+        var MAX_IMAGE_SIZE = 3 * 1024 * 1024;  // 3 MB (rasm siqilgandan keyin)
+        var MAX_DIMENSION = 1200;              // Maksimal kenglik/balandlik
 
         var adminToken = "";
-        var selectedFiles = [null, null, null, null];  // 4 slot, null = bo'sh
+        var selectedFiles = [null, null, null, null];
         var selectedCategories = [];
         var selectedSizes = [];
         var selectedColors = [];
@@ -558,7 +562,68 @@
             }
         }
 
-        // ============ RASM YUKLASH (YANGI) ============
+        // ============ RASM SIQISH (COMPRESS) ============
+        function compressImage(file, callback) {
+            // Agar rasm kichik bo'lsa — to'g'ridan-to'g'ri qaytaramiz
+            if (file.size < 300 * 1024) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    callback({ file: file, preview: e.target.result, compressed: false });
+                };
+                reader.readAsDataURL(file);
+                return;
+            }
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var width = img.width;
+                    var height = img.height;
+                    
+                    // Maksimal o'lchamga keltirish
+                    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                        if (width > height) {
+                            height = Math.round((height * MAX_DIMENSION) / width);
+                            width = MAX_DIMENSION;
+                        } else {
+                            width = Math.round((width * MAX_DIMENSION) / height);
+                            height = MAX_DIMENSION;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Sifatni 0.75 ga tushirish
+                    canvas.toBlob(function(blob) {
+                        var newFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        var compressedReader = new FileReader();
+                        compressedReader.onload = function(ev) {
+                            callback({ 
+                                file: newFile, 
+                                preview: ev.target.result, 
+                                compressed: true,
+                                originalSize: file.size,
+                                newSize: newFile.size
+                            });
+                        };
+                        compressedReader.readAsDataURL(newFile);
+                    }, 'image/jpeg', 0.75);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ============ RASM YUKLASH ============
         function renderImageSlots() {
             var container = document.getElementById('image-preview');
             container.innerHTML = '';
@@ -577,18 +642,25 @@
                     img.src = selectedFiles[i].preview;
                     slot.appendChild(img);
                     
-                    var removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'remove-btn';
-                    removeBtn.innerText = '✕';
-                    removeBtn.setAttribute('data-remove', i);
-                    removeBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        var slotIdx = parseInt(this.getAttribute('data-remove'));
-                        selectedFiles[slotIdx] = null;
-                        renderImageSlots();
-                    });
-                    slot.appendChild(removeBtn);
+                    if (selectedFiles[i].uploading) {
+                        var overlay = document.createElement('div');
+                        overlay.className = 'uploading-overlay';
+                        overlay.innerHTML = '<div class="spinner"></div><div>Yuklanmoqda...</div>';
+                        slot.appendChild(overlay);
+                    } else {
+                        var removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.innerText = '✕';
+                        removeBtn.setAttribute('data-remove', i);
+                        removeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var slotIdx = parseInt(this.getAttribute('data-remove'));
+                            selectedFiles[slotIdx] = null;
+                            renderImageSlots();
+                        });
+                        slot.appendChild(removeBtn);
+                    }
                 } else {
                     var emptyIcon = document.createElement('div');
                     emptyIcon.className = 'empty-icon';
@@ -599,6 +671,7 @@
                 slot.addEventListener('click', function(e) {
                     if (e.target.classList.contains('remove-btn')) return;
                     var slotIdx = parseInt(this.getAttribute('data-slot'));
+                    if (selectedFiles[slotIdx] && selectedFiles[slotIdx].uploading) return;
                     openFilePickerForSlot(slotIdx);
                 });
                 
@@ -613,56 +686,112 @@
             input.onchange = function(e) {
                 var file = e.target.files[0];
                 if (!file) return;
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("Rasm hajmi 5 MB dan oshmasin!");
+                if (file.size > 15 * 1024 * 1024) {
+                    alert("Rasm hajmi 15 MB dan oshmasin!");
                     return;
                 }
-                var reader = new FileReader();
-                reader.onload = function(ev) {
-                    selectedFiles[slotIdx] = { file: file, preview: ev.target.result };
+                
+                var statusEl = document.getElementById('add-status');
+                statusEl.innerText = "⏳ Rasm siqilmoqda...";
+                statusEl.className = "status ok";
+                
+                compressImage(file, function(result) {
+                    selectedFiles[slotIdx] = result;
                     renderImageSlots();
-                };
-                reader.readAsDataURL(file);
+                    
+                    if (result.compressed) {
+                        statusEl.innerText = "✅ Rasm siqildi (" + 
+                            Math.round(result.originalSize / 1024) + " KB → " + 
+                            Math.round(result.newSize / 1024) + " KB)";
+                    } else {
+                        statusEl.innerText = "✅ Rasm qo'shildi";
+                    }
+                    statusEl.className = "status ok";
+                    setTimeout(function() {
+                        if (statusEl.innerText.indexOf('✅') === 0) {
+                            statusEl.innerText = '';
+                            statusEl.className = '';
+                        }
+                    }, 3000);
+                });
             };
             input.click();
         }
 
         document.getElementById('p-images').addEventListener('change', function(e) {
             var files = Array.from(e.target.files).slice(0, MAX_IMAGES);
-            for (var i = 0; i < files.length; i++) {
-                (function(file, idx) {
-                    if (file.size > 5 * 1024 * 1024) return;
-                    var reader = new FileReader();
-                    reader.onload = function(ev) {
-                        // Bo'sh slotni topib joylashtirish
-                        for (var j = 0; j < MAX_IMAGES; j++) {
-                            if (!selectedFiles[j]) {
-                                selectedFiles[j] = { file: file, preview: ev.target.result };
-                                break;
-                            }
+            var statusEl = document.getElementById('add-status');
+            
+            var processed = 0;
+            var total = files.length;
+            if (total === 0) return;
+            
+            statusEl.innerText = "⏳ " + total + " rasm siqilmoqda...";
+            statusEl.className = "status ok";
+            
+            files.forEach(function(file) {
+                if (file.size > 15 * 1024 * 1024) {
+                    processed++;
+                    checkDone();
+                    return;
+                }
+                compressImage(file, function(result) {
+                    // Bo'sh slotni topib joylashtirish
+                    for (var j = 0; j < MAX_IMAGES; j++) {
+                        if (!selectedFiles[j]) {
+                            selectedFiles[j] = result;
+                            break;
                         }
-                        renderImageSlots();
-                    };
-                    reader.readAsDataURL(file);
-                })(files[i], i);
+                    }
+                    renderImageSlots();
+                    processed++;
+                    checkDone();
+                });
+            });
+            
+            function checkDone() {
+                if (processed === total) {
+                    statusEl.innerText = "✅ " + total + " rasm qo'shildi (siqilgan)";
+                    statusEl.className = "status ok";
+                    setTimeout(function() {
+                        if (statusEl.innerText.indexOf('✅') === 0) {
+                            statusEl.innerText = '';
+                            statusEl.className = '';
+                        }
+                    }, 3000);
+                }
             }
+            
             this.value = '';
         });
 
-        // ============ RASM YUKLASH (IMGBB) ============
+        // ============ IMGBB YUKLASH (timeout oshirilgan) ============
         async function uploadImageWithRetry(file, maxRetries) {
             for (var attempt = 0; attempt < maxRetries; attempt++) {
                 try {
                     var formData = new FormData();
                     formData.append('image', file);
                     formData.append('token', adminToken);
-                    var res = await fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData });
+                    
+                    var controller = new AbortController();
+                    var timeoutId = setTimeout(function() { controller.abort(); }, 90000);  // 90 sekund
+                    
+                    var res = await fetch(API_URL + '/api/upload_image', { 
+                        method: 'POST', 
+                        body: formData,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
                     var data = await res.json();
                     if (data.success && data.url) return data.url;
                 } catch (e) {
-                    console.log("Upload urinish " + (attempt + 1) + " muvaffaqiyatsiz:", e);
+                    console.log("Upload urinish " + (attempt + 1) + " muvaffaqiyatsiz:", e.message);
                 }
-                await new Promise(function(r) { setTimeout(r, 1000); });
+                // Retry orasida kutish
+                if (attempt < maxRetries - 1) {
+                    await new Promise(function(r) { setTimeout(r, 2000); });
+                }
             }
             return null;
         }
@@ -684,7 +813,7 @@
             }
 
             var hasAnyImage = false;
-            for (var k = 0; k < MAX_IMAGES; k++) { if (selectedFiles[k]) { hasAnyImage = true; break; } }
+            for (var k = 0; k < MAX_IMAGES; k++) { if (selectedFiles[k] && selectedFiles[k].file) { hasAnyImage = true; break; } }
             
             if (!hasAnyImage && !editingProductId) {
                 statusEl.innerText = "❗ Kamida 1 ta rasm yuklang (asosiy rasm)";
@@ -699,31 +828,54 @@
             try {
                 var imageUrls = [];
                 var uploadedCount = 0;
+                var failedSlots = [];
                 
                 for (var i = 0; i < MAX_IMAGES; i++) {
-                    if (selectedFiles[i]) {
-                        statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (i+1) + '/' + MAX_IMAGES + ')';
+                    var item = selectedFiles[i];
+                    if (!item) continue;
+                    
+                    if (item.existing && !item.file) {
+                        // Mavjud rasm (tahrirlash paytida)
+                        imageUrls.push(item.preview);
+                        uploadedCount++;
+                        continue;
+                    }
+                    
+                    if (item.file) {
+                        statusEl.innerText = '⏳ ' + (i+1) + '-rasm yuklanmoqda...';
                         statusEl.className = "status ok";
-                        var url = await uploadImageWithRetry(selectedFiles[i].file, 3);
+                        
+                        var url = await uploadImageWithRetry(item.file, 3);
                         if (url) {
                             imageUrls.push(url);
                             uploadedCount++;
                         } else {
-                            statusEl.innerText = "❌ " + (i+1) + "-rasm yuklanmadi. Boshqa rasm bilan urinib ko'ring.";
-                            statusEl.className = "status err";
-                            btn.disabled = false;
-                            btn.innerText = '💾 Saqlash';
-                            return;
+                            failedSlots.push(i + 1);
                         }
                     }
                 }
                 
                 if (uploadedCount === 0) {
-                    statusEl.innerText = "❌ Hech qanday rasm yuklanmadi";
+                    statusEl.innerText = "❌ Hech qanday rasm yuklanmadi. Internetni tekshiring.";
                     statusEl.className = "status err";
                     btn.disabled = false;
                     btn.innerText = '💾 Saqlash';
                     return;
+                }
+                
+                if (failedSlots.length > 0) {
+                    var confirmed = confirm(
+                        failedSlots.length + " ta rasm yuklanmadi (" + 
+                        failedSlots.join(', ') + "-slotlar).\n\n" +
+                        "Davom etishni xohlaysizmi? (Faqat muvaffaqiyatli rasmlar saqlanadi)"
+                    );
+                    if (!confirmed) {
+                        btn.disabled = false;
+                        btn.innerText = '💾 Saqlash';
+                        statusEl.innerText = '';
+                        statusEl.className = '';
+                        return;
+                    }
                 }
 
                 statusEl.innerText = "⏳ Ma'lumotlar saqlanmoqda...";
@@ -753,7 +905,8 @@
                 data = await res.json();
 
                 if (data.success) {
-                    statusEl.innerText = editingProductId ? "✅ Mahsulot yangilandi!" : "✅ Mahsulot qo'shildi!";
+                    statusEl.innerText = (editingProductId ? "✅ Mahsulot yangilandi!" : "✅ Mahsulot qo'shildi!") + 
+                        (failedSlots.length > 0 ? " (" + failedSlots.length + " rasm tushib qoldi)" : "");
                     statusEl.className = "status ok";
                     resetForm();
                     loadProducts();
@@ -809,7 +962,6 @@
             selectedSizes = product.sizes || [];
             selectedColors = product.colors || [];
             
-            // Mavjud rasmlarni ko'rsatish
             selectedFiles = [null, null, null, null];
             var imgs = product.images || [];
             for (var j = 0; j < imgs.length && j < MAX_IMAGES; j++) {
