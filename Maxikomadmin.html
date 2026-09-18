@@ -51,7 +51,7 @@
         .hidden { display: none; }
         .session-info { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; }
         
-        /* Collapsible sections */
+        /* Collapsible */
         .collapsible-header {
             display: flex;
             justify-content: space-between;
@@ -125,6 +125,142 @@
             margin-bottom: 12px;
         }
         .refresh-btn-top:active { background: #0d47a1; }
+        
+        /* Products toolbar */
+        .products-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #1565c0, #42a5f5);
+            border-radius: 12px;
+            color: #fff;
+            margin-bottom: 12px;
+            box-shadow: 0 3px 10px rgba(21,101,192,0.25);
+        }
+        .products-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .products-count-icon {
+            background: rgba(255,255,255,0.25);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .products-count-number {
+            font-size: 22px;
+            font-weight: 900;
+        }
+        .products-count-label {
+            font-size: 11px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        /* Search products */
+        .products-search {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 4px 12px;
+            margin-bottom: 12px;
+        }
+        .products-search-icon { font-size: 15px; margin-right: 8px; color: #888; }
+        .products-search input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 9px 0;
+            font-size: 14px;
+            background: transparent;
+        }
+        .products-search-clear {
+            background: #e0e0e0;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 0;
+            margin: 0;
+            width: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+        }
+        
+        /* Category filter */
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            user-select: none;
+            margin-bottom: 8px;
+            transition: background 0.15s;
+        }
+        .filter-header:hover { background: #e9ecef; }
+        .filter-header.active {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .filter-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .filter-body.open {
+            max-height: 1000px;
+            padding-top: 8px;
+        }
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .filter-chip {
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .filter-chip:hover { background: #e9ecef; }
+        .filter-chip.active {
+            background: #1565c0;
+            color: #fff;
+            border-color: #0d47a1;
+        }
+        .empty-result {
+            text-align: center;
+            padding: 30px 20px;
+            color: #999;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -166,7 +302,6 @@
             <label>📂 Kategoriyalar (2 tagacha)</label>
             <div class="grid-2" id="categories-grid"></div>
 
-            <!-- COLLAPSIBLE: SIZES -->
             <div class="collapsible-header" onclick="toggleCollapsible('sizes')">
                 <span>📏 O'lchamlar / Razmerlar</span>
                 <span class="arrow" id="sizes-arrow">▼</span>
@@ -175,7 +310,6 @@
                 <div class="grid-3" id="sizes-grid"></div>
             </div>
 
-            <!-- COLLAPSIBLE: COLORS -->
             <div class="collapsible-header" onclick="toggleCollapsible('colors')">
                 <span>🎨 Ranglar (10 tagacha)</span>
                 <span class="arrow" id="colors-arrow">▼</span>
@@ -199,7 +333,41 @@
         <div class="section">
             <h2>📦 Mavjud mahsulotlar</h2>
             
+            <!-- SANOQ -->
+            <div class="products-toolbar">
+                <div class="products-count">
+                    <div class="products-count-icon">📦</div>
+                    <div>
+                        <div class="products-count-number" id="total-count">0</div>
+                        <div class="products-count-label">ta mahsulot yuklangan</div>
+                    </div>
+                </div>
+                <div class="products-count">
+                    <div class="products-count-icon">🔍</div>
+                    <div>
+                        <div class="products-count-number" id="filtered-count">0</div>
+                        <div class="products-count-label">ta ko'rsatilmoqda</div>
+                    </div>
+                </div>
+            </div>
+            
             <button id="refresh-btn" class="refresh-btn-top">🔄 Yangilash</button>
+            
+            <!-- QIDIRUV -->
+            <div class="products-search">
+                <span class="products-search-icon">🔍</span>
+                <input type="text" id="products-search-input" placeholder="Mahsulot qidirish..." oninput="searchProducts()">
+                <button class="products-search-clear" id="products-search-clear" onclick="clearProductsSearch()" style="display:none;">✕</button>
+            </div>
+            
+            <!-- KATEGORIYA FILTRI -->
+            <div class="filter-header" id="filter-header" onclick="toggleFilter()">
+                <span>📂 Kategoriya bo'yicha filtrlash</span>
+                <span class="arrow" id="filter-arrow">▼</span>
+            </div>
+            <div class="filter-body" id="filter-body">
+                <div class="filter-chips" id="filter-chips"></div>
+            </div>
             
             <!-- TOP PAGINATION -->
             <div class="pagination" id="pagination-top">
@@ -236,8 +404,11 @@
         var selectedColors = [];
         var editingProductId = null;
         var allProducts = [];
+        var filteredProducts = [];
         var currentPage = 1;
         var totalPages = 1;
+        var searchQuery = "";
+        var activeFilterCategory = "all";
 
         var CATEGORIES = [
             { id: "elektronika", name: "Elektronika", emoji: "📱" },
@@ -282,7 +453,6 @@
         function toggleCollapsible(name) {
             var header = document.querySelector('[onclick="toggleCollapsible(\'' + name + '\')"]');
             var body = document.getElementById(name + '-body');
-            var arrow = document.getElementById(name + '-arrow');
             
             if (body.classList.contains('open')) {
                 body.classList.remove('open');
@@ -290,6 +460,20 @@
             } else {
                 body.classList.add('open');
                 header.classList.add('open');
+            }
+        }
+
+        // ============ FILTER TOGGLE ============
+        function toggleFilter() {
+            var header = document.getElementById('filter-header');
+            var body = document.getElementById('filter-body');
+            
+            if (body.classList.contains('open')) {
+                body.classList.remove('open');
+                header.classList.remove('active');
+            } else {
+                body.classList.add('open');
+                header.classList.add('active');
             }
         }
 
@@ -324,6 +508,7 @@
                 renderCategories();
                 renderSizes();
                 renderColors();
+                renderFilterChips();
                 loadProducts();
             }
         });
@@ -365,6 +550,7 @@
                     renderCategories();
                     renderSizes();
                     renderColors();
+                    renderFilterChips();
                     loadProducts();
                 } else {
                     statusEl.innerText = "❌ " + (data.error || "Xatolik");
@@ -454,6 +640,26 @@
                         arr.push(val);
                     }
                     rerender();
+                });
+            }
+        }
+
+        // FILTER CHIPS
+        function renderFilterChips() {
+            var chips = document.getElementById('filter-chips');
+            var html = '<div class="filter-chip' + (activeFilterCategory === 'all' ? ' active' : '') + '" data-filter="all">🌐 Barchasi</div>';
+            for (var i = 0; i < CATEGORIES.length; i++) {
+                var cat = CATEGORIES[i];
+                html += '<div class="filter-chip' + (activeFilterCategory === cat.id ? ' active' : '') + '" data-filter="' + cat.id + '">' + cat.emoji + ' ' + cat.name + '</div>';
+            }
+            chips.innerHTML = html;
+            
+            var items = chips.querySelectorAll('.filter-chip');
+            for (var k = 0; k < items.length; k++) {
+                items[k].addEventListener('click', function() {
+                    activeFilterCategory = this.getAttribute('data-filter');
+                    renderFilterChips();
+                    applyFilters();
                 });
             }
         }
@@ -613,6 +819,41 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
+        // QIDIRUV + FILTR
+        function searchProducts() {
+            searchQuery = document.getElementById('products-search-input').value.trim().toLowerCase();
+            var clearBtn = document.getElementById('products-search-clear');
+            clearBtn.style.display = searchQuery ? 'flex' : 'none';
+            applyFilters();
+        }
+
+        function clearProductsSearch() {
+            document.getElementById('products-search-input').value = '';
+            searchQuery = '';
+            document.getElementById('products-search-clear').style.display = 'none';
+            applyFilters();
+        }
+
+        function applyFilters() {
+            filteredProducts = allProducts.filter(function(p) {
+                var matchSearch = !searchQuery || 
+                    (p.title || '').toLowerCase().includes(searchQuery) ||
+                    (p.description || '').toLowerCase().includes(searchQuery);
+                var matchCategory = activeFilterCategory === 'all' || 
+                    (p.categories && p.categories.indexOf(activeFilterCategory) > -1);
+                return matchSearch && matchCategory;
+            });
+            
+            totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            
+            document.getElementById('filtered-count').innerText = filteredProducts.length;
+            document.getElementById('total-count').innerText = allProducts.length;
+            
+            renderProductsPage();
+        }
+
         // PAGINATION
         function changePage(dir) {
             currentPage += dir;
@@ -637,15 +878,15 @@
         function renderProductsPage() {
             var list = document.getElementById('products-list');
             
-            if (allProducts.length === 0) {
-                list.innerHTML = '<p style="color:#999;text-align:center;">Mahsulotlar yo\'q</p>';
+            if (filteredProducts.length === 0) {
+                list.innerHTML = '<div class="empty-result">🔍 Mahsulot topilmadi</div>';
                 updatePaginationUI();
                 return;
             }
 
             var start = (currentPage - 1) * PER_PAGE;
-            var end = Math.min(start + PER_PAGE, allProducts.length);
-            var pageProducts = allProducts.slice(start, end);
+            var end = Math.min(start + PER_PAGE, filteredProducts.length);
+            var pageProducts = filteredProducts.slice(start, end);
 
             var html = '';
             pageProducts.forEach(function(p) {
@@ -691,8 +932,13 @@
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 allProducts = data.products || [];
-                totalPages = Math.max(1, Math.ceil(allProducts.length / PER_PAGE));
+                filteredProducts = allProducts.slice();
+                totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
                 currentPage = 1;
+                
+                document.getElementById('total-count').innerText = allProducts.length;
+                document.getElementById('filtered-count').innerText = filteredProducts.length;
+                
                 renderProductsPage();
             })
             .catch(function(err) { list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>'; });
