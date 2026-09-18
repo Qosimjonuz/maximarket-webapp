@@ -22,6 +22,25 @@ const CATEGORIES = [
     { id: "boshqa", name: "Boshqa", emoji: "📦" }
 ];
 
+const COLORS = [
+    { id: "qora", name: "Qora", hex: "#000000" },
+    { id: "oq", name: "Oq", hex: "#ffffff" },
+    { id: "qizil", name: "Qizil", hex: "#e53935" },
+    { id: "kok", name: "Ko'k", hex: "#1565c0" },
+    { id: "yashil", name: "Yashil", hex: "#2e7d32" },
+    { id: "sariq", name: "Sariq", hex: "#fbc02d" },
+    { id: "pushti", name: "Pushti", hex: "#ec407a" },
+    { id: "binafsha", name: "Binafsha", hex: "#8e24aa" },
+    { id: "kulrang", name: "Kulrang", hex: "#757575" },
+    { id: "jigarrang", name: "Jigarrang", hex: "#6d4c41" },
+    { id: "toq-sariq", name: "To'q sariq", hex: "#f57c00" },
+    { id: "oltin", name: "Oltin", hex: "#ffd700" },
+    { id: "kumush", name: "Kumush", hex: "#c0c0c0" },
+    { id: "moviy", name: "Moviy", hex: "#29b6f6" },
+    { id: "yashil-och", name: "Och yashil", hex: "#66bb6a" },
+    { id: "chegirma-1", name: "Marjon", hex: "#ff7043" }
+];
+
 const banners = [
     { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
     { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
@@ -44,6 +63,7 @@ let currentImageIndex = 0;
 let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
+let selectedColor = null;
 
 let currentUser = null;
 let profilePhotoUrl = "";
@@ -207,6 +227,24 @@ function getStockText(stock) {
     return `✅ Mavjud: ${stock} ta`;
 }
 
+function getColorsHtml(colors) {
+    if (!colors || colors.length === 0) return '';
+    let html = '<div class="modal-colors">';
+    html += '<div class="modal-colors-label">🎨 Ranglar:</div>';
+    html += '<div class="modal-colors-list">';
+    colors.forEach(cid => {
+        const c = COLORS.find(x => x.id === cid);
+        if (c) {
+            html += `<div class="modal-color-item" data-color="${c.id}">
+                <div class="modal-color-circle" style="background:${c.hex};"></div>
+                <div class="modal-color-name">${c.name}</div>
+            </div>`;
+        }
+    });
+    html += '</div></div>';
+    return html;
+}
+
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -218,6 +256,12 @@ function renderProducts() {
         const discountPercent = p.price > 0 && p.discount_price > 0 
             ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
         const productId = String(p.id);
+        const colorsHtml = (p.colors && p.colors.length > 0) 
+            ? '<div class="product-colors-mini">' + p.colors.slice(0, 5).map(cid => {
+                const c = COLORS.find(x => x.id === cid);
+                return c ? `<span style="background:${c.hex};" title="${c.name}"></span>` : '';
+            }).join('') + '</div>' 
+            : '';
         html += `
         <div class="product-card-h" data-id="${productId}">
             <div class="product-image-h">
@@ -225,6 +269,7 @@ function renderProducts() {
                 ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
             </div>
             <div class="product-title-h">${(p.title || '').substring(0, 40)}</div>
+            ${colorsHtml}
             <div class="product-price-h">
                 ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
                 <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
@@ -258,6 +303,7 @@ async function openModal(id) {
     if (!currentProduct) return;
     
     currentImageIndex = 0;
+    selectedColor = null;
     document.getElementById('modal-title').innerText = currentProduct.title || '';
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
     
@@ -270,6 +316,20 @@ async function openModal(id) {
     const formatted = formatDescription(currentProduct.description);
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
+    
+    // Ranglar
+    const colorsEl = document.getElementById('modal-colors');
+    colorsEl.innerHTML = getColorsHtml(currentProduct.colors);
+    
+    // Rang tanlash
+    const colorItems = colorsEl.querySelectorAll('.modal-color-item');
+    colorItems.forEach(item => {
+        item.addEventListener('click', function() {
+            colorItems.forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedColor = this.getAttribute('data-color');
+        });
+    });
     
     updateImage();
     startCountdown();
@@ -332,7 +392,8 @@ function submitOrder(event) {
         product_title: currentProduct.title,
         price: currentProduct.discount_price,
         customer_name: name,
-        customer_phone: phone
+        customer_phone: phone,
+        color: selectedColor || ""
     }));
     tg.showAlert("Buyurtmangiz qabul qilindi!");
     closeModal();
@@ -385,7 +446,6 @@ function previewProfilePhoto(event) {
     reader.readAsDataURL(file);
 }
 
-// RASM YUKLASH (BACKEND ORQALI)
 function uploadImageToServer(file) {
     return new Promise(function(resolve) {
         var formData = new FormData();
