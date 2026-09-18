@@ -24,9 +24,18 @@
         .info-note { background: #e3f2fd; color: #1565c0; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin: 10px 0; line-height: 1.5; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
         .chip { display: flex; align-items: center; gap: 6px; background: #f8f9fa; padding: 8px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
         .chip.selected { background: #e3f2fd; border-color: #1565c0; }
         .chip input { width: auto; margin: 0; }
+        .color-chip { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 8px; background: #f8f9fa; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+        .color-chip.selected { border-color: #1565c0; background: #e3f2fd; }
+        .color-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        .color-name { font-size: 10px; font-weight: 600; color: #555; }
+        .password-box { position: relative; }
+        .password-box input { padding-right: 45px; }
+        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; margin: 0; width: auto; color: #666; }
+        .eye-btn:hover { color: #1565c0; }
         .image-preview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
         .image-preview img { width: 100%; height: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0; }
         .image-preview .empty { background: #f5f5f5; border: 2px dashed #ddd; border-radius: 8px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #bbb; }
@@ -34,6 +43,8 @@
         .product-item-info { flex: 1; min-width: 0; }
         .product-item-info b { display: block; font-size: 14px; margin-bottom: 3px; word-break: break-word; }
         .product-item-info small { color: #777; font-size: 11px; display: block; }
+        .product-colors { display: flex; gap: 4px; margin-top: 4px; }
+        .product-colors span { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #ddd; }
         .status { text-align: center; padding: 10px; font-size: 13px; margin-top: 10px; border-radius: 8px; font-weight: 500; }
         .status.ok { background: #e8f5e9; color: #2e7d32; }
         .status.err { background: #ffebee; color: #c62828; }
@@ -47,7 +58,10 @@
     <div id="login-section" class="section">
         <h2>🔑 Kirish</h2>
         <label>Admin paroli</label>
-        <input type="password" id="password-input" placeholder="Parolni kiriting">
+        <div class="password-box">
+            <input type="password" id="password-input" placeholder="Parolni kiriting">
+            <button type="button" class="eye-btn" id="eye-btn">👁</button>
+        </div>
         <button id="login-btn">Kirish</button>
         <div id="login-status" class="status"></div>
     </div>
@@ -80,6 +94,9 @@
             <label>📏 O'lchamlar / Razmerlar (4 tagacha)</label>
             <div class="grid-3" id="sizes-grid"></div>
 
+            <label>🎨 Ranglar (10 tagacha)</label>
+            <div class="grid-4" id="colors-grid"></div>
+
             <label>📷 Rasmlar (4 tagacha)</label>
             <input type="file" id="p-images" accept="image/*" multiple>
             <div class="image-preview" id="image-preview">
@@ -106,11 +123,13 @@
         var TOKEN_KEY = "maximarket_admin_token";
         var MAX_CATEGORIES = 2;
         var MAX_SIZES = 4;
+        var MAX_COLORS = 10;
 
         var adminToken = "";
         var selectedFiles = [];
         var selectedCategories = [];
         var selectedSizes = [];
+        var selectedColors = [];
         var editingProductId = null;
         var allProducts = [];
 
@@ -134,23 +153,29 @@
 
         var SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "Universal"];
 
-        // ============ TOKEN ============
-        function saveToken(token) {
-            adminToken = token;
-            localStorage.setItem(TOKEN_KEY, token);
-        }
+        var COLORS = [
+            { id: "qora", name: "Qora", hex: "#000000" },
+            { id: "oq", name: "Oq", hex: "#ffffff" },
+            { id: "qizil", name: "Qizil", hex: "#e53935" },
+            { id: "kok", name: "Ko'k", hex: "#1565c0" },
+            { id: "yashil", name: "Yashil", hex: "#2e7d32" },
+            { id: "sariq", name: "Sariq", hex: "#fbc02d" },
+            { id: "pushti", name: "Pushti", hex: "#ec407a" },
+            { id: "binafsha", name: "Binafsha", hex: "#8e24aa" },
+            { id: "kulrang", name: "Kulrang", hex: "#757575" },
+            { id: "jigarrang", name: "Jigarrang", hex: "#6d4c41" },
+            { id: "toq-sariq", name: "To'q sariq", hex: "#f57c00" },
+            { id: "oltin", name: "Oltin", hex: "#ffd700" },
+            { id: "kumush", name: "Kumush", hex: "#c0c0c0" },
+            { id: "moviy", name: "Moviy", hex: "#29b6f6" },
+            { id: "yashil-och", name: "Och yashil", hex: "#66bb6a" },
+            { id: "chegirma-1", name: "Marjon", hex: "#ff7043" }
+        ];
 
-        function loadToken() {
-            var saved = localStorage.getItem(TOKEN_KEY);
-            if (saved) { adminToken = saved; return true; }
-            return false;
-        }
-
-        function clearToken() {
-            adminToken = "";
-            localStorage.removeItem(TOKEN_KEY);
-        }
-
+        // TOKEN
+        function saveToken(token) { adminToken = token; localStorage.setItem(TOKEN_KEY, token); }
+        function loadToken() { var s = localStorage.getItem(TOKEN_KEY); if (s) { adminToken = s; return true; } return false; }
+        function clearToken() { adminToken = ""; localStorage.removeItem(TOKEN_KEY); }
         function handleAuthError() {
             clearToken();
             alert("⚠️ Sessiya muddati tugagan. Qaytadan kiring.");
@@ -158,18 +183,31 @@
             document.getElementById('login-section').classList.remove('hidden');
         }
 
-        // ============ AVTOMATIK KIRISH ============
+        // KO'ZCHA
+        document.getElementById('eye-btn').addEventListener('click', function() {
+            var input = document.getElementById('password-input');
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.innerText = '🙈';
+            } else {
+                input.type = 'password';
+                this.innerText = '👁';
+            }
+        });
+
+        // AVTOMATIK KIRISH
         window.addEventListener('DOMContentLoaded', function() {
             if (loadToken()) {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('panel-section').classList.remove('hidden');
                 renderCategories();
                 renderSizes();
+                renderColors();
                 loadProducts();
             }
         });
 
-        // ============ LOGIN ============
+        // LOGIN
         document.getElementById('login-btn').addEventListener('click', async function() {
             var pwd = document.getElementById('password-input').value.trim();
             var statusEl = document.getElementById('login-status');
@@ -197,12 +235,15 @@
                 if (data.success && data.token) {
                     saveToken(data.token);
                     document.getElementById('password-input').value = '';
+                    document.getElementById('password-input').type = 'password';
+                    document.getElementById('eye-btn').innerText = '👁';
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('panel-section').classList.remove('hidden');
                     statusEl.innerText = '';
                     statusEl.className = '';
                     renderCategories();
                     renderSizes();
+                    renderColors();
                     loadProducts();
                 } else {
                     statusEl.innerText = "❌ " + (data.error || "Xatolik");
@@ -221,16 +262,15 @@
             if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
-        // ============ LOGOUT ============
         document.getElementById('logout-btn').addEventListener('click', function() {
             clearToken();
-            selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
+            selectedFiles = []; selectedCategories = []; selectedSizes = []; selectedColors = []; editingProductId = null;
             document.getElementById('password-input').value = "";
             document.getElementById('panel-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
         });
 
-        // ============ KATEGORIYALAR ============
+        // KATEGORIYALAR
         function renderCategories() {
             var grid = document.getElementById('categories-grid');
             var html = '';
@@ -255,6 +295,31 @@
             bindChipEvents(grid, '.chip[data-size]', 'data-size', selectedSizes, MAX_SIZES, renderSizes);
         }
 
+        function renderColors() {
+            var grid = document.getElementById('colors-grid');
+            var html = '';
+            for (var i = 0; i < COLORS.length; i++) {
+                var c = COLORS[i];
+                var isSel = selectedColors.indexOf(c.id) > -1;
+                html += '<div class="color-chip' + (isSel ? ' selected' : '') + '" data-color="' + c.id + '"><div class="color-circle" style="background:' + c.hex + ';"></div><div class="color-name">' + c.name + '</div></div>';
+            }
+            grid.innerHTML = html;
+            
+            var items = grid.querySelectorAll('.color-chip');
+            for (var k = 0; k < items.length; k++) {
+                items[k].addEventListener('click', function() {
+                    var val = this.getAttribute('data-color');
+                    var idx = selectedColors.indexOf(val);
+                    if (idx > -1) { selectedColors.splice(idx, 1); }
+                    else {
+                        if (selectedColors.length >= MAX_COLORS) { alert("Faqat " + MAX_COLORS + " ta rang tanlash mumkin!"); return; }
+                        selectedColors.push(val);
+                    }
+                    renderColors();
+                });
+            }
+        }
+
         function bindChipEvents(grid, selector, attr, arr, max, rerender) {
             var items = grid.querySelectorAll(selector);
             for (var i = 0; i < items.length; i++) {
@@ -272,7 +337,7 @@
             }
         }
 
-        // ============ RASM PREVIEW ============
+        // RASM PREVIEW
         document.getElementById('p-images').addEventListener('change', function(e) {
             selectedFiles = Array.from(e.target.files).slice(0, 4);
             var preview = document.getElementById('image-preview');
@@ -297,7 +362,7 @@
             }
         });
 
-        // ============ RASM YUKLASH ============
+        // RASM YUKLASH
         function uploadImage(file) {
             return new Promise(function(resolve) {
                 var formData = new FormData();
@@ -310,7 +375,7 @@
             });
         }
 
-        // ============ SAQLASH ============
+        // SAQLASH
         document.getElementById('add-btn').addEventListener('click', async function() {
             var title = document.getElementById('p-title').value.trim();
             var description = document.getElementById('p-description').value.trim();
@@ -346,7 +411,8 @@
                     title: title, description: description,
                     price: price, discount_price: discount,
                     stock: stock, categories: selectedCategories,
-                    sizes: selectedSizes, images: imageUrls
+                    sizes: selectedSizes, colors: selectedColors,
+                    images: imageUrls
                 };
 
                 var res, data;
@@ -388,9 +454,9 @@
             document.getElementById('p-discount').value = '';
             document.getElementById('p-stock').value = '';
             document.getElementById('p-images').value = '';
-            selectedFiles = []; selectedCategories = []; selectedSizes = []; editingProductId = null;
+            selectedFiles = []; selectedCategories = []; selectedSizes = []; selectedColors = []; editingProductId = null;
             document.getElementById('image-preview').innerHTML = '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
-            renderCategories(); renderSizes();
+            renderCategories(); renderSizes(); renderColors();
             document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
             document.getElementById('cancel-btn').classList.add('hidden');
         }
@@ -401,7 +467,7 @@
             document.getElementById('add-status').className = "status ok";
         });
 
-        // ============ TAHRIRLASH ============
+        // TAHRIRLASH
         function editProduct(id) {
             var product = null;
             for (var i = 0; i < allProducts.length; i++) {
@@ -417,15 +483,16 @@
             document.getElementById('p-stock').value = product.stock || 0;
             selectedCategories = product.categories || [];
             selectedSizes = product.sizes || [];
+            selectedColors = product.colors || [];
             selectedFiles = [];
-            renderCategories(); renderSizes();
+            renderCategories(); renderSizes(); renderColors();
             document.getElementById('image-preview').innerHTML = '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
             document.getElementById('form-title').innerText = "✏️ Mahsulotni tahrirlash";
             document.getElementById('cancel-btn').classList.remove('hidden');
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // ============ MAHSULOTLAR ============
+        // MAHSULOTLAR
         function loadProducts() {
             var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
@@ -440,11 +507,21 @@
                 var html = '';
                 allProducts.forEach(function(p) {
                     var sizes = (p.sizes || []).join(', ');
+                    var colorHtml = '';
+                    if (p.colors && p.colors.length > 0) {
+                        colorHtml = '<div class="product-colors">';
+                        p.colors.forEach(function(cid) {
+                            var c = COLORS.find(function(x) { return x.id === cid; });
+                            if (c) colorHtml += '<span style="background:' + c.hex + ';" title="' + c.name + '"></span>';
+                        });
+                        colorHtml += '</div>';
+                    }
                     html += '<div class="product-item">' +
                         '<div class="product-item-info">' +
                         '<b>' + (p.title || '') + '</b>' +
                         '<small>💰 ' + (p.discount_price || 0).toLocaleString() + ' so\'m | 📦 ' + (p.stock || 0) + ' dona | 👁 ' + (p.views || 0) + '</small>' +
                         (sizes ? '<small>📏 ' + sizes + '</small>' : '') +
+                        colorHtml +
                         '</div>' +
                         '<div class="btn-row">' +
                         '<button class="success small" data-edit="' + p.id + '">✏️</button>' +
