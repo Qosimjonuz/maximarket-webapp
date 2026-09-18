@@ -63,6 +63,8 @@ let currentImageIndex = 0;
 let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
+
+let selectedSize = null;
 let selectedColor = null;
 
 let currentUser = null;
@@ -221,30 +223,6 @@ function getImageUrl(url) {
     return `${API_URL}/api/image/${url}`;
 }
 
-function getStockText(stock) {
-    if (!stock || stock === 0) return '';
-    if (stock > 0 && stock <= 5) return `⚠️ Faqat ${stock} ta qoldi!`;
-    return `✅ Mavjud: ${stock} ta`;
-}
-
-function getColorsHtml(colors) {
-    if (!colors || colors.length === 0) return '';
-    let html = '<div class="modal-colors">';
-    html += '<div class="modal-colors-label">🎨 Ranglar:</div>';
-    html += '<div class="modal-colors-list">';
-    colors.forEach(cid => {
-        const c = COLORS.find(x => x.id === cid);
-        if (c) {
-            html += `<div class="modal-color-item" data-color="${c.id}">
-                <div class="modal-color-circle" style="background:${c.hex};"></div>
-                <div class="modal-color-name">${c.name}</div>
-            </div>`;
-        }
-    });
-    html += '</div></div>';
-    return html;
-}
-
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -292,6 +270,32 @@ function renderProducts() {
     });
 }
 
+// TELEFON FORMATLASH
+function formatPhone(value) {
+    let digits = value.replace(/\D/g, '');
+    if (digits.startsWith('998')) digits = digits.slice(3);
+    digits = digits.slice(0, 9);
+    let result = '+998';
+    if (digits.length > 0) result += '(' + digits.slice(0, 2);
+    if (digits.length >= 2) result += ')';
+    if (digits.length > 2) result += '-' + digits.slice(2, 5);
+    if (digits.length > 5) result += '-' + digits.slice(5, 7);
+    if (digits.length > 7) result += '-' + digits.slice(7, 9);
+    return result;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('order-phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            this.value = formatPhone(this.value);
+        });
+        phoneInput.addEventListener('focus', function() {
+            if (!this.value) this.value = '+998';
+        });
+    }
+});
+
 // MODAL
 function formatDescription(text) {
     if (!text || !text.trim()) return '';
@@ -303,38 +307,87 @@ async function openModal(id) {
     if (!currentProduct) return;
     
     currentImageIndex = 0;
+    selectedSize = null;
     selectedColor = null;
+    
+    // Title
     document.getElementById('modal-title').innerText = currentProduct.title || '';
+    
+    // Narx
+    const oldPriceEl = document.getElementById('modal-old-price');
+    const discountBadgeEl = document.getElementById('modal-discount-badge');
+    if (currentProduct.price > currentProduct.discount_price) {
+        oldPriceEl.innerText = currentProduct.price.toLocaleString() + " so'm";
+        oldPriceEl.style.display = 'inline';
+        const percent = Math.round((1 - currentProduct.discount_price / currentProduct.price) * 100);
+        discountBadgeEl.innerText = '-' + percent + '%';
+        discountBadgeEl.style.display = 'inline-block';
+    } else {
+        oldPriceEl.style.display = 'none';
+        discountBadgeEl.style.display = 'none';
+    }
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
     
-    const stockEl = document.getElementById('modal-stock');
-    const stockText = getStockText(currentProduct.stock);
-    if (stockText) { stockEl.innerText = stockText; stockEl.style.display = 'block'; }
-    else { stockEl.style.display = 'none'; }
+    // Stock va Sold
+    document.getElementById('modal-stock').innerText = currentProduct.stock || 0;
+    document.getElementById('modal-sold').innerText = currentProduct.sold || 0;
     
+    // Tavsif
     const descEl = document.getElementById('modal-description');
     const formatted = formatDescription(currentProduct.description);
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
     
-    // Ranglar
-    const colorsEl = document.getElementById('modal-colors');
-    colorsEl.innerHTML = getColorsHtml(currentProduct.colors);
-    
-    // Rang tanlash
-    const colorItems = colorsEl.querySelectorAll('.modal-color-item');
-    colorItems.forEach(item => {
-        item.addEventListener('click', function() {
-            colorItems.forEach(i => i.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedColor = this.getAttribute('data-color');
+    // RAZMER
+    const sizeSection = document.getElementById('size-section');
+    const sizesList = document.getElementById('modal-sizes');
+    if (currentProduct.sizes && currentProduct.sizes.length > 0) {
+        sizeSection.style.display = 'block';
+        sizesList.innerHTML = currentProduct.sizes.map(sz => 
+            `<button type="button" class="option-btn size-btn" data-size="${sz}">${sz}</button>`
+        ).join('');
+        sizesList.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                sizesList.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSize = this.getAttribute('data-size');
+            });
         });
-    });
+    } else {
+        sizeSection.style.display = 'none';
+    }
     
+    // RANG
+    const colorSection = document.getElementById('color-section');
+    const colorsList = document.getElementById('modal-colors');
+    if (currentProduct.colors && currentProduct.colors.length > 0) {
+        colorSection.style.display = 'block';
+        colorsList.innerHTML = currentProduct.colors.map(cid => {
+            const c = COLORS.find(x => x.id === cid);
+            if (!c) return '';
+            return `<button type="button" class="option-btn color-opt-btn" data-color="${c.id}">
+                <div class="option-color-circle" style="background:${c.hex};"></div>
+                <span>${c.name}</span>
+            </button>`;
+        }).join('');
+        colorsList.querySelectorAll('.color-opt-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                colorsList.querySelectorAll('.color-opt-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedColor = this.getAttribute('data-color');
+            });
+        });
+    } else {
+        colorSection.style.display = 'none';
+    }
+    
+    // Sana va vaqt
     updateImage();
     startCountdown();
     document.getElementById('order-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
     
+    // View increment
     try {
         await fetch(`${API_URL}/api/increment_view`, {
             method: 'POST',
@@ -346,7 +399,12 @@ async function openModal(id) {
 
 function closeModal() {
     document.getElementById('order-modal').classList.remove('active');
+    document.body.style.overflow = '';
     if (countdownInterval) clearInterval(countdownInterval);
+    // Formani tozalash
+    document.getElementById('order-form').reset();
+    document.getElementById('order-status').innerText = '';
+    document.getElementById('order-status').className = 'status';
 }
 
 function updateImage() {
@@ -382,10 +440,44 @@ function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
-    if (!name || !phone || phone.length < 10) {
-        tg.showAlert("Iltimos, ism va telefon raqamni to'g'ri kiriting!");
+    const statusEl = document.getElementById('order-status');
+    
+    // Ism validatsiyasi — kamida 4 harf
+    if (!name || name.length < 4) {
+        statusEl.innerText = "❌ Ism kamida 4 harfdan iborat bo'lishi kerak!";
+        statusEl.className = "status err";
         return;
     }
+    
+    // Telefon validatsiyasi
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 12) {
+        statusEl.innerText = "❌ Telefon raqamni to'liq kiriting!";
+        statusEl.className = "status err";
+        return;
+    }
+    
+    // Razmer tanlash (agar mavjud bo'lsa)
+    if (currentProduct.sizes && currentProduct.sizes.length > 0 && !selectedSize) {
+        statusEl.innerText = "❌ Iltimos, o'lchamni tanlang!";
+        statusEl.className = "status err";
+        return;
+    }
+    
+    // Rang tanlash (agar mavjud bo'lsa)
+    if (currentProduct.colors && currentProduct.colors.length > 0 && !selectedColor) {
+        statusEl.innerText = "❌ Iltimos, rangni tanlang!";
+        statusEl.className = "status err";
+        return;
+    }
+    
+    // Rang nomini olish
+    let colorName = "";
+    if (selectedColor) {
+        const c = COLORS.find(x => x.id === selectedColor);
+        if (c) colorName = c.name;
+    }
+    
     tg.sendData(JSON.stringify({
         action: 'order',
         product_id: String(currentProduct.id),
@@ -393,10 +485,17 @@ function submitOrder(event) {
         price: currentProduct.discount_price,
         customer_name: name,
         customer_phone: phone,
-        color: selectedColor || ""
+        size: selectedSize || "",
+        color: colorName
     }));
-    tg.showAlert("Buyurtmangiz qabul qilindi!");
-    closeModal();
+    
+    statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
+    statusEl.className = "status ok";
+    
+    setTimeout(() => {
+        tg.showAlert("Buyurtmangiz qabul qilindi!");
+        closeModal();
+    }, 500);
 }
 
 // PROFIL
