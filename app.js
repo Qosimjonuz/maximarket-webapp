@@ -425,13 +425,38 @@ function slideImage(dir) {
 
 function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
-    function tick() {
-        const end = currentProduct.discount_end ? new Date(currentProduct.discount_end).getTime() : 0;
-        const diff = Math.max(0, end - Date.now());
-        document.getElementById('cd-hours').innerText = String(Math.floor(diff / 3600000)).padStart(2, '0');
-        document.getElementById('cd-minutes').innerText = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-        document.getElementById('cd-seconds').innerText = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+    
+    // Har 24 soatda reset qilish (localStorage orqali)
+    const RESET_KEY = 'countdown_reset_' + currentProduct.id;
+    const DAY = 24 * 60 * 60 * 1000;
+    const THREE_DAYS = 72 * 60 * 60 * 1000;
+    const now = Date.now();
+    
+    let resetTime = parseInt(localStorage.getItem(RESET_KEY) || '0');
+    
+    // Agar 24 soat o'tgan bo'lsa yoki birinchi marta bo'lsa — reset
+    if (!resetTime || (now - resetTime) >= DAY) {
+        resetTime = now;
+        localStorage.setItem(RESET_KEY, resetTime.toString());
     }
+    
+    // Countdown tugash vaqti = reset vaqti + 3 kun
+    const endTime = resetTime + THREE_DAYS;
+    
+    function tick() {
+        const diff = Math.max(0, endTime - Date.now());
+        
+        const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+        const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((diff % (60 * 1000)) / 1000);
+        
+        document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
+        document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
+        document.getElementById('cd-minutes').innerText = String(minutes).padStart(2, '0');
+        document.getElementById('cd-seconds').innerText = String(seconds).padStart(2, '0');
+    }
+    
     tick();
     countdownInterval = setInterval(tick, 1000);
 }
