@@ -35,10 +35,114 @@
         .password-box { position: relative; }
         .password-box input { padding-right: 45px; }
         .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; margin: 0; width: auto; color: #666; }
-        .eye-btn:hover { color: #1565c0; }
-        .image-preview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
-        .image-preview img { width: 100%; height: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0; }
-        .image-preview .empty { background: #f5f5f5; border: 2px dashed #ddd; border-radius: 8px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #bbb; }
+        
+        /* IMAGE PREVIEW - YANGI */
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .image-slot {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px dashed #ccc;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .image-slot.main-slot {
+            border-color: #ff9800;
+            border-style: solid;
+            box-shadow: 0 0 0 2px rgba(255,152,0,0.2);
+        }
+        .image-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .image-slot .empty-icon {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #bbb;
+        }
+        .image-slot .slot-label {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 3;
+        }
+        .image-slot.main-slot .slot-label {
+            background: #ff9800;
+        }
+        .image-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(229,57,53,0.95);
+            color: #fff;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+        }
+        .image-slot .uploading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(21,101,192,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            z-index: 4;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .image-slot .uploading-overlay .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .main-image-note {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin: 8px 0;
+            border-left: 4px solid #ff9800;
+            line-height: 1.5;
+        }
+        
         .product-item { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .product-item-info { flex: 1; min-width: 0; }
         .product-item-info b { display: block; font-size: 14px; margin-bottom: 3px; word-break: break-word; }
@@ -51,216 +155,41 @@
         .hidden { display: none; }
         .session-info { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; }
         
-        /* Collapsible */
-        .collapsible-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-            color: #333;
-            margin: 12px 0 5px;
-            user-select: none;
-            transition: background 0.15s;
-        }
+        .collapsible-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: #333; margin: 12px 0 5px; user-select: none; transition: background 0.15s; }
         .collapsible-header:hover { background: #e9ecef; }
-        .collapsible-header .arrow {
-            font-size: 12px;
-            transition: transform 0.2s;
-            color: #1565c0;
-        }
+        .collapsible-header .arrow { font-size: 12px; transition: transform 0.2s; color: #1565c0; }
         .collapsible-header.open .arrow { transform: rotate(180deg); }
-        .collapsible-body {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .collapsible-body.open {
-            max-height: 2000px;
-            padding-top: 8px;
-        }
+        .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .collapsible-body.open { max-height: 2000px; padding-top: 8px; }
         
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            margin-bottom: 8px;
-        }
-        .pagination button {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            padding: 0;
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 10px 0; margin-bottom: 8px; }
+        .pagination button { width: 40px; height: 40px; border-radius: 50%; padding: 0; margin: 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .pagination button:disabled { background: #cfd8dc; cursor: not-allowed; }
-        .pagination-info {
-            font-size: 13px;
-            font-weight: 700;
-            color: #333;
-        }
+        .pagination-info { font-size: 13px; font-weight: 700; color: #333; }
         
-        .refresh-btn-top {
-            background: #1565c0;
-            color: #fff;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-        .refresh-btn-top:active { background: #0d47a1; }
+        .refresh-btn-top { background: #1565c0; color: #fff; border: none; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 12px; }
         
-        /* Products toolbar */
-        .products-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: linear-gradient(135deg, #1565c0, #42a5f5);
-            border-radius: 12px;
-            color: #fff;
-            margin-bottom: 12px;
-            box-shadow: 0 3px 10px rgba(21,101,192,0.25);
-        }
-        .products-count {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 700;
-        }
-        .products-count-icon {
-            background: rgba(255,255,255,0.25);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-        .products-count-number {
-            font-size: 22px;
-            font-weight: 900;
-        }
-        .products-count-label {
-            font-size: 11px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
+        .products-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, #1565c0, #42a5f5); border-radius: 12px; color: #fff; margin-bottom: 12px; box-shadow: 0 3px 10px rgba(21,101,192,0.25); }
+        .products-count { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+        .products-count-icon { background: rgba(255,255,255,0.25); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .products-count-number { font-size: 22px; font-weight: 900; }
+        .products-count-label { font-size: 11px; opacity: 0.9; font-weight: 500; }
         
-        /* Search products */
-        .products-search {
-            display: flex;
-            align-items: center;
-            background: #fff;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 4px 12px;
-            margin-bottom: 12px;
-        }
+        .products-search { display: flex; align-items: center; background: #fff; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 4px 12px; margin-bottom: 12px; }
         .products-search-icon { font-size: 15px; margin-right: 8px; color: #888; }
-        .products-search input {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 9px 0;
-            font-size: 14px;
-            background: transparent;
-        }
-        .products-search-clear {
-            background: #e0e0e0;
-            border: none;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 11px;
-            padding: 0;
-            margin: 0;
-            width: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #555;
-        }
+        .products-search input { flex: 1; border: none; outline: none; padding: 9px 0; font-size: 14px; background: transparent; }
+        .products-search-clear { background: #e0e0e0; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 11px; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center; color: #555; }
         
-        /* Category filter */
-        .filter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-            color: #333;
-            user-select: none;
-            margin-bottom: 8px;
-            transition: background 0.15s;
-        }
+        .filter-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: #333; user-select: none; margin-bottom: 8px; transition: background 0.15s; }
         .filter-header:hover { background: #e9ecef; }
-        .filter-header.active {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-        .filter-body {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .filter-body.open {
-            max-height: 1000px;
-            padding-top: 8px;
-        }
-        .filter-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .filter-chip {
-            padding: 6px 10px;
-            border-radius: 20px;
-            background: #f8f9fa;
-            border: 2px solid transparent;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .filter-header.active { background: #e3f2fd; color: #1565c0; }
+        .filter-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .filter-body.open { max-height: 1000px; padding-top: 8px; }
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .filter-chip { padding: 6px 10px; border-radius: 20px; background: #f8f9fa; border: 2px solid transparent; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 4px; }
         .filter-chip:hover { background: #e9ecef; }
-        .filter-chip.active {
-            background: #1565c0;
-            color: #fff;
-            border-color: #0d47a1;
-        }
-        .empty-result {
-            text-align: center;
-            padding: 30px 20px;
-            color: #999;
-            font-size: 14px;
-        }
+        .filter-chip.active { background: #1565c0; color: #fff; border-color: #0d47a1; }
+        .empty-result { text-align: center; padding: 30px 20px; color: #999; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -318,12 +247,13 @@
                 <div class="grid-4" id="colors-grid"></div>
             </div>
 
+            <!-- RASM YUKLASH -->
             <label>📷 Rasmlar (4 tagacha)</label>
-            <input type="file" id="p-images" accept="image/*" multiple>
-            <div class="image-preview" id="image-preview">
-                <div class="empty">📷</div><div class="empty">📷</div>
-                <div class="empty">📷</div><div class="empty">📷</div>
+            <div class="main-image-note">
+                ⭐ <b>Asosiy rasm</b> — birinchi slotdagi rasm mahsulotning asosiy ko'rinishi bo'ladi (katalog va qidiruvda ko'rinadi).
             </div>
+            <input type="file" id="p-images" accept="image/*" multiple>
+            <div class="image-preview" id="image-preview"></div>
 
             <button id="add-btn">💾 Saqlash</button>
             <button id="cancel-btn" class="danger hidden">❌ Tahrirlashni bekor qilish</button>
@@ -333,7 +263,6 @@
         <div class="section">
             <h2>📦 Mavjud mahsulotlar</h2>
             
-            <!-- SANOQ -->
             <div class="products-toolbar">
                 <div class="products-count">
                     <div class="products-count-icon">📦</div>
@@ -353,14 +282,12 @@
             
             <button id="refresh-btn" class="refresh-btn-top">🔄 Yangilash</button>
             
-            <!-- QIDIRUV -->
             <div class="products-search">
                 <span class="products-search-icon">🔍</span>
                 <input type="text" id="products-search-input" placeholder="Mahsulot qidirish..." oninput="searchProducts()">
                 <button class="products-search-clear" id="products-search-clear" onclick="clearProductsSearch()" style="display:none;">✕</button>
             </div>
             
-            <!-- KATEGORIYA FILTRI -->
             <div class="filter-header" id="filter-header" onclick="toggleFilter()">
                 <span>📂 Kategoriya bo'yicha filtrlash</span>
                 <span class="arrow" id="filter-arrow">▼</span>
@@ -369,7 +296,6 @@
                 <div class="filter-chips" id="filter-chips"></div>
             </div>
             
-            <!-- TOP PAGINATION -->
             <div class="pagination" id="pagination-top">
                 <button id="prev-top" onclick="changePage(-1)">‹</button>
                 <div class="pagination-info" id="page-info-top">1 / 1</div>
@@ -378,7 +304,6 @@
             
             <div id="products-list">⏳ Yuklanmoqda...</div>
             
-            <!-- BOTTOM PAGINATION -->
             <div class="pagination" id="pagination-bottom">
                 <button id="prev-bottom" onclick="changePage(-1)">‹</button>
                 <div class="pagination-info" id="page-info-bottom">1 / 1</div>
@@ -396,9 +321,10 @@
         var MAX_SIZES = 4;
         var MAX_COLORS = 10;
         var PER_PAGE = 10;
+        var MAX_IMAGES = 4;
 
         var adminToken = "";
-        var selectedFiles = [];
+        var selectedFiles = [null, null, null, null];  // 4 slot, null = bo'sh
         var selectedCategories = [];
         var selectedSizes = [];
         var selectedColors = [];
@@ -453,27 +379,20 @@
         function toggleCollapsible(name) {
             var header = document.querySelector('[onclick="toggleCollapsible(\'' + name + '\')"]');
             var body = document.getElementById(name + '-body');
-            
             if (body.classList.contains('open')) {
-                body.classList.remove('open');
-                header.classList.remove('open');
+                body.classList.remove('open'); header.classList.remove('open');
             } else {
-                body.classList.add('open');
-                header.classList.add('open');
+                body.classList.add('open'); header.classList.add('open');
             }
         }
 
-        // ============ FILTER TOGGLE ============
         function toggleFilter() {
             var header = document.getElementById('filter-header');
             var body = document.getElementById('filter-body');
-            
             if (body.classList.contains('open')) {
-                body.classList.remove('open');
-                header.classList.remove('active');
+                body.classList.remove('open'); header.classList.remove('active');
             } else {
-                body.classList.add('open');
-                header.classList.add('active');
+                body.classList.add('open'); header.classList.add('active');
             }
         }
 
@@ -488,56 +407,37 @@
             document.getElementById('login-section').classList.remove('hidden');
         }
 
-        // KO'ZCHA
         document.getElementById('eye-btn').addEventListener('click', function() {
             var input = document.getElementById('password-input');
-            if (input.type === 'password') {
-                input.type = 'text';
-                this.innerText = '🙈';
-            } else {
-                input.type = 'password';
-                this.innerText = '👁';
-            }
+            if (input.type === 'password') { input.type = 'text'; this.innerText = '🙈'; }
+            else { input.type = 'password'; this.innerText = '👁'; }
         });
 
-        // AVTOMATIK KIRISH
+        // ============ AVTOMATIK KIRISH ============
         window.addEventListener('DOMContentLoaded', function() {
+            renderImageSlots();
             if (loadToken()) {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('panel-section').classList.remove('hidden');
-                renderCategories();
-                renderSizes();
-                renderColors();
-                renderFilterChips();
+                renderCategories(); renderSizes(); renderColors(); renderFilterChips();
                 loadProducts();
             }
         });
 
-        // LOGIN
+        // ============ LOGIN ============
         document.getElementById('login-btn').addEventListener('click', async function() {
             var pwd = document.getElementById('password-input').value.trim();
             var statusEl = document.getElementById('login-status');
             var btn = document.getElementById('login-btn');
-
-            if (!pwd) {
-                statusEl.innerText = "Parolni kiriting!";
-                statusEl.className = "status err";
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = 'Tekshirilmoqda...';
-            statusEl.innerText = '';
-            statusEl.className = '';
-
+            if (!pwd) { statusEl.innerText = "Parolni kiriting!"; statusEl.className = "status err"; return; }
+            btn.disabled = true; btn.innerText = 'Tekshirilmoqda...';
+            statusEl.innerText = ''; statusEl.className = '';
             try {
                 var res = await fetch(API_URL + '/api/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ password: pwd })
                 });
                 var data = await res.json();
-
                 if (data.success && data.token) {
                     saveToken(data.token);
                     document.getElementById('password-input').value = '';
@@ -545,12 +445,8 @@
                     document.getElementById('eye-btn').innerText = '👁';
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('panel-section').classList.remove('hidden');
-                    statusEl.innerText = '';
-                    statusEl.className = '';
-                    renderCategories();
-                    renderSizes();
-                    renderColors();
-                    renderFilterChips();
+                    statusEl.innerText = ''; statusEl.className = '';
+                    renderCategories(); renderSizes(); renderColors(); renderFilterChips();
                     loadProducts();
                 } else {
                     statusEl.innerText = "❌ " + (data.error || "Xatolik");
@@ -560,8 +456,7 @@
                 statusEl.innerText = "❌ Server xatoligi: " + err.message;
                 statusEl.className = "status err";
             } finally {
-                btn.disabled = false;
-                btn.innerText = 'Kirish';
+                btn.disabled = false; btn.innerText = 'Kirish';
             }
         });
 
@@ -571,13 +466,14 @@
 
         document.getElementById('logout-btn').addEventListener('click', function() {
             clearToken();
-            selectedFiles = []; selectedCategories = []; selectedSizes = []; selectedColors = []; editingProductId = null;
+            selectedFiles = [null, null, null, null];
+            selectedCategories = []; selectedSizes = []; selectedColors = []; editingProductId = null;
             document.getElementById('password-input').value = "";
             document.getElementById('panel-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
         });
 
-        // KATEGORIYALAR
+        // ============ KATEGORIYALAR ============
         function renderCategories() {
             var grid = document.getElementById('categories-grid');
             var html = '';
@@ -611,7 +507,6 @@
                 html += '<div class="color-chip' + (isSel ? ' selected' : '') + '" data-color="' + c.id + '"><div class="color-circle" style="background:' + c.hex + ';"></div><div class="color-name">' + c.name + '</div></div>';
             }
             grid.innerHTML = html;
-            
             var items = grid.querySelectorAll('.color-chip');
             for (var k = 0; k < items.length; k++) {
                 items[k].addEventListener('click', function() {
@@ -644,7 +539,7 @@
             }
         }
 
-        // FILTER CHIPS
+        // ============ FILTER CHIPS ============
         function renderFilterChips() {
             var chips = document.getElementById('filter-chips');
             var html = '<div class="filter-chip' + (activeFilterCategory === 'all' ? ' active' : '') + '" data-filter="all">🌐 Barchasi</div>';
@@ -653,7 +548,6 @@
                 html += '<div class="filter-chip' + (activeFilterCategory === cat.id ? ' active' : '') + '" data-filter="' + cat.id + '">' + cat.emoji + ' ' + cat.name + '</div>';
             }
             chips.innerHTML = html;
-            
             var items = chips.querySelectorAll('.filter-chip');
             for (var k = 0; k < items.length; k++) {
                 items[k].addEventListener('click', function() {
@@ -664,45 +558,116 @@
             }
         }
 
-        // RASM PREVIEW
-        document.getElementById('p-images').addEventListener('change', function(e) {
-            selectedFiles = Array.from(e.target.files).slice(0, 4);
-            var preview = document.getElementById('image-preview');
-            preview.innerHTML = '';
-            for (var i = 0; i < 4; i++) {
+        // ============ RASM YUKLASH (YANGI) ============
+        function renderImageSlots() {
+            var container = document.getElementById('image-preview');
+            container.innerHTML = '';
+            for (var i = 0; i < MAX_IMAGES; i++) {
+                var slot = document.createElement('div');
+                slot.className = 'image-slot' + (i === 0 ? ' main-slot' : '');
+                slot.setAttribute('data-slot', i);
+                
+                var label = document.createElement('div');
+                label.className = 'slot-label';
+                label.innerText = i === 0 ? '⭐ Asosiy' : (i + 1);
+                slot.appendChild(label);
+                
                 if (selectedFiles[i]) {
-                    (function(file) {
-                        var reader = new FileReader();
-                        reader.onload = function(ev) {
-                            var img = document.createElement('img');
-                            img.src = ev.target.result;
-                            preview.appendChild(img);
-                        };
-                        reader.readAsDataURL(file);
-                    })(selectedFiles[i]);
+                    var img = document.createElement('img');
+                    img.src = selectedFiles[i].preview;
+                    slot.appendChild(img);
+                    
+                    var removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.innerText = '✕';
+                    removeBtn.setAttribute('data-remove', i);
+                    removeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var slotIdx = parseInt(this.getAttribute('data-remove'));
+                        selectedFiles[slotIdx] = null;
+                        renderImageSlots();
+                    });
+                    slot.appendChild(removeBtn);
                 } else {
-                    var div = document.createElement('div');
-                    div.className = 'empty';
-                    div.innerText = '📷';
-                    preview.appendChild(div);
+                    var emptyIcon = document.createElement('div');
+                    emptyIcon.className = 'empty-icon';
+                    emptyIcon.innerText = '📷';
+                    slot.appendChild(emptyIcon);
                 }
+                
+                slot.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('remove-btn')) return;
+                    var slotIdx = parseInt(this.getAttribute('data-slot'));
+                    openFilePickerForSlot(slotIdx);
+                });
+                
+                container.appendChild(slot);
             }
-        });
-
-        // RASM YUKLASH
-        function uploadImage(file) {
-            return new Promise(function(resolve) {
-                var formData = new FormData();
-                formData.append('image', file);
-                formData.append('token', adminToken);
-                fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData })
-                    .then(function(r) { return r.json(); })
-                    .then(function(d) { resolve(d.success ? d.url : null); })
-                    .catch(function() { resolve(null); });
-            });
         }
 
-        // SAQLASH
+        function openFilePickerForSlot(slotIdx) {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("Rasm hajmi 5 MB dan oshmasin!");
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    selectedFiles[slotIdx] = { file: file, preview: ev.target.result };
+                    renderImageSlots();
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        document.getElementById('p-images').addEventListener('change', function(e) {
+            var files = Array.from(e.target.files).slice(0, MAX_IMAGES);
+            for (var i = 0; i < files.length; i++) {
+                (function(file, idx) {
+                    if (file.size > 5 * 1024 * 1024) return;
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        // Bo'sh slotni topib joylashtirish
+                        for (var j = 0; j < MAX_IMAGES; j++) {
+                            if (!selectedFiles[j]) {
+                                selectedFiles[j] = { file: file, preview: ev.target.result };
+                                break;
+                            }
+                        }
+                        renderImageSlots();
+                    };
+                    reader.readAsDataURL(file);
+                })(files[i], i);
+            }
+            this.value = '';
+        });
+
+        // ============ RASM YUKLASH (IMGBB) ============
+        async function uploadImageWithRetry(file, maxRetries) {
+            for (var attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    var formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('token', adminToken);
+                    var res = await fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData });
+                    var data = await res.json();
+                    if (data.success && data.url) return data.url;
+                } catch (e) {
+                    console.log("Upload urinish " + (attempt + 1) + " muvaffaqiyatsiz:", e);
+                }
+                await new Promise(function(r) { setTimeout(r, 1000); });
+            }
+            return null;
+        }
+
+        // ============ SAQLASH ============
         document.getElementById('add-btn').addEventListener('click', async function() {
             var title = document.getElementById('p-title').value.trim();
             var description = document.getElementById('p-description').value.trim();
@@ -718,20 +683,51 @@
                 return;
             }
 
+            var hasAnyImage = false;
+            for (var k = 0; k < MAX_IMAGES; k++) { if (selectedFiles[k]) { hasAnyImage = true; break; } }
+            
+            if (!hasAnyImage && !editingProductId) {
+                statusEl.innerText = "❗ Kamida 1 ta rasm yuklang (asosiy rasm)";
+                statusEl.className = "status err";
+                return;
+            }
+
             btn.disabled = true;
             btn.innerText = 'Saqlanmoqda...';
             statusEl.innerText = '';
 
             try {
                 var imageUrls = [];
-                if (selectedFiles.length > 0) {
-                    for (var i = 0; i < selectedFiles.length; i++) {
-                        statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (i+1) + '/' + selectedFiles.length + ')';
+                var uploadedCount = 0;
+                
+                for (var i = 0; i < MAX_IMAGES; i++) {
+                    if (selectedFiles[i]) {
+                        statusEl.innerText = '⏳ Rasm yuklanmoqda... (' + (i+1) + '/' + MAX_IMAGES + ')';
                         statusEl.className = "status ok";
-                        var url = await uploadImage(selectedFiles[i]);
-                        if (url) imageUrls.push(url);
+                        var url = await uploadImageWithRetry(selectedFiles[i].file, 3);
+                        if (url) {
+                            imageUrls.push(url);
+                            uploadedCount++;
+                        } else {
+                            statusEl.innerText = "❌ " + (i+1) + "-rasm yuklanmadi. Boshqa rasm bilan urinib ko'ring.";
+                            statusEl.className = "status err";
+                            btn.disabled = false;
+                            btn.innerText = '💾 Saqlash';
+                            return;
+                        }
                     }
                 }
+                
+                if (uploadedCount === 0) {
+                    statusEl.innerText = "❌ Hech qanday rasm yuklanmadi";
+                    statusEl.className = "status err";
+                    btn.disabled = false;
+                    btn.innerText = '💾 Saqlash';
+                    return;
+                }
+
+                statusEl.innerText = "⏳ Ma'lumotlar saqlanmoqda...";
+                statusEl.className = "status ok";
 
                 var body = {
                     token: adminToken,
@@ -781,8 +777,9 @@
             document.getElementById('p-discount').value = '';
             document.getElementById('p-stock').value = '';
             document.getElementById('p-images').value = '';
-            selectedFiles = []; selectedCategories = []; selectedSizes = []; selectedColors = []; editingProductId = null;
-            document.getElementById('image-preview').innerHTML = '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
+            selectedFiles = [null, null, null, null];
+            selectedCategories = []; selectedSizes = []; selectedColors = []; editingProductId = null;
+            renderImageSlots();
             renderCategories(); renderSizes(); renderColors();
             document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
             document.getElementById('cancel-btn').classList.add('hidden');
@@ -794,7 +791,7 @@
             document.getElementById('add-status').className = "status ok";
         });
 
-        // TAHRIRLASH
+        // ============ TAHRIRLASH ============
         function editProduct(id) {
             var product = null;
             for (var i = 0; i < allProducts.length; i++) {
@@ -811,15 +808,21 @@
             selectedCategories = product.categories || [];
             selectedSizes = product.sizes || [];
             selectedColors = product.colors || [];
-            selectedFiles = [];
-            renderCategories(); renderSizes(); renderColors();
-            document.getElementById('image-preview').innerHTML = '<div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div><div class="empty">📷</div>';
+            
+            // Mavjud rasmlarni ko'rsatish
+            selectedFiles = [null, null, null, null];
+            var imgs = product.images || [];
+            for (var j = 0; j < imgs.length && j < MAX_IMAGES; j++) {
+                selectedFiles[j] = { file: null, preview: imgs[j], existing: true };
+            }
+            
+            renderCategories(); renderSizes(); renderColors(); renderImageSlots();
             document.getElementById('form-title').innerText = "✏️ Mahsulotni tahrirlash";
             document.getElementById('cancel-btn').classList.remove('hidden');
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // QIDIRUV + FILTR
+        // ============ QIDIRUV + FILTR ============
         function searchProducts() {
             searchQuery = document.getElementById('products-search-input').value.trim().toLowerCase();
             var clearBtn = document.getElementById('products-search-clear');
@@ -843,18 +846,14 @@
                     (p.categories && p.categories.indexOf(activeFilterCategory) > -1);
                 return matchSearch && matchCategory;
             });
-            
             totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
             if (currentPage > totalPages) currentPage = totalPages;
             if (currentPage < 1) currentPage = 1;
-            
             document.getElementById('filtered-count').innerText = filteredProducts.length;
             document.getElementById('total-count').innerText = allProducts.length;
-            
             renderProductsPage();
         }
 
-        // PAGINATION
         function changePage(dir) {
             currentPage += dir;
             if (currentPage < 1) currentPage = 1;
@@ -865,10 +864,8 @@
         function updatePaginationUI() {
             document.getElementById('page-info-top').innerText = currentPage + ' / ' + totalPages;
             document.getElementById('page-info-bottom').innerText = currentPage + ' / ' + totalPages;
-            
             var prevDisabled = currentPage <= 1;
             var nextDisabled = currentPage >= totalPages;
-            
             document.getElementById('prev-top').disabled = prevDisabled;
             document.getElementById('next-top').disabled = nextDisabled;
             document.getElementById('prev-bottom').disabled = prevDisabled;
@@ -877,17 +874,14 @@
 
         function renderProductsPage() {
             var list = document.getElementById('products-list');
-            
             if (filteredProducts.length === 0) {
                 list.innerHTML = '<div class="empty-result">🔍 Mahsulot topilmadi</div>';
                 updatePaginationUI();
                 return;
             }
-
             var start = (currentPage - 1) * PER_PAGE;
             var end = Math.min(start + PER_PAGE, filteredProducts.length);
             var pageProducts = filteredProducts.slice(start, end);
-
             var html = '';
             pageProducts.forEach(function(p) {
                 var sizes = (p.sizes || []).join(', ');
@@ -913,18 +907,15 @@
                     '</div></div>';
             });
             list.innerHTML = html;
-            
             var eb = list.querySelectorAll('[data-edit]');
             for (var i = 0; i < eb.length; i++) eb[i].addEventListener('click', function() { editProduct(this.getAttribute('data-edit')); });
             var db = list.querySelectorAll('[data-del]');
             for (var j = 0; j < db.length; j++) db[j].addEventListener('click', function() {
                 if (confirm("O'chirishni tasdiqlaysizmi?")) deleteProduct(this.getAttribute('data-del'));
             });
-            
             updatePaginationUI();
         }
 
-        // MAHSULOTLAR
         function loadProducts() {
             var list = document.getElementById('products-list');
             list.innerHTML = '⏳ Yuklanmoqda...';
@@ -935,10 +926,8 @@
                 filteredProducts = allProducts.slice();
                 totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
                 currentPage = 1;
-                
                 document.getElementById('total-count').innerText = allProducts.length;
                 document.getElementById('filtered-count').innerText = filteredProducts.length;
-                
                 renderProductsPage();
             })
             .catch(function(err) { list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>'; });
