@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- HEADER -->
     <header class="app-header">
         <div class="header-left">
             <img src="https://i.ibb.co/9k8t621d/IMG-20260916-104211-663.jpg" alt="MaxiMarket" class="logo-img" onerror="this.style.display='none'">
@@ -21,7 +20,6 @@
         </button>
     </header>
 
-    <!-- BANNER -->
     <div class="banner-carousel" id="banner-carousel">
         <div class="banner-slide" id="banner-slide"></div>
         <button class="banner-nav prev" onclick="slideBanner(-1)">‹</button>
@@ -29,17 +27,14 @@
         <div class="banner-dots" id="banner-dots"></div>
     </div>
 
-    <!-- QIDIRUV -->
     <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="search-input" placeholder="Mahsulot qidirish..." oninput="filterProducts()">
         <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none;">✕</button>
     </div>
 
-    <!-- KATEGORIYALAR -->
     <div class="categories-scroll" id="categories-scroll"></div>
 
-    <!-- MAHSULOTLAR -->
     <main id="products-container"></main>
 
     <!-- PROFIL OYNASI -->
@@ -67,35 +62,84 @@
 
     <!-- BUYURTMA OYNASI -->
     <div id="order-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">✕</button>
-            <div class="slider">
-                <button class="slider-btn prev" onclick="slideImage(-1)">‹</button>
-                <img id="modal-image" src="" alt="Mahsulot rasmi">
-                <button class="slider-btn next" onclick="slideImage(1)">›</button>
-                <div class="slider-dots" id="slider-dots"></div>
+        <div class="order-modal-content">
+            <div class="order-modal-header">
+                <button class="back-btn" onclick="closeModal()">←</button>
+                <div class="order-modal-title">Buyurtma berish</div>
+                <div style="width:40px;"></div>
             </div>
-            <h2 id="modal-title"></h2>
-            <div class="stock-badge" id="modal-stock"></div>
-            <div id="modal-description" class="modal-description"></div>
-            <div id="modal-colors" class="modal-colors-wrap"></div>
-            <p class="aksiya-badge">❗ AKSIYA NARXIDA ❗</p>
-            <p class="modal-price">💵 <span id="modal-price"></span> SO'M</p>
-            <p class="countdown-label">👉 Bugungi aksiya tugashiga</p>
-            <div class="countdown">
-                <div><span id="cd-hours">00</span><small>SOAT</small></div>
-                <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
-                <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
+
+            <div class="order-modal-body">
+                <!-- Rasm slayder -->
+                <div class="slider">
+                    <button class="slider-btn prev" onclick="slideImage(-1)">‹</button>
+                    <img id="modal-image" src="" alt="Mahsulot rasmi">
+                    <button class="slider-btn next" onclick="slideImage(1)">›</button>
+                    <div class="slider-dots" id="slider-dots"></div>
+                </div>
+
+                <!-- Mahsulot nomi -->
+                <h2 id="modal-title" class="order-title"></h2>
+
+                <!-- Narx -->
+                <div class="order-price-block">
+                    <span class="order-old-price" id="modal-old-price"></span>
+                    <span class="order-new-price"><span id="modal-price"></span> so'm</span>
+                    <span class="order-discount-badge" id="modal-discount-badge"></span>
+                </div>
+
+                <!-- Ombordagi va sotilgan -->
+                <div class="order-stats">
+                    <div class="stat-item" id="stock-stat">
+                        <span class="stat-icon">📦</span>
+                        <span class="stat-text">Omborda: <b id="modal-stock">0</b> dona</span>
+                    </div>
+                    <div class="stat-item" id="sold-stat">
+                        <span class="stat-icon">✅</span>
+                        <span class="stat-text">Sotilgan: <b id="modal-sold">0</b> dona</span>
+                    </div>
+                </div>
+
+                <!-- Tavsif -->
+                <div id="modal-description" class="order-description"></div>
+
+                <!-- Razmer tanlash -->
+                <div id="size-section" class="order-option-section" style="display:none;">
+                    <div class="option-label">📏 O'lchamni tanlang:</div>
+                    <div class="option-list" id="modal-sizes"></div>
+                </div>
+
+                <!-- Rang tanlash -->
+                <div id="color-section" class="order-option-section" style="display:none;">
+                    <div class="option-label">🎨 Rangni tanlang:</div>
+                    <div class="option-list" id="modal-colors"></div>
+                </div>
+
+                <!-- Countdown -->
+                <div class="countdown-block">
+                    <p class="countdown-label">⏰ Aksiya tugashiga:</p>
+                    <div class="countdown">
+                        <div><span id="cd-hours">00</span><small>SOAT</small></div>
+                        <div><span id="cd-minutes">00</span><small>DAQIQA</small></div>
+                        <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
+                    </div>
+                </div>
+
+                <!-- Forma -->
+                <form id="order-form" onsubmit="submitOrder(event)">
+                    <label class="form-label">To'liq ismi sharif *</label>
+                    <input type="text" id="order-name" placeholder="To'liq ismi sharif" required minlength="4">
+
+                    <label class="form-label">Telefon raqamingiz *</label>
+                    <input type="tel" id="order-phone" placeholder="+998(__)-___-__-__" required>
+
+                    <div id="order-status" class="status"></div>
+
+                    <button type="submit" class="order-submit-btn">Tasdiqlash</button>
+                </form>
+
+                <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
             </div>
-            <p class="info-label">Ma'lumotlaringizni yozib qoldiring ⬇️</p>
-            <form id="order-form" onsubmit="submitOrder(event)">
-                <label>ISMINGIZ *</label>
-                <input type="text" id="order-name" placeholder="Ismingizni kiriting" required>
-                <label>TELEFON RAQAMINGIZ *</label>
-                <input type="tel" id="order-phone" placeholder="+998 90 000 00 00" value="+998 " required>
-                <button type="submit" class="order-btn">🛒 Buyurtma berish</button>
-            </form>
-            <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
         </div>
     </div>
 
