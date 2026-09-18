@@ -50,6 +50,81 @@
         .status.err { background: #ffebee; color: #c62828; }
         .hidden { display: none; }
         .session-info { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 8px; font-size: 12px; text-align: center; margin-bottom: 10px; }
+        
+        /* Collapsible sections */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            margin: 12px 0 5px;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .collapsible-header:hover { background: #e9ecef; }
+        .collapsible-header .arrow {
+            font-size: 12px;
+            transition: transform 0.2s;
+            color: #1565c0;
+        }
+        .collapsible-header.open .arrow { transform: rotate(180deg); }
+        .collapsible-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .collapsible-body.open {
+            max-height: 2000px;
+            padding-top: 8px;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            margin-bottom: 8px;
+        }
+        .pagination button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 0;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination button:disabled { background: #cfd8dc; cursor: not-allowed; }
+        .pagination-info {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .refresh-btn-top {
+            background: #1565c0;
+            color: #fff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .refresh-btn-top:active { background: #0d47a1; }
     </style>
 </head>
 <body>
@@ -71,7 +146,7 @@
 
         <div class="section">
             <h2 id="form-title">➕ Yangi mahsulot qo'shish</h2>
-            <div class="info-note">ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi.</div>
+            <div class="info-note">ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi. Ranglar kategoriya bo'ylab amal qiladi.</div>
 
             <label>Mahsulot nomi *</label>
             <input type="text" id="p-title" placeholder="Mahsulot nomi">
@@ -91,11 +166,23 @@
             <label>📂 Kategoriyalar (2 tagacha)</label>
             <div class="grid-2" id="categories-grid"></div>
 
-            <label>📏 O'lchamlar / Razmerlar (4 tagacha)</label>
-            <div class="grid-3" id="sizes-grid"></div>
+            <!-- COLLAPSIBLE: SIZES -->
+            <div class="collapsible-header" onclick="toggleCollapsible('sizes')">
+                <span>📏 O'lchamlar / Razmerlar</span>
+                <span class="arrow" id="sizes-arrow">▼</span>
+            </div>
+            <div class="collapsible-body" id="sizes-body">
+                <div class="grid-3" id="sizes-grid"></div>
+            </div>
 
-            <label>🎨 Ranglar (10 tagacha)</label>
-            <div class="grid-4" id="colors-grid"></div>
+            <!-- COLLAPSIBLE: COLORS -->
+            <div class="collapsible-header" onclick="toggleCollapsible('colors')">
+                <span>🎨 Ranglar (10 tagacha)</span>
+                <span class="arrow" id="colors-arrow">▼</span>
+            </div>
+            <div class="collapsible-body" id="colors-body">
+                <div class="grid-4" id="colors-grid"></div>
+            </div>
 
             <label>📷 Rasmlar (4 tagacha)</label>
             <input type="file" id="p-images" accept="image/*" multiple>
@@ -111,8 +198,24 @@
 
         <div class="section">
             <h2>📦 Mavjud mahsulotlar</h2>
+            
+            <button id="refresh-btn" class="refresh-btn-top">🔄 Yangilash</button>
+            
+            <!-- TOP PAGINATION -->
+            <div class="pagination" id="pagination-top">
+                <button id="prev-top" onclick="changePage(-1)">‹</button>
+                <div class="pagination-info" id="page-info-top">1 / 1</div>
+                <button id="next-top" onclick="changePage(1)">›</button>
+            </div>
+            
             <div id="products-list">⏳ Yuklanmoqda...</div>
-            <button id="refresh-btn">🔄 Yangilash</button>
+            
+            <!-- BOTTOM PAGINATION -->
+            <div class="pagination" id="pagination-bottom">
+                <button id="prev-bottom" onclick="changePage(-1)">‹</button>
+                <div class="pagination-info" id="page-info-bottom">1 / 1</div>
+                <button id="next-bottom" onclick="changePage(1)">›</button>
+            </div>
         </div>
 
         <button class="danger" id="logout-btn">🚪 Chiqish</button>
@@ -124,6 +227,7 @@
         var MAX_CATEGORIES = 2;
         var MAX_SIZES = 4;
         var MAX_COLORS = 10;
+        var PER_PAGE = 10;
 
         var adminToken = "";
         var selectedFiles = [];
@@ -132,6 +236,8 @@
         var selectedColors = [];
         var editingProductId = null;
         var allProducts = [];
+        var currentPage = 1;
+        var totalPages = 1;
 
         var CATEGORIES = [
             { id: "elektronika", name: "Elektronika", emoji: "📱" },
@@ -172,7 +278,22 @@
             { id: "chegirma-1", name: "Marjon", hex: "#ff7043" }
         ];
 
-        // TOKEN
+        // ============ COLLAPSIBLE ============
+        function toggleCollapsible(name) {
+            var header = document.querySelector('[onclick="toggleCollapsible(\'' + name + '\')"]');
+            var body = document.getElementById(name + '-body');
+            var arrow = document.getElementById(name + '-arrow');
+            
+            if (body.classList.contains('open')) {
+                body.classList.remove('open');
+                header.classList.remove('open');
+            } else {
+                body.classList.add('open');
+                header.classList.add('open');
+            }
+        }
+
+        // ============ TOKEN ============
         function saveToken(token) { adminToken = token; localStorage.setItem(TOKEN_KEY, token); }
         function loadToken() { var s = localStorage.getItem(TOKEN_KEY); if (s) { adminToken = s; return true; } return false; }
         function clearToken() { adminToken = ""; localStorage.removeItem(TOKEN_KEY); }
@@ -492,6 +613,76 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
+        // PAGINATION
+        function changePage(dir) {
+            currentPage += dir;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            renderProductsPage();
+        }
+
+        function updatePaginationUI() {
+            document.getElementById('page-info-top').innerText = currentPage + ' / ' + totalPages;
+            document.getElementById('page-info-bottom').innerText = currentPage + ' / ' + totalPages;
+            
+            var prevDisabled = currentPage <= 1;
+            var nextDisabled = currentPage >= totalPages;
+            
+            document.getElementById('prev-top').disabled = prevDisabled;
+            document.getElementById('next-top').disabled = nextDisabled;
+            document.getElementById('prev-bottom').disabled = prevDisabled;
+            document.getElementById('next-bottom').disabled = nextDisabled;
+        }
+
+        function renderProductsPage() {
+            var list = document.getElementById('products-list');
+            
+            if (allProducts.length === 0) {
+                list.innerHTML = '<p style="color:#999;text-align:center;">Mahsulotlar yo\'q</p>';
+                updatePaginationUI();
+                return;
+            }
+
+            var start = (currentPage - 1) * PER_PAGE;
+            var end = Math.min(start + PER_PAGE, allProducts.length);
+            var pageProducts = allProducts.slice(start, end);
+
+            var html = '';
+            pageProducts.forEach(function(p) {
+                var sizes = (p.sizes || []).join(', ');
+                var colorHtml = '';
+                if (p.colors && p.colors.length > 0) {
+                    colorHtml = '<div class="product-colors">';
+                    p.colors.forEach(function(cid) {
+                        var c = COLORS.find(function(x) { return x.id === cid; });
+                        if (c) colorHtml += '<span style="background:' + c.hex + ';" title="' + c.name + '"></span>';
+                    });
+                    colorHtml += '</div>';
+                }
+                html += '<div class="product-item">' +
+                    '<div class="product-item-info">' +
+                    '<b>' + (p.title || '') + '</b>' +
+                    '<small>💰 ' + (p.discount_price || 0).toLocaleString() + ' so\'m | 📦 ' + (p.stock || 0) + ' dona | 👁 ' + (p.views || 0) + '</small>' +
+                    (sizes ? '<small>📏 ' + sizes + '</small>' : '') +
+                    colorHtml +
+                    '</div>' +
+                    '<div class="btn-row">' +
+                    '<button class="success small" data-edit="' + p.id + '">✏️</button>' +
+                    '<button class="danger small" data-del="' + p.id + '">🗑</button>' +
+                    '</div></div>';
+            });
+            list.innerHTML = html;
+            
+            var eb = list.querySelectorAll('[data-edit]');
+            for (var i = 0; i < eb.length; i++) eb[i].addEventListener('click', function() { editProduct(this.getAttribute('data-edit')); });
+            var db = list.querySelectorAll('[data-del]');
+            for (var j = 0; j < db.length; j++) db[j].addEventListener('click', function() {
+                if (confirm("O'chirishni tasdiqlaysizmi?")) deleteProduct(this.getAttribute('data-del'));
+            });
+            
+            updatePaginationUI();
+        }
+
         // MAHSULOTLAR
         function loadProducts() {
             var list = document.getElementById('products-list');
@@ -500,41 +691,9 @@
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 allProducts = data.products || [];
-                if (allProducts.length === 0) {
-                    list.innerHTML = '<p style="color:#999;text-align:center;">Mahsulotlar yo\'q</p>';
-                    return;
-                }
-                var html = '';
-                allProducts.forEach(function(p) {
-                    var sizes = (p.sizes || []).join(', ');
-                    var colorHtml = '';
-                    if (p.colors && p.colors.length > 0) {
-                        colorHtml = '<div class="product-colors">';
-                        p.colors.forEach(function(cid) {
-                            var c = COLORS.find(function(x) { return x.id === cid; });
-                            if (c) colorHtml += '<span style="background:' + c.hex + ';" title="' + c.name + '"></span>';
-                        });
-                        colorHtml += '</div>';
-                    }
-                    html += '<div class="product-item">' +
-                        '<div class="product-item-info">' +
-                        '<b>' + (p.title || '') + '</b>' +
-                        '<small>💰 ' + (p.discount_price || 0).toLocaleString() + ' so\'m | 📦 ' + (p.stock || 0) + ' dona | 👁 ' + (p.views || 0) + '</small>' +
-                        (sizes ? '<small>📏 ' + sizes + '</small>' : '') +
-                        colorHtml +
-                        '</div>' +
-                        '<div class="btn-row">' +
-                        '<button class="success small" data-edit="' + p.id + '">✏️</button>' +
-                        '<button class="danger small" data-del="' + p.id + '">🗑</button>' +
-                        '</div></div>';
-                });
-                list.innerHTML = html;
-                var eb = list.querySelectorAll('[data-edit]');
-                for (var i = 0; i < eb.length; i++) eb[i].addEventListener('click', function() { editProduct(this.getAttribute('data-edit')); });
-                var db = list.querySelectorAll('[data-del]');
-                for (var j = 0; j < db.length; j++) db[j].addEventListener('click', function() {
-                    if (confirm("O'chirishni tasdiqlaysizmi?")) deleteProduct(this.getAttribute('data-del'));
-                });
+                totalPages = Math.max(1, Math.ceil(allProducts.length / PER_PAGE));
+                currentPage = 1;
+                renderProductsPage();
             })
             .catch(function(err) { list.innerHTML = '<p style="color:#c62828;">Xatolik: ' + err.message + '</p>'; });
         }
