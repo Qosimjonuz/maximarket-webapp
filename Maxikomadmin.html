@@ -85,14 +85,12 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .filter-chip{padding:5px 9px;border-radius:20px;background:#f8f9fa;border:2px solid transparent;font-size:11px;font-weight:600;cursor:pointer}
 .filter-chip.active{background:#1565c0;color:#fff}
 .empty-result{text-align:center;padding:24px 16px;color:#999;font-size:13px}
-/* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;background:#fff;border-top:1px solid #e0e0e0;display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.08);padding-bottom:env(safe-area-inset-bottom)}
 .bottom-nav.hidden{display:none}
 .bottom-nav button{flex:1;background:none;border:none;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#888;cursor:pointer;font-family:inherit;font-size:10px;font-weight:600;margin:0;border-radius:0;transition:color .15s}
 .bottom-nav button.active{color:#1565c0}
 .bottom-nav button:active{background:#f0f7ff}
 .bottom-icon{font-size:20px}
-/* STATISTIKA */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .stat-card{background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:12px;border-radius:12px}
 .stat-card.green{background:linear-gradient(135deg,#2e7d32,#66bb6a)}
@@ -101,7 +99,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .stat-card-label{font-size:11px;opacity:.9;margin-bottom:4px;font-weight:600}
 .stat-card-value{font-size:22px;font-weight:900;margin-bottom:2px}
 .stat-card-count{font-size:11px;opacity:.85}
-/* USERS LIST */
 .user-item{background:#f8f9fa;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .user-item input[type=checkbox]{width:20px;height:20px;flex-shrink:0;accent-color:#1565c0}
 .user-info{flex:1;min-width:0}
@@ -110,7 +107,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .user-actions{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .user-actions button{flex:1;min-width:120px;margin:0;padding:8px;font-size:12px}
 .message-box textarea{min-height:80px;font-size:14px}
-.page-title{font-size:16px;font-weight:800;color:#1565c0;text-align:center;padding:6px 0 12px;margin:0}
 @media(max-width:380px){.stats-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -218,17 +214,19 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     </div>
   </div>
 
-  <!-- PAGE 3: STATISTICS -->
+  <!-- PAGE 3: STATISTICS + USERS -->
   <div id="page-stats" class="page hidden">
     <div class="section">
       <h2>📊 Sotuv statistikasi</h2>
+      <div class="info-note" id="stats-info">ℹ️ Statistika <b id="stats-start-date">-</b> dan boshlab hisoblanadi</div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-card-label">📅 Bugun</div><div class="stat-card-value" id="s-today-sum">0</div><div class="stat-card-count" id="s-today-count">0 buyurtma</div></div>
         <div class="stat-card green"><div class="stat-card-label">📆 Bu hafta</div><div class="stat-card-value" id="s-week-sum">0</div><div class="stat-card-count" id="s-week-count">0 buyurtma</div></div>
         <div class="stat-card orange"><div class="stat-card-label">🗓 Bu oy</div><div class="stat-card-value" id="s-month-sum">0</div><div class="stat-card-count" id="s-month-count">0 buyurtma</div></div>
         <div class="stat-card purple"><div class="stat-card-label">📅 Bu yil</div><div class="stat-card-value" id="s-year-sum">0</div><div class="stat-card-count" id="s-year-count">0 buyurtma</div></div>
       </div>
-      <div class="stat-card" style="background:linear-gradient(135deg,#c62828,#e53935)"><div class="stat-card-label">🏆 Jami</div><div class="stat-card-value" id="s-all-sum">0</div><div class="stat-card-count" id="s-all-count">0 buyurtma</div></div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#c62828,#e53935)"><div class="stat-card-label">🏆 Jami (boshlanishdan)</div><div class="stat-card-value" id="s-all-sum">0</div><div class="stat-card-count" id="s-all-count">0 buyurtma</div></div>
+      <button class="danger" style="width:100%;margin-top:10px" onclick="resetStats()">🔄 Statistikani bugundan qayta boshlash</button>
     </div>
 
     <div class="section">
@@ -243,19 +241,30 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     </div>
 
     <div class="section">
-      <h2>📢 Xabar yuborish</h2>
-      <div class="user-actions">
-        <button class="small" onclick="loadUsers()">🔄 Obunachilarni yuklash</button>
-        <button class="small success" onclick="selectAllUsers()">✅ Hammasini tanlash</button>
-        <button class="small danger" onclick="deselectAllUsers()">❌ Tanlovni tozalash</button>
+      <h2>📢 Obunachilarga xabar</h2>
+      <div class="products-search" style="margin-bottom:8px">
+        <span class="products-search-icon">🔍</span>
+        <input type="text" id="user-search-input" placeholder="Ism, username, telefon yoki ID..." oninput="searchUsersDebounced()">
+        <button class="products-search-clear" id="user-search-clear" onclick="clearUserSearch()" style="display:none">✕</button>
       </div>
-      <div id="users-list-container" style="max-height:300px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
-        <div class="empty-result">Obunachilarni yuklash uchun tugmani bosing</div>
+      <div class="user-actions">
+        <button class="small" onclick="loadUsers()">🔄 Yuklash</button>
+        <button class="small success" onclick="selectAllVisibleUsers()">✅ Ko'ringanlarni tanlash</button>
+        <button class="small danger" onclick="deselectAllUsers()">❌ Tozalash</button>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#1565c0;text-align:center;margin:6px 0" id="users-count-info">0 ta obunachi tanlangan</div>
+      <div id="users-list-container" style="max-height:400px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
+        <div class="empty-result">"Yuklash" tugmasini bosing</div>
+      </div>
+      <div class="pagination">
+        <button id="u-prev" onclick="changeUsersPage(-1)">‹</button>
+        <div class="pagination-info" id="users-page-info">1 / 1</div>
+        <button id="u-next" onclick="changeUsersPage(1)">›</button>
       </div>
       <div class="message-box">
         <label>Xabar matni</label>
         <textarea id="broadcast-message" placeholder="Xabar matnini kiriting..."></textarea>
-        <button id="send-message-btn" class="success" onclick="sendMessage()">📤 Tanlangan foydalanuvchilarga yuborish</button>
+        <button id="send-message-btn" class="success" onclick="sendMessage()">📤 Tanlanganlarga yuborish</button>
         <div id="send-status" class="status"></div>
       </div>
     </div>
@@ -284,22 +293,18 @@ var allProducts=[],filteredProducts=[];
 var currentPage=1,totalPages=1;
 var searchQuery="",activeFilterCategory="all";
 var selectedUsers=[];
+var currentUsersPage=1,usersTotalPages=1,usersPerPage=50;
+var userSearchDebounce=null;
+var visibleUsers=[];
 
 var CATEGORIES=[
-{id:"elektronika",name:"Elektronika",emoji:"📱"},
-{id:"kiyim",name:"Kiyim",emoji:"👕"},
-{id:"poyabzallar",name:"Poyabzallar",emoji:"👟"},
-{id:"aksessuarlar",name:"Aksessuarlar",emoji:"👜"},
-{id:"parfyumeriya",name:"Parfyumeriya",emoji:"🌸"},
-{id:"gozallik",name:"Go'zallik",emoji:"💄"},
-{id:"maishiy",name:"Maishiy texnika",emoji:"🏠"},
-{id:"salomatlik",name:"Salomatlik",emoji:"❤️"},
-{id:"bolalar",name:"Bolalar",emoji:"🧸"},
-{id:"sport",name:"Sport",emoji:"⚽"},
-{id:"kitoblar",name:"Kitoblar",emoji:"📚"},
-{id:"avto",name:"Avto",emoji:"🚗"},
-{id:"uy",name:"Uy uchun",emoji:"🏡"},
-{id:"sovga",name:"Sovg'alar",emoji:"🎁"},
+{id:"elektronika",name:"Elektronika",emoji:"📱"},{id:"kiyim",name:"Kiyim",emoji:"👕"},
+{id:"poyabzallar",name:"Poyabzallar",emoji:"👟"},{id:"aksessuarlar",name:"Aksessuarlar",emoji:"👜"},
+{id:"parfyumeriya",name:"Parfyumeriya",emoji:"🌸"},{id:"gozallik",name:"Go'zallik",emoji:"💄"},
+{id:"maishiy",name:"Maishiy texnika",emoji:"🏠"},{id:"salomatlik",name:"Salomatlik",emoji:"❤️"},
+{id:"bolalar",name:"Bolalar",emoji:"🧸"},{id:"sport",name:"Sport",emoji:"⚽"},
+{id:"kitoblar",name:"Kitoblar",emoji:"📚"},{id:"avto",name:"Avto",emoji:"🚗"},
+{id:"uy",name:"Uy uchun",emoji:"🏡"},{id:"sovga",name:"Sovg'alar",emoji:"🎁"},
 {id:"boshqa",name:"Boshqa",emoji:"📦"}
 ];
 var SIZES=["XS","S","M","L","XL","XXL","3XL","36","37","38","39","40","41","42","43","44","45","Universal"];
@@ -314,7 +319,6 @@ var COLORS=[
 {id:"yashil-och",name:"Och yashil",hex:"#66bb6a"},{id:"chegirma-1",name:"Marjon",hex:"#ff7043"}
 ];
 
-// CAPTCHA
 function generateCaptcha(){
   var ops=['+','-','×'],op=ops[Math.floor(Math.random()*ops.length)],a,b,ans;
   if(op==='+'){a=Math.floor(Math.random()*20)+1;b=Math.floor(Math.random()*20)+1;ans=a+b}
@@ -325,7 +329,6 @@ function generateCaptcha(){
   document.getElementById('captcha-input').value='';
 }
 
-// TOGGLE
 function toggleCollapsible(name){
   var h=document.querySelector('[onclick="toggleCollapsible(\''+name+'\')"]'),b=document.getElementById(name+'-body');
   b.classList.toggle('open');h.classList.toggle('open');
@@ -335,7 +338,6 @@ function toggleFilter(){
   document.getElementById('filter-body').classList.toggle('open');
 }
 
-// TOKEN
 function saveToken(t){adminToken=t;localStorage.setItem(TOKEN_KEY,t)}
 function loadToken(){var s=localStorage.getItem(TOKEN_KEY);if(s){adminToken=s;return true}return false}
 function clearToken(){adminToken="";localStorage.removeItem(TOKEN_KEY)}
@@ -355,7 +357,6 @@ function showPanel(){
   loadProducts();
 }
 
-// PAGE SWITCH
 function switchPage(page){
   document.querySelectorAll('.page').forEach(function(el){el.classList.add('hidden')});
   document.getElementById('page-'+page).classList.remove('hidden');
@@ -376,7 +377,6 @@ window.addEventListener('DOMContentLoaded',function(){
   if(loadToken()){showPanel()}
 });
 
-// LOGIN
 document.getElementById('login-btn').addEventListener('click',async function(){
   var pwd=document.getElementById('password-input').value.trim();
   var cap=document.getElementById('captcha-input').value.trim();
@@ -402,7 +402,6 @@ document.getElementById('login-btn').addEventListener('click',async function(){
 document.getElementById('password-input').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('login-btn').click()});
 document.getElementById('captcha-input').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('login-btn').click()});
 
-// LOGOUT
 document.getElementById('logout-btn').addEventListener('click',function(){
   clearToken();
   selectedFiles=[null,null,null,null];selectedCategories=[];selectedSizes=[];selectedColors=[];editingProductId=null;
@@ -410,7 +409,6 @@ document.getElementById('logout-btn').addEventListener('click',function(){
   showLogin();
 });
 
-// CATEGORIES
 function renderCategories(){
   var g=document.getElementById('categories-grid'),h='';
   CATEGORIES.forEach(function(c){
@@ -455,7 +453,6 @@ function bindChips(grid,sel,attr,arr,max,rnd){
   });
 }
 
-// FILTER CHIPS
 function renderFilterChips(){
   var c=document.getElementById('filter-chips'),h='<div class="filter-chip'+(activeFilterCategory==='all'?' active':'')+'" data-filter="all">🌐 Barchasi</div>';
   CATEGORIES.forEach(function(cat){
@@ -470,7 +467,6 @@ function renderFilterChips(){
   });
 }
 
-// COMPRESS
 function compressImage(file,cb){
   var r=new FileReader();
   r.onload=function(e){
@@ -492,7 +488,6 @@ function compressImage(file,cb){
   r.readAsDataURL(file);
 }
 
-// IMAGE SLOTS
 function renderImageSlots(){
   var c=document.getElementById('image-preview');c.innerHTML='';
   for(var i=0;i<MAX_IMAGES;i++){
@@ -550,7 +545,6 @@ document.getElementById('p-images').addEventListener('change',function(e){
   this.value='';
 });
 
-// UPLOAD
 async function uploadImageWithRetry(file,max){
   for(var a=0;a<max;a++){
     try{
@@ -566,7 +560,6 @@ async function uploadImageWithRetry(file,max){
   return null;
 }
 
-// SAVE PRODUCT
 document.getElementById('add-btn').addEventListener('click',async function(){
   var title=document.getElementById('p-title').value.trim();
   var desc=document.getElementById('p-description').value.trim();
@@ -621,7 +614,6 @@ document.getElementById('cancel-btn').addEventListener('click',function(){
   document.getElementById('add-status').className="status ok";
 });
 
-// EDIT
 function editProduct(id){
   var p=null;for(var i=0;i<allProducts.length;i++){if(String(allProducts[i].id)===String(id)){p=allProducts[i];break}}
   if(!p)return;
@@ -641,7 +633,6 @@ function editProduct(id){
   switchPage('add');window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// SEARCH + FILTER
 function searchProducts(){
   searchQuery=document.getElementById('products-search-input').value.trim().toLowerCase();
   document.getElementById('products-search-clear').style.display=searchQuery?'flex':'none';
@@ -715,6 +706,12 @@ async function loadStats(){
     if(r.status===401){handleAuthError();return}
     var d=await r.json();
     if(d.success){
+      if(d.stats_start){
+        try{
+          var sd=new Date(d.stats_start+'Z');
+          document.getElementById('stats-start-date').innerText=sd.toLocaleDateString('uz-UZ',{day:'2-digit',month:'2-digit',year:'numeric'});
+        }catch(e){}
+      }
       document.getElementById('s-today-sum').innerText=(d.today.total||0).toLocaleString();
       document.getElementById('s-today-count').innerText=(d.today.count||0)+' buyurtma';
       document.getElementById('s-week-sum').innerText=(d.week.total||0).toLocaleString();
@@ -740,21 +737,51 @@ async function loadStats(){
   }catch(e){console.log("User stats xatolik:",e)}
 }
 
-// USERS LIST
+async function resetStats(){
+  if(!confirm("Statistikani bugundan qayta boshlaysizmi?\n\nEski buyurtmalar saqlanadi, lekin hisobotda ko'rinmaydi."))return;
+  try{
+    var r=await fetch(API_URL+'/api/stats/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
+    if(r.status===401){handleAuthError();return}
+    var d=await r.json();
+    if(d.success){
+      alert("✅ Statistika bugundan qayta boshlandi!");
+      loadStats();
+    }else{alert("Xatolik: "+(d.error||""))}
+  }catch(e){alert("Xatolik: "+e.message)}
+}
+
+// USERS LIST + SEARCH
+function searchUsersDebounced(){
+  var v=document.getElementById('user-search-input').value;
+  document.getElementById('user-search-clear').style.display=v.trim()?'flex':'none';
+  if(userSearchDebounce)clearTimeout(userSearchDebounce);
+  userSearchDebounce=setTimeout(function(){currentUsersPage=1;loadUsers();},400);
+}
+
+function clearUserSearch(){
+  document.getElementById('user-search-input').value='';
+  document.getElementById('user-search-clear').style.display='none';
+  currentUsersPage=1;loadUsers();
+}
+
 async function loadUsers(){
   var c=document.getElementById('users-list-container');
   c.innerHTML='⏳ Yuklanmoqda...';
+  var search=document.getElementById('user-search-input').value.trim();
   try{
-    var r=await fetch(API_URL+'/api/users/list',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
+    var r=await fetch(API_URL+'/api/users/list',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken,search:search,page:currentUsersPage,per_page:usersPerPage})});
     if(r.status===401){handleAuthError();return}
     var d=await r.json();
     if(!d.success){c.innerHTML='<div class="empty-result">Xatolik</div>';return}
     var users=d.users||[];
-    if(users.length===0){c.innerHTML='<div class="empty-result">Obunachilar yo\'q</div>';return}
+    visibleUsers=users;
+    usersTotalPages=d.total_pages||1;
+    if(users.length===0){c.innerHTML='<div class="empty-result">'+(search?'🔍 Topilmadi':'Obunachilar yo\'q')+'</div>';updateUsersPagination();updateUsersCountInfo();return}
     var h='';
     users.forEach(function(u){
       var nm=u.full_name||u.username||('ID: '+u.user_id);
-      h+='<div class="user-item"><input type="checkbox" class="user-check" value="'+u.user_id+'" '+(selectedUsers.indexOf(u.user_id)>-1?'checked':'')+'><div class="user-info"><b>'+nm+'</b><small>'+u.user_id+(u.phone?' • '+u.phone:'')+'</small></div></div>';
+      var checked=selectedUsers.indexOf(u.user_id)>-1?'checked':'';
+      h+='<div class="user-item"><input type="checkbox" class="user-check" value="'+u.user_id+'" '+checked+'><div class="user-info"><b>'+nm+'</b><small>'+u.user_id+(u.phone?' • '+u.phone:'')+(u.username?' • @'+u.username:'')+'</small></div></div>';
     });
     c.innerHTML=h;
     c.querySelectorAll('.user-check').forEach(function(cb){
@@ -762,18 +789,47 @@ async function loadUsers(){
         var id=parseInt(this.value);
         if(this.checked){if(selectedUsers.indexOf(id)===-1)selectedUsers.push(id)}
         else{selectedUsers=selectedUsers.filter(function(x){return x!==id})}
+        updateUsersCountInfo();
       });
     });
+    updateUsersPagination();
+    updateUsersCountInfo();
   }catch(e){c.innerHTML='<div class="empty-result">Xatolik: '+e.message+'</div>'}
 }
-function selectAllUsers(){
-  document.querySelectorAll('.user-check').forEach(function(cb){cb.checked=true;var id=parseInt(cb.value);if(selectedUsers.indexOf(id)===-1)selectedUsers.push(id)});
-  alert("Hammasi tanlandi ("+selectedUsers.length+" ta)");
+
+function updateUsersCountInfo(){
+  document.getElementById('users-count-info').innerText=selectedUsers.length+' ta obunachi tanlangan';
 }
+
+function updateUsersPagination(){
+  document.getElementById('users-page-info').innerText=currentUsersPage+' / '+usersTotalPages;
+  document.getElementById('u-prev').disabled=currentUsersPage<=1;
+  document.getElementById('u-next').disabled=currentUsersPage>=usersTotalPages;
+}
+
+function changeUsersPage(dir){
+  currentUsersPage+=dir;
+  if(currentUsersPage<1)currentUsersPage=1;
+  if(currentUsersPage>usersTotalPages)currentUsersPage=usersTotalPages;
+  loadUsers();
+}
+
+function selectAllVisibleUsers(){
+  visibleUsers.forEach(function(u){
+    if(selectedUsers.indexOf(u.user_id)===-1)selectedUsers.push(u.user_id);
+  });
+  document.querySelectorAll('.user-check').forEach(function(cb){cb.checked=true});
+  updateUsersCountInfo();
+  alert("Ko'ringan "+visibleUsers.length+" ta obunachi tanlandi. Jami: "+selectedUsers.length);
+}
+
 function deselectAllUsers(){
   document.querySelectorAll('.user-check').forEach(function(cb){cb.checked=false});
-  selectedUsers=[];alert("Tanlov tozalandi");
+  selectedUsers=[];
+  updateUsersCountInfo();
+  alert("Tanlov tozalandi");
 }
+
 async function sendMessage(){
   var msg=document.getElementById('broadcast-message').value.trim();
   var s=document.getElementById('send-status'),b=document.getElementById('send-message-btn');
@@ -788,7 +844,7 @@ async function sendMessage(){
     if(d.success){s.innerText="✅ Yuborildi: "+d.sent+" ta, ❌ Xatolik: "+d.failed+" ta";s.className="status ok";document.getElementById('broadcast-message').value=''}
     else{s.innerText="❌ "+(d.error||"Xatolik");s.className="status err"}
   }catch(e){s.innerText="❌ "+e.message;s.className="status err"}
-  finally{b.disabled=false;b.innerText='📤 Tanlangan foydalanuvchilarga yuborish'}
+  finally{b.disabled=false;b.innerText='📤 Tanlanganlarga yuborish'}
 }
 </script>
 </body>
