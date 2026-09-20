@@ -70,8 +70,26 @@ let selectedColor = null;
 let currentUser = null;
 let profilePhotoUrl = "";
 
-// ⭐ YANGI: Modal holatini kuzatish uchun
+// ⭐ Qaysi modal ochiqligini kuzatish
 let activeModal = null; // 'order' | 'profile' | null
+
+
+// ==================== ⭐ TELEGRAM BACK BUTTON ====================
+function enableBackButton(handler) {
+    if (tg.BackButton && typeof tg.BackButton.show === 'function') {
+        tg.BackButton.show();
+        tg.BackButton.onClick(handler);
+    }
+}
+
+function disableBackButton() {
+    if (tg.BackButton && typeof tg.BackButton.hide === 'function') {
+        try {
+            tg.BackButton.offClick();
+        } catch (e) {}
+        tg.BackButton.hide();
+    }
+}
 
 
 // ==================== BANNER ====================
@@ -316,9 +334,12 @@ async function openModal(id) {
     currentProduct = products.find(p => String(p.id) === String(id));
     if (!currentProduct) return;
 
-    // ⭐ YANGI: History'ga yozamiz (orqaga tugmasi uchun)
     activeModal = 'order';
-    history.pushState({ modal: 'order' }, '', '#order');
+
+    // ⭐ Telegram Back Button'ni yoqish
+    enableBackButton(function() {
+        closeModal(true);
+    });
 
     currentImageIndex = 0;
     selectedSize = null;
@@ -405,7 +426,6 @@ async function openModal(id) {
     } catch (e) { console.log("View increment xatolik:", e); }
 }
 
-// ⭐ YANGI: skipHistory parametri qo'shildi
 function closeModal(skipHistory = false) {
     document.getElementById('order-modal').classList.remove('active');
     document.body.style.overflow = '';
@@ -414,15 +434,9 @@ function closeModal(skipHistory = false) {
     document.getElementById('order-status').innerText = '';
     document.getElementById('order-status').className = 'status';
 
-    // ⭐ YANGI: History'dan chiqaramiz (lekin popstate'dan chaqirilmasa)
-    if (!skipHistory && activeModal === 'order') {
-        activeModal = null;
-        if (history.state && history.state.modal === 'order') {
-            history.back();
-        }
-    } else {
-        activeModal = null;
-    }
+    // ⭐ Back Button'ni o'chirish
+    disableBackButton();
+    activeModal = null;
 }
 
 function updateImage() {
@@ -536,9 +550,12 @@ function submitOrder(event) {
 
 // ==================== PROFIL ====================
 async function openProfile() {
-    // ⭐ YANGI: History'ga yozamiz
     activeModal = 'profile';
-    history.pushState({ modal: 'profile' }, '', '#profile');
+
+    // ⭐ Telegram Back Button'ni yoqish
+    enableBackButton(function() {
+        closeProfile(true);
+    });
 
     document.getElementById('profile-modal').classList.add('active');
     const user = tg.initDataUnsafe?.user;
@@ -570,19 +587,12 @@ async function openProfile() {
     } catch (err) { console.log("Profil xatolik:", err); }
 }
 
-// ⭐ YANGI: skipHistory parametri qo'shildi
 function closeProfile(skipHistory = false) {
     document.getElementById('profile-modal').classList.remove('active');
 
-    // ⭐ YANGI: History'dan chiqaramiz (lekin popstate'dan chaqirilmasa)
-    if (!skipHistory && activeModal === 'profile') {
-        activeModal = null;
-        if (history.state && history.state.modal === 'profile') {
-            history.back();
-        }
-    } else {
-        activeModal = null;
-    }
+    // ⭐ Back Button'ni o'chirish
+    disableBackButton();
+    activeModal = null;
 }
 
 function previewProfilePhoto(event) {
@@ -650,21 +660,14 @@ async function saveProfile() {
 }
 
 
-// ==================== ⭐ YANGI: ORQAGA TUGMASI HANDLER ====================
+// ==================== ⭐ ZAXIRA: popstate HANDLER ====================
+// Agar Telegram BackButton ishlamasa, bu zaxira sifatida ishlaydi
 window.addEventListener('popstate', function(event) {
-    // Buyurtma modal ochiq bo'lsa — yopamiz
     if (activeModal === 'order') {
-        closeModal(true); // skipHistory = true (qayta history.back() chaqirmaslik uchun)
-        return;
+        closeModal(true);
+    } else if (activeModal === 'profile') {
+        closeProfile(true);
     }
-
-    // Profil modal ochiq bo'lsa — yopamiz
-    if (activeModal === 'profile') {
-        closeProfile(true); // skipHistory = true
-        return;
-    }
-
-    // Boshqa holatda — hech narsa qilmaymiz (WebApp tabiiy yopiladi)
 });
 
 
