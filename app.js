@@ -70,11 +70,15 @@ let selectedColor = null;
 let currentUser = null;
 let profilePhotoUrl = "";
 
-// BANNER
+// ⭐ YANGI: Modal holatini kuzatish uchun
+let activeModal = null; // 'order' | 'profile' | null
+
+
+// ==================== BANNER ====================
 function initBanner() {
     updateBanner();
     const dotsEl = document.getElementById('banner-dots');
-    dotsEl.innerHTML = banners.map((_, i) => 
+    dotsEl.innerHTML = banners.map((_, i) =>
         `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
     ).join('');
     startBannerAutoSlide();
@@ -120,7 +124,8 @@ function updateBanner() {
     });
 }
 
-// KATEGORIYALAR
+
+// ==================== KATEGORIYALAR ====================
 function renderCategories() {
     const scroll = document.getElementById('categories-scroll');
     let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">
@@ -140,15 +145,16 @@ function setCategory(catId) {
     filterProducts();
 }
 
-// QIDIRUV
+
+// ==================== QIDIRUV ====================
 function filterProducts() {
     const query = document.getElementById('search-input').value.trim().toLowerCase();
     const clearBtn = document.getElementById('search-clear');
     filteredProducts = products.filter(p => {
-        const matchesSearch = !query || 
+        const matchesSearch = !query ||
             (p.title || '').toLowerCase().includes(query) ||
             (p.description || '').toLowerCase().includes(query);
-        const matchesCategory = activeCategory === 'all' || 
+        const matchesCategory = activeCategory === 'all' ||
             (p.categories && p.categories.includes(activeCategory));
         return matchesSearch && matchesCategory;
     });
@@ -162,7 +168,8 @@ function clearSearch() {
     filterProducts();
 }
 
-// SHUFFLE
+
+// ==================== SHUFFLE ====================
 const SHUFFLE_INTERVAL = 25 * 60 * 1000;
 
 function shuffleArray(arr) {
@@ -197,7 +204,8 @@ function startAutoShuffle() {
     }, 60 * 1000);
 }
 
-// MAHSULOTLAR
+
+// ==================== MAHSULOTLAR ====================
 async function loadProducts() {
     const container = document.getElementById('products-container');
     container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
@@ -231,14 +239,14 @@ function renderProducts() {
     }
     let html = '<div class="products-horizontal">';
     filteredProducts.forEach(p => {
-        const discountPercent = p.price > 0 && p.discount_price > 0 
+        const discountPercent = p.price > 0 && p.discount_price > 0
             ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
         const productId = String(p.id);
-        const colorsHtml = (p.colors && p.colors.length > 0) 
+        const colorsHtml = (p.colors && p.colors.length > 0)
             ? '<div class="product-colors-mini">' + p.colors.slice(0, 5).map(cid => {
                 const c = COLORS.find(x => x.id === cid);
                 return c ? `<span style="background:${c.hex};" title="${c.name}"></span>` : '';
-            }).join('') + '</div>' 
+            }).join('') + '</div>'
             : '';
         html += `
         <div class="product-card-h" data-id="${productId}">
@@ -257,11 +265,11 @@ function renderProducts() {
     });
     html += '</div>';
     container.innerHTML = html;
-    
+
     document.querySelectorAll('.product-card-h').forEach(card => {
         card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
-    
+
     document.querySelectorAll('.buy-btn-h').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -270,7 +278,8 @@ function renderProducts() {
     });
 }
 
-// TELEFON FORMATLASH
+
+// ==================== TELEFON FORMATLASH ====================
 function formatPhone(value) {
     let digits = value.replace(/\D/g, '');
     if (digits.startsWith('998')) digits = digits.slice(3);
@@ -296,7 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// MODAL
+
+// ==================== MODAL ====================
 function formatDescription(text) {
     if (!text || !text.trim()) return '';
     return text.split('\n').map(l => l.trim()).filter(l => l).map(l => `<p>${l}</p>`).join('');
@@ -305,15 +315,17 @@ function formatDescription(text) {
 async function openModal(id) {
     currentProduct = products.find(p => String(p.id) === String(id));
     if (!currentProduct) return;
-    
+
+    // ⭐ YANGI: History'ga yozamiz (orqaga tugmasi uchun)
+    activeModal = 'order';
+    history.pushState({ modal: 'order' }, '', '#order');
+
     currentImageIndex = 0;
     selectedSize = null;
     selectedColor = null;
-    
-    // Title
+
     document.getElementById('modal-title').innerText = currentProduct.title || '';
-    
-    // Narx
+
     const oldPriceEl = document.getElementById('modal-old-price');
     const discountBadgeEl = document.getElementById('modal-discount-badge');
     if (currentProduct.price > currentProduct.discount_price) {
@@ -327,23 +339,21 @@ async function openModal(id) {
         discountBadgeEl.style.display = 'none';
     }
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
-    
-    // Stock va Sold
+
     document.getElementById('modal-stock').innerText = currentProduct.stock || 0;
     document.getElementById('modal-sold').innerText = currentProduct.sold || 0;
-    
-    // Tavsif
+
     const descEl = document.getElementById('modal-description');
     const formatted = formatDescription(currentProduct.description);
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
-    
+
     // RAZMER
     const sizeSection = document.getElementById('size-section');
     const sizesList = document.getElementById('modal-sizes');
     if (currentProduct.sizes && currentProduct.sizes.length > 0) {
         sizeSection.style.display = 'block';
-        sizesList.innerHTML = currentProduct.sizes.map(sz => 
+        sizesList.innerHTML = currentProduct.sizes.map(sz =>
             `<button type="button" class="option-btn size-btn" data-size="${sz}">${sz}</button>`
         ).join('');
         sizesList.querySelectorAll('.size-btn').forEach(btn => {
@@ -356,7 +366,7 @@ async function openModal(id) {
     } else {
         sizeSection.style.display = 'none';
     }
-    
+
     // RANG
     const colorSection = document.getElementById('color-section');
     const colorsList = document.getElementById('modal-colors');
@@ -380,14 +390,12 @@ async function openModal(id) {
     } else {
         colorSection.style.display = 'none';
     }
-    
-    // Sana va vaqt
+
     updateImage();
     startCountdown();
     document.getElementById('order-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
-    
-    // View increment
+
     try {
         await fetch(`${API_URL}/api/increment_view`, {
             method: 'POST',
@@ -397,14 +405,24 @@ async function openModal(id) {
     } catch (e) { console.log("View increment xatolik:", e); }
 }
 
-function closeModal() {
+// ⭐ YANGI: skipHistory parametri qo'shildi
+function closeModal(skipHistory = false) {
     document.getElementById('order-modal').classList.remove('active');
     document.body.style.overflow = '';
     if (countdownInterval) clearInterval(countdownInterval);
-    // Formani tozalash
     document.getElementById('order-form').reset();
     document.getElementById('order-status').innerText = '';
     document.getElementById('order-status').className = 'status';
+
+    // ⭐ YANGI: History'dan chiqaramiz (lekin popstate'dan chaqirilmasa)
+    if (!skipHistory && activeModal === 'order') {
+        activeModal = null;
+        if (history.state && history.state.modal === 'order') {
+            history.back();
+        }
+    } else {
+        activeModal = null;
+    }
 }
 
 function updateImage() {
@@ -412,7 +430,7 @@ function updateImage() {
     img.src = (currentProduct.images && currentProduct.images.length > 0)
         ? getImageUrl(currentProduct.images[currentImageIndex])
         : "https://via.placeholder.com/400x400?text=No+Image";
-    const dots = (currentProduct.images || []).map((_, i) => 
+    const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
 }
@@ -425,38 +443,35 @@ function slideImage(dir) {
 
 function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
-    
-    // Har 24 soatda reset qilish (localStorage orqali)
+
     const RESET_KEY = 'countdown_reset_' + currentProduct.id;
     const DAY = 24 * 60 * 60 * 1000;
     const THREE_DAYS = 72 * 60 * 60 * 1000;
     const now = Date.now();
-    
+
     let resetTime = parseInt(localStorage.getItem(RESET_KEY) || '0');
-    
-    // Agar 24 soat o'tgan bo'lsa yoki birinchi marta bo'lsa — reset
+
     if (!resetTime || (now - resetTime) >= DAY) {
         resetTime = now;
         localStorage.setItem(RESET_KEY, resetTime.toString());
     }
-    
-    // Countdown tugash vaqti = reset vaqti + 3 kun
+
     const endTime = resetTime + THREE_DAYS;
-    
+
     function tick() {
         const diff = Math.max(0, endTime - Date.now());
-        
+
         const days = Math.floor(diff / (24 * 60 * 60 * 1000));
         const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
         const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
         const seconds = Math.floor((diff % (60 * 1000)) / 1000);
-        
+
         document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
         document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
         document.getElementById('cd-minutes').innerText = String(minutes).padStart(2, '0');
         document.getElementById('cd-seconds').innerText = String(seconds).padStart(2, '0');
     }
-    
+
     tick();
     countdownInterval = setInterval(tick, 1000);
 }
@@ -466,43 +481,38 @@ function submitOrder(event) {
     const name = document.getElementById('order-name').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
     const statusEl = document.getElementById('order-status');
-    
-    // Ism validatsiyasi — kamida 4 harf
+
     if (!name || name.length < 4) {
         statusEl.innerText = "❌ Ism kamida 4 harfdan iborat bo'lishi kerak!";
         statusEl.className = "status err";
         return;
     }
-    
-    // Telefon validatsiyasi
+
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length < 12) {
         statusEl.innerText = "❌ Telefon raqamni to'liq kiriting!";
         statusEl.className = "status err";
         return;
     }
-    
-    // Razmer tanlash (agar mavjud bo'lsa)
+
     if (currentProduct.sizes && currentProduct.sizes.length > 0 && !selectedSize) {
         statusEl.innerText = "❌ Iltimos, o'lchamni tanlang!";
         statusEl.className = "status err";
         return;
     }
-    
-    // Rang tanlash (agar mavjud bo'lsa)
+
     if (currentProduct.colors && currentProduct.colors.length > 0 && !selectedColor) {
         statusEl.innerText = "❌ Iltimos, rangni tanlang!";
         statusEl.className = "status err";
         return;
     }
-    
-    // Rang nomini olish
+
     let colorName = "";
     if (selectedColor) {
         const c = COLORS.find(x => x.id === selectedColor);
         if (c) colorName = c.name;
     }
-    
+
     tg.sendData(JSON.stringify({
         action: 'order',
         product_id: String(currentProduct.id),
@@ -513,22 +523,27 @@ function submitOrder(event) {
         size: selectedSize || "",
         color: colorName
     }));
-    
+
     statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
     statusEl.className = "status ok";
-    
+
     setTimeout(() => {
         tg.showAlert("Buyurtmangiz qabul qilindi!");
         closeModal();
     }, 500);
 }
 
-// PROFIL
+
+// ==================== PROFIL ====================
 async function openProfile() {
+    // ⭐ YANGI: History'ga yozamiz
+    activeModal = 'profile';
+    history.pushState({ modal: 'profile' }, '', '#profile');
+
     document.getElementById('profile-modal').classList.add('active');
     const user = tg.initDataUnsafe?.user;
     if (!user) return;
-    
+
     try {
         const res = await fetch(`${API_URL}/api/register_user`, {
             method: 'POST',
@@ -545,7 +560,7 @@ async function openProfile() {
             document.getElementById('profile-number').innerText = '#' + data.user_number;
             document.getElementById('profile-fullname').value = data.full_name || (user.first_name + (user.last_name ? ' ' + user.last_name : ''));
             document.getElementById('profile-phone').value = data.phone || '';
-            document.getElementById('profile-date').value = data.registered_at ? 
+            document.getElementById('profile-date').value = data.registered_at ?
                 new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
             if (data.photo) {
                 profilePhotoUrl = data.photo;
@@ -555,8 +570,19 @@ async function openProfile() {
     } catch (err) { console.log("Profil xatolik:", err); }
 }
 
-function closeProfile() {
+// ⭐ YANGI: skipHistory parametri qo'shildi
+function closeProfile(skipHistory = false) {
     document.getElementById('profile-modal').classList.remove('active');
+
+    // ⭐ YANGI: History'dan chiqaramiz (lekin popstate'dan chaqirilmasa)
+    if (!skipHistory && activeModal === 'profile') {
+        activeModal = null;
+        if (history.state && history.state.modal === 'profile') {
+            history.back();
+        }
+    } else {
+        activeModal = null;
+    }
 }
 
 function previewProfilePhoto(event) {
@@ -564,7 +590,7 @@ function previewProfilePhoto(event) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        document.getElementById('profile-avatar').innerHTML = 
+        document.getElementById('profile-avatar').innerHTML =
             `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
     };
     reader.readAsDataURL(file);
@@ -587,17 +613,17 @@ async function saveProfile() {
     const phone = document.getElementById('profile-phone').value.trim();
     const statusEl = document.getElementById('profile-status');
     const fileInput = document.getElementById('profile-photo');
-    
+
     statusEl.innerText = "⏳ Saqlanmoqda...";
     statusEl.className = "status ok";
-    
+
     try {
         let photoUrl = profilePhotoUrl;
         if (fileInput.files[0]) {
             photoUrl = await uploadImageToServer(fileInput.files[0]);
             if (!photoUrl) photoUrl = profilePhotoUrl;
         }
-        
+
         const res = await fetch(`${API_URL}/api/update_user`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -623,7 +649,26 @@ async function saveProfile() {
     }
 }
 
-// START
+
+// ==================== ⭐ YANGI: ORQAGA TUGMASI HANDLER ====================
+window.addEventListener('popstate', function(event) {
+    // Buyurtma modal ochiq bo'lsa — yopamiz
+    if (activeModal === 'order') {
+        closeModal(true); // skipHistory = true (qayta history.back() chaqirmaslik uchun)
+        return;
+    }
+
+    // Profil modal ochiq bo'lsa — yopamiz
+    if (activeModal === 'profile') {
+        closeProfile(true); // skipHistory = true
+        return;
+    }
+
+    // Boshqa holatda — hech narsa qilmaymiz (WebApp tabiiy yopiladi)
+});
+
+
+// ==================== START ====================
 initBanner();
 renderCategories();
 loadProducts();
