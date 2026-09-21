@@ -4,7 +4,6 @@ tg.expand();
 
 const API_URL = "https://maximarketbot-production.up.railway.app";
 
-// ⭐ 1x1 shaffof placeholder (CSS spinner ko'rinadi)
 const PLACEHOLDER_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 const CATEGORIES = [
@@ -78,18 +77,14 @@ let profilePhotoUrl = "";
 
 let activeModal = null;
 
-// ⭐ IntersectionObserver
 let imageObserver = null;
 
 
-// ==================== ⭐ SCREENSHOT HIMOYASI ====================
-// Eslatma: to'liq himoya qilish imkonsiz (OS darajasida screenshot),
-// lekin quyidagilar bloklanadi:
+// ==================== SCREENSHOT HIMOYASI ====================
 document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
 document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
 
 document.addEventListener('keydown', function(e) {
-    // Ctrl+S, Ctrl+P, Ctrl+U, PrintScreen
     if ((e.ctrlKey || e.metaKey) && ['s','S','p','P','u','U'].indexOf(e.key) !== -1) {
         e.preventDefault();
         return false;
@@ -101,7 +96,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Ilova fonga o'tganda — kontent blur bo'ladi
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
         document.body.classList.add('privacy-blur');
@@ -113,19 +107,37 @@ document.addEventListener('visibilitychange', function() {
 });
 
 
-// ==================== PAGINATION ====================
+// ==================== ⭐ PAGINATION MANTIQI ====================
+// 1-sahifa: 10 (yonbosh) + 14 (7 qator × 2) = 24 ta
+// 2+ sahifa: 10 (5 qator × 2) ta
+
+const FIRST_PAGE_HORIZONTAL = 10;   // Yonboshga
+const FIRST_PAGE_GRID = 14;         // 7 qator × 2 ta
+const OTHER_PAGE_GRID = 10;         // 5 qator × 2 ta
+
 function getTotalPages() {
     const total = filteredProducts.length;
-    if (total <= 10) return 1;
-    return 1 + Math.ceil((total - 10) / 5);
+    const firstPageCount = FIRST_PAGE_HORIZONTAL + FIRST_PAGE_GRID; // 24
+
+    if (total <= firstPageCount) return 1;
+
+    const remaining = total - firstPageCount;
+    return 1 + Math.ceil(remaining / OTHER_PAGE_GRID);
 }
 
+// Sahifa uchun ma'lumot olish
 function getPageItems(page) {
     if (page === 1) {
-        return filteredProducts.slice(0, 10);
+        return {
+            horizontal: filteredProducts.slice(0, FIRST_PAGE_HORIZONTAL),
+            grid: filteredProducts.slice(FIRST_PAGE_HORIZONTAL, FIRST_PAGE_HORIZONTAL + FIRST_PAGE_GRID)
+        };
     }
-    const start = 10 + (page - 2) * 5;
-    return filteredProducts.slice(start, start + 5);
+    const start = FIRST_PAGE_HORIZONTAL + FIRST_PAGE_GRID + (page - 2) * OTHER_PAGE_GRID;
+    return {
+        horizontal: [],
+        grid: filteredProducts.slice(start, start + OTHER_PAGE_GRID)
+    };
 }
 
 function goToPage(page) {
@@ -133,7 +145,12 @@ function goToPage(page) {
     if (page < 1 || page > totalPages) return;
     currentPage = page;
     renderProducts();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Tepaga scroll
+    const container = document.getElementById('products-container');
+    if (container) {
+        const topPos = container.getBoundingClientRect().top + window.pageYOffset - 100;
+        window.scrollTo({ top: topPos, behavior: 'smooth' });
+    }
 }
 
 
@@ -279,7 +296,7 @@ function renderCategories() {
 
 function setCategory(catId) {
     activeCategory = catId;
-    currentPage = 1; // ⭐ Filtr o'zgarganda 1-sahifaga qaytish
+    currentPage = 1;
     renderCategories();
     filterProducts();
 }
@@ -298,7 +315,7 @@ function filterProducts() {
         return matchesSearch && matchesCategory;
     });
     clearBtn.style.display = query ? 'flex' : 'none';
-    currentPage = 1; // ⭐ Qidiruvda 1-sahifaga qaytish
+    currentPage = 1;
     shuffleProducts();
     renderProducts();
 }
@@ -388,7 +405,6 @@ function getImageUrl(url) {
     return `${API_URL}/api/image/${url}`;
 }
 
-// ⭐ Kartochka yasash (spinnerli yuklash)
 function buildProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
@@ -426,7 +442,7 @@ function buildProductCard(p) {
 }
 
 
-// ==================== ⭐ PAGINATION BILAN RENDER ====================
+// ==================== ⭐ RENDER (YANGI PAGINATION) ====================
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -442,15 +458,17 @@ function renderProducts() {
 
     let html = '';
 
-    // Sahifa 1: yonboshga scroll
-    // Sahifa 2+: 2 tadan pastga grid
-    if (currentPage === 1) {
+    // 1-qator: Yonboshga suriladigan (faqat 1-sahifada)
+    if (items.horizontal.length > 0) {
         html += '<div class="products-horizontal">';
-        items.forEach(p => { html += buildProductCard(p); });
+        items.horizontal.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
-    } else {
+    }
+
+    // Pastga qarab grid
+    if (items.grid.length > 0) {
         html += '<div class="products-grid">';
-        items.forEach(p => { html += buildProductCard(p); });
+        items.grid.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
     }
 
@@ -459,7 +477,7 @@ function renderProducts() {
         html += '<div class="pagination-controls">';
         html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Oldingi</button>`;
         html += `<span class="page-info">${currentPage} / ${totalPages}</span>`;
-        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Keyingi ›</button>`;
+        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Keyingisi ›</button>`;
         html += '</div>';
     }
 
@@ -550,7 +568,6 @@ async function openModal(id) {
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
 
-    // RAZMER
     const sizeSection = document.getElementById('size-section');
     const sizesList = document.getElementById('modal-sizes');
     if (currentProduct.sizes && currentProduct.sizes.length > 0) {
@@ -569,7 +586,6 @@ async function openModal(id) {
         sizeSection.style.display = 'none';
     }
 
-    // RANG
     const colorSection = document.getElementById('color-section');
     const colorsList = document.getElementById('modal-colors');
     if (currentProduct.colors && currentProduct.colors.length > 0) {
@@ -642,7 +658,6 @@ function updateImage() {
         tempImg.src = imgUrl;
     }
 
-    // Dots
     const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
