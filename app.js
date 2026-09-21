@@ -72,6 +72,44 @@ let profilePhotoUrl = "";
 
 let activeModal = null;
 
+// ⭐ IntersectionObserver — faqat ko'rinish maydoniga yaqin rasmlarni yuklash
+let imageObserver = null;
+
+function initImageObserver() {
+    if (!('IntersectionObserver' in window)) {
+        // Brauzer qo'llab-quvvatlamasa — hammasini darhol yuklash
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            img.src = img.getAttribute('data-src');
+            img.removeAttribute('data-src');
+        });
+        return;
+    }
+
+    if (imageObserver) imageObserver.disconnect();
+
+    imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                const realSrc = img.getAttribute('data-src');
+                if (realSrc) {
+                    img.src = realSrc;
+                    img.removeAttribute('data-src');
+                    img.classList.add('img-loaded');
+                }
+                imageObserver.unobserve(img);
+            }
+        });
+    }, {
+        rootMargin: '300px 0px',   // 300px oldin yuklashni boshlash
+        threshold: 0.01
+    });
+
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+
 
 // ==================== BACK BUTTON ====================
 function enableTelegramBackButton(handler) {
@@ -126,9 +164,19 @@ function updateBanner() {
     slide.style.opacity = '0';
     setTimeout(() => {
         if (banner.image) {
-            // ⭐ Banner ham lazy yuklanadi
-            slide.style.background = `url("${banner.image}") center/cover no-repeat`;
-            slide.innerHTML = '';
+            // ⭐ Banner rasmini ham oldindan yuklash (background)
+            const img = new Image();
+            img.onload = () => {
+                slide.style.background = `url("${banner.image}") center/cover no-repeat`;
+                slide.innerHTML = '';
+                slide.style.opacity = '1';
+            };
+            img.onerror = () => {
+                slide.style.background = 'linear-gradient(135deg, #1565c0, #42a5f5)';
+                slide.innerHTML = '';
+                slide.style.opacity = '1';
+            };
+            img.src = banner.image;
         } else {
             slide.style.background = banner.bg;
             slide.innerHTML = `
@@ -136,8 +184,8 @@ function updateBanner() {
                 <div class="banner-title">${banner.title}</div>
                 <div class="banner-subtitle">${banner.subtitle}</div>
             `;
+            slide.style.opacity = '1';
         }
-        slide.style.opacity = '1';
     }, 200);
     document.querySelectorAll('#banner-dots span').forEach((dot, i) => {
         dot.classList.toggle('active', i === currentBannerIndex);
@@ -228,7 +276,8 @@ function startAutoShuffle() {
 // ==================== MAHSULOTLAR ====================
 async function loadProducts() {
     const container = document.getElementById('products-container');
-    container.innerHTML = '<p class="loading">⏳ Yuklanmoqda...</p>';
+    // ⭐ Skeleton loader — foydalanuvchiga "yuklanmoqda" hissi
+    container.innerHTML = buildSkeleton(6);
     try {
         const response = await fetch(`${API_URL}/api/products`);
         const data = await response.json();
@@ -241,29 +290,43 @@ async function loadProducts() {
         shuffleProducts();
         renderProducts();
     } catch (error) {
-        container.innerHTML = '<p class="loading">❌ Xatolik</p>';
+        container.innerHTML = '<p class="loading">❌ Xatolik. Qayta urinib ko\'ring.</p>';
     }
 }
 
-// ⭐ YANGI: rasm URL tekshiruvchi
+// ⭐ Skeleton loader — tezlikni his qilish uchun
+function buildSkeleton(count) {
+    let html = '<div class="products-grid-skeleton">';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-card">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-btn"></div>
+            </div>
+        `;
+    }
+    html += '</div>';
+    return html;
+}
+
 function getImageUrl(url) {
     if (!url) return "";
     if (url.startsWith('http')) return url;
     return `${API_URL}/api/image/${url}`;
 }
 
-// ⭐ YANGI: xato holatda placeholder SVG
 function getPlaceholderSvg() {
     return "data:image/svg+xml;utf8," + encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-            <rect width="200" height="200" fill="#f5f5f5"/>
-            <text x="100" y="105" font-size="60" text-anchor="middle">📦</text>
-            <text x="100" y="150" font-size="12" text-anchor="middle" fill="#999">Yuklanmadi</text>
+            <rect width="200" height="200" fill="#f0f0f0"/>
+            <text x="100" y="115" font-size="56" text-anchor="middle" opacity="0.3">📦</text>
         </svg>
     `);
 }
 
-// ⭐ YANGI: rasmni lazy yuklash + qayta urinish
+// ⭐ Kartochka yasash (lazy + skeleton)
 function buildProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
@@ -275,17 +338,19 @@ function buildProductCard(p) {
         }).join('') + '</div>'
         : '';
 
-    const imgUrl = getImageUrl(p.images && p.images[0]);
+    const realImg = getImageUrl(p.images && p.images[0]);
+    const placeholder = getPlaceholderSvg();
 
     return `
     <div class="product-card-h" data-id="${productId}">
         <div class="product-image-h">
             <img
-                src="${imgUrl || getPlaceholderSvg()}"
+                src="${placeholder}"
+                data-src="${realImg || ''}"
                 alt="${(p.title || '').substring(0, 30)}"
-                loading="lazy"
                 decoding="async"
-                onerror="this.onerror=null; this.src='${getPlaceholderSvg()}';"
+                onerror="this.onerror=null; this.src='${placeholder}';"
+                class="product-img"
             >
             ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
         </div>
@@ -299,7 +364,6 @@ function buildProductCard(p) {
     </div>`;
 }
 
-// 10 ta yonboshga, qolganlari 2 tadan pastga
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -322,6 +386,7 @@ function renderProducts() {
 
     container.innerHTML = html;
 
+    // ⭐ Event listenerlar
     container.querySelectorAll('.product-card-h').forEach(card => {
         card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
@@ -332,6 +397,9 @@ function renderProducts() {
             openModal(btn.getAttribute('data-buy'));
         });
     });
+
+    // ⭐ IntersectionObserver'ni ishga tushirish
+    initImageObserver();
 }
 
 
@@ -482,15 +550,19 @@ function closeModal(skipHistory = false) {
 
 function updateImage() {
     const img = document.getElementById('modal-image');
+    const placeholder = getPlaceholderSvg();
+    img.src = placeholder;
+
     const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
         ? getImageUrl(currentProduct.images[currentImageIndex])
         : "";
-    img.src = imgUrl || getPlaceholderSvg();
-    img.loading = "lazy";
-    img.onerror = function() {
-        this.onerror = null;
-        this.src = getPlaceholderSvg();
-    };
+
+    if (imgUrl) {
+        const tempImg = new Image();
+        tempImg.onload = () => { img.src = imgUrl; };
+        tempImg.onerror = () => { img.src = placeholder; };
+        tempImg.src = imgUrl;
+    }
 
     const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
