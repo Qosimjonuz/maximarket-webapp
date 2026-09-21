@@ -8,6 +8,19 @@ body {
     padding: 0 0 20px 0;
     min-height: 100vh;
     position: relative;
+
+    /* ⭐ SCREENSHOT HIMOYASI: matn tanlashni bloklash */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* ⭐ SCREENSHOT HIMOYASI: fonga o'tganda blur */
+body.privacy-blur {
+    filter: blur(20px);
+    transition: filter 0.15s;
 }
 
 body::before {
@@ -169,7 +182,7 @@ body::before {
 /* MAHSULOTLAR */
 #products-container { padding: 0 12px; }
 
-/* ⭐ 1-QATOR: 10 ta yonboshga scroll */
+/* 1-sahifa: 10 ta yonboshga scroll */
 .products-horizontal {
     display: flex;
     flex-wrap: nowrap;
@@ -186,7 +199,7 @@ body::before {
     width: 198px;
 }
 
-/* ⭐ QOLGANLARI: 2 tadan pastga */
+/* 2+ sahifa: 2 tadan pastga grid */
 .products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -203,33 +216,49 @@ body::before {
     cursor: pointer; display: flex;
     flex-direction: column; gap: 6px;
     transition: transform 0.15s;
-    /* ⭐ Tezlik: contain bilan render tezlashadi */
     contain: layout style;
 }
 .product-card-h:active { transform: scale(0.97); }
 
-/* ⭐ Rasm konteyneri — fon bilan (yuklanguncha bo'sh ko'rinmaydi) */
+/* ⭐ RASM + SPINNER */
 .product-image-h {
-    position: relative; width: 100%;
+    position: relative;
+    width: 100%;
     height: 204px;
     border-radius: 8px;
     overflow: hidden;
     background: #f0f0f0;
 }
 .product-image-h img {
+    position: relative;
+    z-index: 2;
     width: 100%; height: 100%;
     object-fit: cover; display: block;
     opacity: 0;
-    transition: opacity 0.25s ease-in;
-    /* ⭐ Yumshoq paydo bo'lish */
+    transition: opacity 0.3s ease-in;
 }
-.product-image-h img.img-loaded,
-.product-image-h img[src^="data:"] {
+.product-image-h img.loaded {
     opacity: 1;
 }
-/* ⭐ Rasm yuklanganda fade-in */
-.product-image-h img:not([src^="data:"]):not([data-src]) {
-    opacity: 1;
+/* ⭐ Spinner */
+.img-spinner {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 32px; height: 32px;
+    margin: -16px 0 0 -16px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #1565c0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 1;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+/* Rasm yuklanganda spinner yo'qoladi */
+.product-image-h img.loaded ~ .img-spinner,
+.product-image-h:has(img.loaded) .img-spinner {
+    display: none;
 }
 
 .discount-badge-h {
@@ -237,7 +266,7 @@ body::before {
     background: linear-gradient(135deg, #ff6f00, #e53935);
     color: #fff; font-size: 10px; font-weight: 700;
     padding: 3px 6px; border-radius: 5px;
-    z-index: 2;
+    z-index: 3;
 }
 .product-title-h {
     font-size: 12px; font-weight: 600; color: #222;
@@ -269,12 +298,52 @@ body::before {
     color: #333; font-size: 14px; font-weight: 600;
 }
 
-/* ============ SKELETON LOADER ============ */
+/* ⭐ PAGINATION */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 12px 10px;
+    margin-top: 10px;
+}
+.page-btn {
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(21,101,192,0.3);
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.page-btn:active { transform: scale(0.96); }
+.page-btn:disabled {
+    background: #cfd8dc;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.7;
+}
+.page-info {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    min-width: 60px;
+    text-align: center;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* SKELETON LOADER */
 .products-grid-skeleton {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    padding: 0 12px;
 }
 .skeleton-card {
     background: #fff;
@@ -321,7 +390,7 @@ body::before {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-/* ============ BUYURTMA OYNASI ============ */
+/* BUYURTMA OYNASI */
 .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: #fff; z-index: 999;
@@ -445,31 +514,73 @@ body::before {
 }
 .order-submit-btn:active { background: #1a237e; }
 
-/* SLIDER */
-.slider { position: relative; margin: 24px 0 16px; }
+/* ⭐ SLIDER — yangi tuzilma (o'qlar va nuqtalar rasm tagida) */
+.slider {
+    margin: 24px 0 16px;
+}
 .slider img {
     width: 100%;
     height: 600px;
     object-fit: cover;
     border-radius: 12px;
     background: #f0f0f0;
+    display: block;
 }
+
+.slider-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 0 4px;
+}
+
 .slider-btn {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.95); border: none;
-    width: 44px; height: 44px; border-radius: 50%;
-    font-size: 24px; cursor: pointer; color: #1565c0; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(21,101,192,0.35);
+    flex-shrink: 0;
+    transition: all 0.15s;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
 }
-.slider-btn.prev { left: 12px; }
-.slider-btn.next { right: 12px; }
-.slider-dots { text-align: center; margin-top: 10px; }
+.slider-btn:active {
+    transform: scale(0.92);
+    background: #0d47a1;
+}
+
+.slider-dots {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+}
 .slider-dots span {
-    display: inline-block; width: 8px; height: 8px;
-    background: #ccc; border-radius: 50%; margin: 0 3px;
+    width: 9px;
+    height: 9px;
+    background: #cfd8dc;
+    border-radius: 50%;
+    transition: all 0.25s ease;
 }
-.slider-dots span.active { background: #1565c0; }
+.slider-dots span.active {
+    background: #1565c0;
+    transform: scale(1.4);
+    box-shadow: 0 0 8px rgba(21,101,192,0.5);
+}
 
 /* TITLE */
 .order-title {
@@ -545,9 +656,9 @@ body::before {
 .order-description p { margin: 0 0 8px; }
 .order-description p:last-child { margin-bottom: 0; }
 
-/* OPTION SECTIONS */
+/* OPTION SECTIONS (razmer/rang) */
 .order-option-section {
-    margin: 16px 0;
+    margin: 14px 0;
     padding: 12px;
     background: #f8f9fa;
     border-radius: 10px;
@@ -736,4 +847,5 @@ body::before {
     .countdown span { font-size: 18px; }
     .countdown div { min-width: 40px; }
     .order-new-price { font-size: 18px; }
+    .page-btn { font-size: 12px; padding: 9px 14px; }
 }
