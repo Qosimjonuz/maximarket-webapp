@@ -126,6 +126,7 @@ function updateBanner() {
     slide.style.opacity = '0';
     setTimeout(() => {
         if (banner.image) {
+            // ⭐ Banner ham lazy yuklanadi
             slide.style.background = `url("${banner.image}") center/cover no-repeat`;
             slide.innerHTML = '';
         } else {
@@ -244,12 +245,25 @@ async function loadProducts() {
     }
 }
 
+// ⭐ YANGI: rasm URL tekshiruvchi
 function getImageUrl(url) {
-    if (!url) return "https://via.placeholder.com/200x200?text=📦";
+    if (!url) return "";
     if (url.startsWith('http')) return url;
     return `${API_URL}/api/image/${url}`;
 }
 
+// ⭐ YANGI: xato holatda placeholder SVG
+function getPlaceholderSvg() {
+    return "data:image/svg+xml;utf8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+            <rect width="200" height="200" fill="#f5f5f5"/>
+            <text x="100" y="105" font-size="60" text-anchor="middle">📦</text>
+            <text x="100" y="150" font-size="12" text-anchor="middle" fill="#999">Yuklanmadi</text>
+        </svg>
+    `);
+}
+
+// ⭐ YANGI: rasmni lazy yuklash + qayta urinish
 function buildProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
@@ -260,10 +274,19 @@ function buildProductCard(p) {
             return c ? `<span style="background:${c.hex};" title="${c.name}"></span>` : '';
         }).join('') + '</div>'
         : '';
+
+    const imgUrl = getImageUrl(p.images && p.images[0]);
+
     return `
     <div class="product-card-h" data-id="${productId}">
         <div class="product-image-h">
-            <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
+            <img
+                src="${imgUrl || getPlaceholderSvg()}"
+                alt="${(p.title || '').substring(0, 30)}"
+                loading="lazy"
+                decoding="async"
+                onerror="this.onerror=null; this.src='${getPlaceholderSvg()}';"
+            >
             ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
         </div>
         <div class="product-title-h">${(p.title || '').substring(0, 40)}</div>
@@ -276,7 +299,7 @@ function buildProductCard(p) {
     </div>`;
 }
 
-// ⭐ 10 ta yonboshga, qolganlari 2 tadan pastga
+// 10 ta yonboshga, qolganlari 2 tadan pastga
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -459,9 +482,16 @@ function closeModal(skipHistory = false) {
 
 function updateImage() {
     const img = document.getElementById('modal-image');
-    img.src = (currentProduct.images && currentProduct.images.length > 0)
+    const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
         ? getImageUrl(currentProduct.images[currentImageIndex])
-        : "https://via.placeholder.com/400x400?text=No+Image";
+        : "";
+    img.src = imgUrl || getPlaceholderSvg();
+    img.loading = "lazy";
+    img.onerror = function() {
+        this.onerror = null;
+        this.src = getPlaceholderSvg();
+    };
+
     const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
@@ -596,7 +626,7 @@ async function openProfile() {
                 new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
             if (data.photo) {
                 profilePhotoUrl = data.photo;
-                document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy">`;
             }
         }
     } catch (err) { console.log("Profil xatolik:", err); }
