@@ -70,24 +70,25 @@ let selectedColor = null;
 let currentUser = null;
 let profilePhotoUrl = "";
 
-// ⭐ Qaysi modal ochiqligini kuzatish
-let activeModal = null; // 'order' | 'profile' | null
+let activeModal = null;
 
 
-// ==================== ⭐ TELEGRAM BACK BUTTON ====================
-function enableBackButton(handler) {
+// ==================== BACK BUTTON ====================
+function enableTelegramBackButton(handler) {
     if (tg.BackButton && typeof tg.BackButton.show === 'function') {
-        tg.BackButton.show();
-        tg.BackButton.onClick(handler);
+        try {
+            tg.BackButton.show();
+            tg.BackButton.onClick(handler);
+        } catch (e) { console.log("BackButton error:", e); }
     }
 }
 
-function disableBackButton() {
+function disableTelegramBackButton() {
     if (tg.BackButton && typeof tg.BackButton.hide === 'function') {
         try {
             tg.BackButton.offClick();
+            tg.BackButton.hide();
         } catch (e) {}
-        tg.BackButton.hide();
     }
 }
 
@@ -249,46 +250,60 @@ function getImageUrl(url) {
     return `${API_URL}/api/image/${url}`;
 }
 
+function buildProductCard(p) {
+    const discountPercent = p.price > 0 && p.discount_price > 0
+        ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
+    const productId = String(p.id);
+    const colorsHtml = (p.colors && p.colors.length > 0)
+        ? '<div class="product-colors-mini">' + p.colors.slice(0, 5).map(cid => {
+            const c = COLORS.find(x => x.id === cid);
+            return c ? `<span style="background:${c.hex};" title="${c.name}"></span>` : '';
+        }).join('') + '</div>'
+        : '';
+    return `
+    <div class="product-card-h" data-id="${productId}">
+        <div class="product-image-h">
+            <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
+            ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
+        </div>
+        <div class="product-title-h">${(p.title || '').substring(0, 40)}</div>
+        ${colorsHtml}
+        <div class="product-price-h">
+            ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
+            <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
+        </div>
+        <button class="buy-btn-h" data-buy="${productId}">🛒 Sotib olish</button>
+    </div>`;
+}
+
+// ⭐ 10 ta yonboshga, qolganlari 2 tadan pastga
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
         container.innerHTML = '<p class="loading">🔍 Mahsulot topilmadi</p>';
         return;
     }
+
+    const firstTen = filteredProducts.slice(0, 10);
+    const remaining = filteredProducts.slice(10);
+
     let html = '<div class="products-horizontal">';
-    filteredProducts.forEach(p => {
-        const discountPercent = p.price > 0 && p.discount_price > 0
-            ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
-        const productId = String(p.id);
-        const colorsHtml = (p.colors && p.colors.length > 0)
-            ? '<div class="product-colors-mini">' + p.colors.slice(0, 5).map(cid => {
-                const c = COLORS.find(x => x.id === cid);
-                return c ? `<span style="background:${c.hex};" title="${c.name}"></span>` : '';
-            }).join('') + '</div>'
-            : '';
-        html += `
-        <div class="product-card-h" data-id="${productId}">
-            <div class="product-image-h">
-                <img src="${getImageUrl(p.images && p.images[0])}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=📦'">
-                ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
-            </div>
-            <div class="product-title-h">${(p.title || '').substring(0, 40)}</div>
-            ${colorsHtml}
-            <div class="product-price-h">
-                ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
-                <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
-            </div>
-            <button class="buy-btn-h" data-buy="${productId}">🛒 Sotib olish</button>
-        </div>`;
-    });
+    firstTen.forEach(p => { html += buildProductCard(p); });
     html += '</div>';
+
+    if (remaining.length > 0) {
+        html += '<div class="products-grid">';
+        remaining.forEach(p => { html += buildProductCard(p); });
+        html += '</div>';
+    }
+
     container.innerHTML = html;
 
-    document.querySelectorAll('.product-card-h').forEach(card => {
+    container.querySelectorAll('.product-card-h').forEach(card => {
         card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
 
-    document.querySelectorAll('.buy-btn-h').forEach(btn => {
+    container.querySelectorAll('.buy-btn-h').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             openModal(btn.getAttribute('data-buy'));
@@ -336,10 +351,8 @@ async function openModal(id) {
 
     activeModal = 'order';
 
-    // ⭐ Telegram Back Button'ni yoqish
-    enableBackButton(function() {
-        closeModal(true);
-    });
+    enableTelegramBackButton(function() { closeModal(true); });
+    try { history.pushState({ modal: 'order' }, '', '#order'); } catch (e) {}
 
     currentImageIndex = 0;
     selectedSize = null;
@@ -369,7 +382,6 @@ async function openModal(id) {
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
 
-    // RAZMER
     const sizeSection = document.getElementById('size-section');
     const sizesList = document.getElementById('modal-sizes');
     if (currentProduct.sizes && currentProduct.sizes.length > 0) {
@@ -388,7 +400,6 @@ async function openModal(id) {
         sizeSection.style.display = 'none';
     }
 
-    // RANG
     const colorSection = document.getElementById('color-section');
     const colorsList = document.getElementById('modal-colors');
     if (currentProduct.colors && currentProduct.colors.length > 0) {
@@ -434,9 +445,16 @@ function closeModal(skipHistory = false) {
     document.getElementById('order-status').innerText = '';
     document.getElementById('order-status').className = 'status';
 
-    // ⭐ Back Button'ni o'chirish
-    disableBackButton();
-    activeModal = null;
+    disableTelegramBackButton();
+
+    if (!skipHistory && activeModal === 'order') {
+        activeModal = null;
+        try {
+            if (history.state && history.state.modal === 'order') history.back();
+        } catch (e) {}
+    } else {
+        activeModal = null;
+    }
 }
 
 function updateImage() {
@@ -474,7 +492,6 @@ function startCountdown() {
 
     function tick() {
         const diff = Math.max(0, endTime - Date.now());
-
         const days = Math.floor(diff / (24 * 60 * 60 * 1000));
         const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
         const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
@@ -552,10 +569,8 @@ function submitOrder(event) {
 async function openProfile() {
     activeModal = 'profile';
 
-    // ⭐ Telegram Back Button'ni yoqish
-    enableBackButton(function() {
-        closeProfile(true);
-    });
+    enableTelegramBackButton(function() { closeProfile(true); });
+    try { history.pushState({ modal: 'profile' }, '', '#profile'); } catch (e) {}
 
     document.getElementById('profile-modal').classList.add('active');
     const user = tg.initDataUnsafe?.user;
@@ -590,9 +605,16 @@ async function openProfile() {
 function closeProfile(skipHistory = false) {
     document.getElementById('profile-modal').classList.remove('active');
 
-    // ⭐ Back Button'ni o'chirish
-    disableBackButton();
-    activeModal = null;
+    disableTelegramBackButton();
+
+    if (!skipHistory && activeModal === 'profile') {
+        activeModal = null;
+        try {
+            if (history.state && history.state.modal === 'profile') history.back();
+        } catch (e) {}
+    } else {
+        activeModal = null;
+    }
 }
 
 function previewProfilePhoto(event) {
@@ -660,8 +682,7 @@ async function saveProfile() {
 }
 
 
-// ==================== ⭐ ZAXIRA: popstate HANDLER ====================
-// Agar Telegram BackButton ishlamasa, bu zaxira sifatida ishlaydi
+// ==================== ZAXIRA ====================
 window.addEventListener('popstate', function(event) {
     if (activeModal === 'order') {
         closeModal(true);
