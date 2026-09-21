@@ -66,8 +66,13 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
-// ⭐ PAGINATION
-let currentPage = 1;
+// ⭐ YANA KO'RISH (Load More) — sozlamalar
+const FIRST_HORIZONTAL = 10;    // Tepada yonboshga
+const INITIAL_GRID_ROWS = 10;   // Boshlanishida 10 qator
+const LOAD_MORE_ROWS = 10;      // Har bosishda 10 qator qo'shiladi
+const GRID_COLS = 2;            // Bir qatorda 2 ta
+
+let gridRowsShown = INITIAL_GRID_ROWS;
 
 let selectedSize = null;
 let selectedColor = null;
@@ -107,50 +112,28 @@ document.addEventListener('visibilitychange', function() {
 });
 
 
-// ==================== ⭐ PAGINATION MANTIQI ====================
-// 1-sahifa: 10 (yonbosh) + 14 (7 qator × 2) = 24 ta
-// 2+ sahifa: 10 (5 qator × 2) ta
-
-const FIRST_PAGE_HORIZONTAL = 10;   // Yonboshga
-const FIRST_PAGE_GRID = 14;         // 7 qator × 2 ta
-const OTHER_PAGE_GRID = 10;         // 5 qator × 2 ta
-
-function getTotalPages() {
+// ==================== ⭐ YANA KO'RISH MANTIQI ====================
+function getDisplayedProducts() {
     const total = filteredProducts.length;
-    const firstPageCount = FIRST_PAGE_HORIZONTAL + FIRST_PAGE_GRID; // 24
+    if (total === 0) return { horizontal: [], grid: [], hasMore: false, remaining: 0 };
 
-    if (total <= firstPageCount) return 1;
+    const horizontal = filteredProducts.slice(0, FIRST_HORIZONTAL);
+    const gridAvailable = total - FIRST_HORIZONTAL;
+    const gridShown = Math.min(gridRowsShown * GRID_COLS, gridAvailable);
+    const grid = filteredProducts.slice(FIRST_HORIZONTAL, FIRST_HORIZONTAL + gridShown);
+    const hasMore = FIRST_HORIZONTAL + gridShown < total;
+    const remaining = total - FIRST_HORIZONTAL - gridShown;
 
-    const remaining = total - firstPageCount;
-    return 1 + Math.ceil(remaining / OTHER_PAGE_GRID);
+    return { horizontal, grid, hasMore, remaining };
 }
 
-// Sahifa uchun ma'lumot olish
-function getPageItems(page) {
-    if (page === 1) {
-        return {
-            horizontal: filteredProducts.slice(0, FIRST_PAGE_HORIZONTAL),
-            grid: filteredProducts.slice(FIRST_PAGE_HORIZONTAL, FIRST_PAGE_HORIZONTAL + FIRST_PAGE_GRID)
-        };
-    }
-    const start = FIRST_PAGE_HORIZONTAL + FIRST_PAGE_GRID + (page - 2) * OTHER_PAGE_GRID;
-    return {
-        horizontal: [],
-        grid: filteredProducts.slice(start, start + OTHER_PAGE_GRID)
-    };
-}
-
-function goToPage(page) {
-    const totalPages = getTotalPages();
-    if (page < 1 || page > totalPages) return;
-    currentPage = page;
+function loadMoreProducts() {
+    gridRowsShown += LOAD_MORE_ROWS;
     renderProducts();
-    // Tepaga scroll
-    const container = document.getElementById('products-container');
-    if (container) {
-        const topPos = container.getBoundingClientRect().top + window.pageYOffset - 100;
-        window.scrollTo({ top: topPos, behavior: 'smooth' });
-    }
+}
+
+function resetLoadMore() {
+    gridRowsShown = INITIAL_GRID_ROWS;
 }
 
 
@@ -296,7 +279,7 @@ function renderCategories() {
 
 function setCategory(catId) {
     activeCategory = catId;
-    currentPage = 1;
+    resetLoadMore(); // ⭐ Qayta boshlash
     renderCategories();
     filterProducts();
 }
@@ -315,7 +298,7 @@ function filterProducts() {
         return matchesSearch && matchesCategory;
     });
     clearBtn.style.display = query ? 'flex' : 'none';
-    currentPage = 1;
+    resetLoadMore(); // ⭐ Qayta boshlash
     shuffleProducts();
     renderProducts();
 }
@@ -356,7 +339,7 @@ function startAutoShuffle() {
             filteredProducts = [...products];
             shuffleArray(filteredProducts);
             localStorage.setItem('lastShuffle', now.toString());
-            currentPage = 1;
+            resetLoadMore();
             renderProducts();
         }
     }, 60 * 1000);
@@ -377,6 +360,7 @@ async function loadProducts() {
             return;
         }
         shuffleProducts();
+        resetLoadMore();
         renderProducts();
     } catch (error) {
         container.innerHTML = '<p class="loading">❌ Xatolik. Qayta urinib ko\'ring.</p>';
@@ -442,7 +426,7 @@ function buildProductCard(p) {
 }
 
 
-// ==================== ⭐ RENDER (YANGI PAGINATION) ====================
+// ==================== ⭐ RENDER (YANA KO'RISH) ====================
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -450,39 +434,45 @@ function renderProducts() {
         return;
     }
 
-    const totalPages = getTotalPages();
-    if (currentPage > totalPages) currentPage = totalPages;
-    if (currentPage < 1) currentPage = 1;
-
-    const items = getPageItems(currentPage);
+    const { horizontal, grid, hasMore, remaining } = getDisplayedProducts();
 
     let html = '';
 
-    // 1-qator: Yonboshga suriladigan (faqat 1-sahifada)
-    if (items.horizontal.length > 0) {
+    // 1-qator: Yonboshga scroll (faqat 1-marta)
+    if (horizontal.length > 0) {
         html += '<div class="products-horizontal">';
-        items.horizontal.forEach(p => { html += buildProductCard(p); });
+        horizontal.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
     }
 
-    // Pastga qarab grid
-    if (items.grid.length > 0) {
+    // Pastga qarab: 2 tadan grid (yig'ilib boradi)
+    if (grid.length > 0) {
         html += '<div class="products-grid">';
-        items.grid.forEach(p => { html += buildProductCard(p); });
+        grid.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
     }
 
-    // Pagination tugmalari
-    if (totalPages > 1) {
-        html += '<div class="pagination-controls">';
-        html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Oldingi</button>`;
-        html += `<span class="page-info">${currentPage} / ${totalPages}</span>`;
-        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Keyingisi ›</button>`;
-        html += '</div>';
+    // "Yana ko'rish" tugmasi
+    if (hasMore) {
+        html += `
+            <div class="load-more-container">
+                <button class="load-more-btn" onclick="loadMoreProducts()">
+                    <span class="load-more-icon">⬇️</span>
+                    <span>Yana ko'rish (${remaining} ta qoldi)</span>
+                </button>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="load-more-container">
+                <p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>
+            </div>
+        `;
     }
 
     container.innerHTML = html;
 
+    // Event listenerlar
     container.querySelectorAll('.product-card-h').forEach(card => {
         card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
