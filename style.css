@@ -8,8 +8,6 @@ body {
     padding: 0 0 20px 0;
     min-height: 100vh;
     position: relative;
-
-    /* ⭐ SCREENSHOT HIMOYASI: matn tanlashni bloklash */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -17,7 +15,6 @@ body {
     -webkit-touch-callout: none;
 }
 
-/* ⭐ SCREENSHOT HIMOYASI: fonga o'tganda blur */
 body.privacy-blur {
     filter: blur(20px);
     transition: filter 0.15s;
@@ -182,7 +179,7 @@ body::before {
 /* MAHSULOTLAR */
 #products-container { padding: 0 12px; }
 
-/* 1-sahifa: 10 ta yonboshga scroll */
+/* 1-qator: yonboshga scroll */
 .products-horizontal {
     display: flex;
     flex-wrap: nowrap;
@@ -199,7 +196,7 @@ body::before {
     width: 198px;
 }
 
-/* 2+ sahifa: 2 tadan pastga grid */
+/* Pastga qarab: 2 tadan grid */
 .products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -220,7 +217,6 @@ body::before {
 }
 .product-card-h:active { transform: scale(0.97); }
 
-/* ⭐ RASM + SPINNER */
 .product-image-h {
     position: relative;
     width: 100%;
@@ -240,7 +236,6 @@ body::before {
 .product-image-h img.loaded {
     opacity: 1;
 }
-/* ⭐ Spinner */
 .img-spinner {
     position: absolute;
     top: 50%; left: 50%;
@@ -255,8 +250,6 @@ body::before {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-/* Rasm yuklanganda spinner yo'qoladi */
-.product-image-h img.loaded ~ .img-spinner,
 .product-image-h:has(img.loaded) .img-spinner {
     display: none;
 }
@@ -298,45 +291,55 @@ body::before {
     color: #333; font-size: 14px; font-weight: 600;
 }
 
-/* ⭐ PAGINATION */
-.pagination-controls {
+/* ⭐ YANA KO'RISH TUGMASI */
+.load-more-container {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 14px;
-    padding: 20px 12px 10px;
+    align-items: center;
+    padding: 24px 12px 16px;
     margin-top: 10px;
 }
-.page-btn {
-    background: #1565c0;
+
+.load-more-btn {
+    background: linear-gradient(135deg, #1565c0, #42a5f5);
     color: #fff;
     border: none;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 14px;
+    padding: 15px 32px;
+    border-radius: 14px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(21,101,192,0.3);
+    box-shadow: 0 4px 14px rgba(21,101,192,0.35);
     font-family: inherit;
-    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    min-width: 220px;
+    justify-content: center;
 }
-.page-btn:active { transform: scale(0.96); }
-.page-btn:disabled {
-    background: #cfd8dc;
-    cursor: not-allowed;
-    box-shadow: none;
-    opacity: 0.7;
+.load-more-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(21,101,192,0.4);
 }
-.page-info {
-    font-size: 14px;
-    font-weight: 700;
-    color: #333;
-    min-width: 60px;
+.load-more-icon {
+    font-size: 18px;
+    animation: bounceDown 1.5s infinite;
+}
+@keyframes bounceDown {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+}
+
+.all-shown {
     text-align: center;
-    padding: 8px 12px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    color: #2e7d32;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 14px 20px;
+    background: #e8f5e9;
+    border-radius: 10px;
+    margin: 0;
 }
 
 /* SKELETON LOADER */
@@ -454,7 +457,6 @@ body::before {
     flex: 1;
 }
 
-/* COUNTDOWN */
 .countdown-block {
     text-align: center;
     margin: 0 0 14px;
@@ -474,7 +476,6 @@ body::before {
 .countdown span { font-size: 20px; font-weight: 900; color: #e65100; display: block; }
 .countdown small { font-size: 8px; color: #888; letter-spacing: 1px; font-weight: 700; }
 
-/* FORM */
 .form-label {
     display: block;
     font-size: 13px;
@@ -514,7 +515,6 @@ body::before {
 }
 .order-submit-btn:active { background: #1a237e; }
 
-/* ⭐ SLIDER — yangi tuzilma (o'qlar va nuqtalar rasm tagida) */
 .slider {
     margin: 24px 0 16px;
 }
@@ -582,7 +582,6 @@ body::before {
     box-shadow: 0 0 8px rgba(21,101,192,0.5);
 }
 
-/* TITLE */
 .order-title {
     font-size: 18px;
     font-weight: 700;
@@ -592,7 +591,6 @@ body::before {
     line-height: 1.3;
 }
 
-/* NARX */
 .order-price-block {
     text-align: center;
     margin: 8px 0 12px;
@@ -621,7 +619,6 @@ body::before {
     font-weight: 700;
 }
 
-/* STATS */
 .order-stats {
     display: flex;
     gap: 12px;
@@ -642,7 +639,6 @@ body::before {
 .stat-item b { color: #1565c0; font-weight: 700; }
 .stat-icon { font-size: 16px; }
 
-/* DESCRIPTION */
 .order-description {
     background: #f8f9fa;
     border-radius: 10px;
@@ -656,7 +652,6 @@ body::before {
 .order-description p { margin: 0 0 8px; }
 .order-description p:last-child { margin-bottom: 0; }
 
-/* OPTION SECTIONS (razmer/rang) */
 .order-option-section {
     margin: 14px 0;
     padding: 12px;
@@ -707,7 +702,6 @@ body::before {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-/* STATUS */
 .status {
     text-align: center;
     padding: 10px;
@@ -721,7 +715,6 @@ body::before {
 .status.ok { background: #e8f5e9; color: #2e7d32; }
 .status.err { background: #ffebee; color: #c62828; }
 
-/* DELIVERY */
 .delivery-info {
     text-align: center;
     font-size: 12px;
@@ -733,7 +726,6 @@ body::before {
     line-height: 1.5;
 }
 
-/* PASTKI MENYU */
 .order-bottom-menu {
     position: fixed;
     bottom: 0;
@@ -773,7 +765,6 @@ body::before {
     color: #1565c0;
 }
 
-/* PROFIL MODAL */
 .modal-overlay:not(#order-modal) .modal-content {
     background: #fff;
     border-radius: 16px;
@@ -833,7 +824,6 @@ body::before {
     padding: 0;
 }
 
-/* MOBIL */
 @media (max-width: 360px) {
     .products-horizontal .product-card-h { width: 178px; }
     .products-grid .product-card-h { width: 100%; }
@@ -847,5 +837,5 @@ body::before {
     .countdown span { font-size: 18px; }
     .countdown div { min-width: 40px; }
     .order-new-price { font-size: 18px; }
-    .page-btn { font-size: 12px; padding: 9px 14px; }
+    .load-more-btn { min-width: 190px; font-size: 13px; padding: 13px 24px; }
 }
