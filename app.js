@@ -4,6 +4,9 @@ tg.expand();
 
 const API_URL = "https://maximarketbot-production.up.railway.app";
 
+// ⭐ 1x1 shaffof placeholder (CSS spinner ko'rinadi)
+const PLACEHOLDER_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
 const CATEGORIES = [
     { id: "elektronika", name: "Elektronika", emoji: "📱" },
     { id: "kiyim", name: "Kiyim", emoji: "👕" },
@@ -64,6 +67,9 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
+// ⭐ PAGINATION
+let currentPage = 1;
+
 let selectedSize = null;
 let selectedColor = null;
 
@@ -72,15 +78,72 @@ let profilePhotoUrl = "";
 
 let activeModal = null;
 
-// ⭐ IntersectionObserver — faqat ko'rinish maydoniga yaqin rasmlarni yuklash
+// ⭐ IntersectionObserver
 let imageObserver = null;
 
+
+// ==================== ⭐ SCREENSHOT HIMOYASI ====================
+// Eslatma: to'liq himoya qilish imkonsiz (OS darajasida screenshot),
+// lekin quyidagilar bloklanadi:
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S, Ctrl+P, Ctrl+U, PrintScreen
+    if ((e.ctrlKey || e.metaKey) && ['s','S','p','P','u','U'].indexOf(e.key) !== -1) {
+        e.preventDefault();
+        return false;
+    }
+    if (e.key === 'PrintScreen') {
+        e.preventDefault();
+        try { navigator.clipboard.writeText(''); } catch (err) {}
+        return false;
+    }
+});
+
+// Ilova fonga o'tganda — kontent blur bo'ladi
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        document.body.classList.add('privacy-blur');
+    } else {
+        setTimeout(function() {
+            document.body.classList.remove('privacy-blur');
+        }, 250);
+    }
+});
+
+
+// ==================== PAGINATION ====================
+function getTotalPages() {
+    const total = filteredProducts.length;
+    if (total <= 10) return 1;
+    return 1 + Math.ceil((total - 10) / 5);
+}
+
+function getPageItems(page) {
+    if (page === 1) {
+        return filteredProducts.slice(0, 10);
+    }
+    const start = 10 + (page - 2) * 5;
+    return filteredProducts.slice(start, start + 5);
+}
+
+function goToPage(page) {
+    const totalPages = getTotalPages();
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// ==================== IMAGE OBSERVER ====================
 function initImageObserver() {
     if (!('IntersectionObserver' in window)) {
-        // Brauzer qo'llab-quvvatlamasa — hammasini darhol yuklash
         document.querySelectorAll('img[data-src]').forEach(img => {
             img.src = img.getAttribute('data-src');
             img.removeAttribute('data-src');
+            img.classList.add('loaded');
         });
         return;
     }
@@ -93,15 +156,23 @@ function initImageObserver() {
                 const img = entry.target;
                 const realSrc = img.getAttribute('data-src');
                 if (realSrc) {
-                    img.src = realSrc;
-                    img.removeAttribute('data-src');
-                    img.classList.add('img-loaded');
+                    const loader = new Image();
+                    loader.onload = () => {
+                        img.src = realSrc;
+                        img.removeAttribute('data-src');
+                        img.classList.add('loaded');
+                    };
+                    loader.onerror = () => {
+                        img.removeAttribute('data-src');
+                        img.classList.add('loaded');
+                    };
+                    loader.src = realSrc;
                 }
                 imageObserver.unobserve(img);
             }
         });
     }, {
-        rootMargin: '300px 0px',   // 300px oldin yuklashni boshlash
+        rootMargin: '300px 0px',
         threshold: 0.01
     });
 
@@ -164,7 +235,6 @@ function updateBanner() {
     slide.style.opacity = '0';
     setTimeout(() => {
         if (banner.image) {
-            // ⭐ Banner rasmini ham oldindan yuklash (background)
             const img = new Image();
             img.onload = () => {
                 slide.style.background = `url("${banner.image}") center/cover no-repeat`;
@@ -209,6 +279,7 @@ function renderCategories() {
 
 function setCategory(catId) {
     activeCategory = catId;
+    currentPage = 1; // ⭐ Filtr o'zgarganda 1-sahifaga qaytish
     renderCategories();
     filterProducts();
 }
@@ -227,6 +298,7 @@ function filterProducts() {
         return matchesSearch && matchesCategory;
     });
     clearBtn.style.display = query ? 'flex' : 'none';
+    currentPage = 1; // ⭐ Qidiruvda 1-sahifaga qaytish
     shuffleProducts();
     renderProducts();
 }
@@ -267,6 +339,7 @@ function startAutoShuffle() {
             filteredProducts = [...products];
             shuffleArray(filteredProducts);
             localStorage.setItem('lastShuffle', now.toString());
+            currentPage = 1;
             renderProducts();
         }
     }, 60 * 1000);
@@ -276,7 +349,6 @@ function startAutoShuffle() {
 // ==================== MAHSULOTLAR ====================
 async function loadProducts() {
     const container = document.getElementById('products-container');
-    // ⭐ Skeleton loader — foydalanuvchiga "yuklanmoqda" hissi
     container.innerHTML = buildSkeleton(6);
     try {
         const response = await fetch(`${API_URL}/api/products`);
@@ -294,7 +366,6 @@ async function loadProducts() {
     }
 }
 
-// ⭐ Skeleton loader — tezlikni his qilish uchun
 function buildSkeleton(count) {
     let html = '<div class="products-grid-skeleton">';
     for (let i = 0; i < count; i++) {
@@ -317,16 +388,7 @@ function getImageUrl(url) {
     return `${API_URL}/api/image/${url}`;
 }
 
-function getPlaceholderSvg() {
-    return "data:image/svg+xml;utf8," + encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-            <rect width="200" height="200" fill="#f0f0f0"/>
-            <text x="100" y="115" font-size="56" text-anchor="middle" opacity="0.3">📦</text>
-        </svg>
-    `);
-}
-
-// ⭐ Kartochka yasash (lazy + skeleton)
+// ⭐ Kartochka yasash (spinnerli yuklash)
 function buildProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
@@ -339,17 +401,16 @@ function buildProductCard(p) {
         : '';
 
     const realImg = getImageUrl(p.images && p.images[0]);
-    const placeholder = getPlaceholderSvg();
 
     return `
     <div class="product-card-h" data-id="${productId}">
         <div class="product-image-h">
+            <div class="img-spinner"></div>
             <img
-                src="${placeholder}"
+                src="${PLACEHOLDER_PIXEL}"
                 data-src="${realImg || ''}"
                 alt="${(p.title || '').substring(0, 30)}"
                 decoding="async"
-                onerror="this.onerror=null; this.src='${placeholder}';"
                 class="product-img"
             >
             ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
@@ -364,6 +425,8 @@ function buildProductCard(p) {
     </div>`;
 }
 
+
+// ==================== ⭐ PAGINATION BILAN RENDER ====================
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -371,22 +434,37 @@ function renderProducts() {
         return;
     }
 
-    const firstTen = filteredProducts.slice(0, 10);
-    const remaining = filteredProducts.slice(10);
+    const totalPages = getTotalPages();
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
 
-    let html = '<div class="products-horizontal">';
-    firstTen.forEach(p => { html += buildProductCard(p); });
-    html += '</div>';
+    const items = getPageItems(currentPage);
 
-    if (remaining.length > 0) {
+    let html = '';
+
+    // Sahifa 1: yonboshga scroll
+    // Sahifa 2+: 2 tadan pastga grid
+    if (currentPage === 1) {
+        html += '<div class="products-horizontal">';
+        items.forEach(p => { html += buildProductCard(p); });
+        html += '</div>';
+    } else {
         html += '<div class="products-grid">';
-        remaining.forEach(p => { html += buildProductCard(p); });
+        items.forEach(p => { html += buildProductCard(p); });
+        html += '</div>';
+    }
+
+    // Pagination tugmalari
+    if (totalPages > 1) {
+        html += '<div class="pagination-controls">';
+        html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Oldingi</button>`;
+        html += `<span class="page-info">${currentPage} / ${totalPages}</span>`;
+        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Keyingi ›</button>`;
         html += '</div>';
     }
 
     container.innerHTML = html;
 
-    // ⭐ Event listenerlar
     container.querySelectorAll('.product-card-h').forEach(card => {
         card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
@@ -398,7 +476,6 @@ function renderProducts() {
         });
     });
 
-    // ⭐ IntersectionObserver'ni ishga tushirish
     initImageObserver();
 }
 
@@ -473,6 +550,7 @@ async function openModal(id) {
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
 
+    // RAZMER
     const sizeSection = document.getElementById('size-section');
     const sizesList = document.getElementById('modal-sizes');
     if (currentProduct.sizes && currentProduct.sizes.length > 0) {
@@ -491,6 +569,7 @@ async function openModal(id) {
         sizeSection.style.display = 'none';
     }
 
+    // RANG
     const colorSection = document.getElementById('color-section');
     const colorsList = document.getElementById('modal-colors');
     if (currentProduct.colors && currentProduct.colors.length > 0) {
@@ -550,8 +629,7 @@ function closeModal(skipHistory = false) {
 
 function updateImage() {
     const img = document.getElementById('modal-image');
-    const placeholder = getPlaceholderSvg();
-    img.src = placeholder;
+    img.src = PLACEHOLDER_PIXEL;
 
     const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
         ? getImageUrl(currentProduct.images[currentImageIndex])
@@ -560,10 +638,11 @@ function updateImage() {
     if (imgUrl) {
         const tempImg = new Image();
         tempImg.onload = () => { img.src = imgUrl; };
-        tempImg.onerror = () => { img.src = placeholder; };
+        tempImg.onerror = () => { img.src = PLACEHOLDER_PIXEL; };
         tempImg.src = imgUrl;
     }
 
+    // Dots
     const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
