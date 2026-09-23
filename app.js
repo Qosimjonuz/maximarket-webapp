@@ -86,7 +86,7 @@ let activeModal = null;
 
 let imageObserver = null;
 
-// ⭐ Swipe uchun
+// ⭐ Swipe
 let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeActive = false;
@@ -119,7 +119,7 @@ document.addEventListener('visibilitychange', function() {
 });
 
 
-// ==================== ⭐ SWIPE (rasm o'tkazish) ====================
+// ==================== SWIPE ====================
 function initModalSwipe() {
     const wrap = document.getElementById('modal-img-wrap');
     if (!wrap) return;
@@ -138,9 +138,7 @@ function initModalSwipe() {
         const dx = e.touches[0].clientX - swipeStartX;
         const dy = e.touches[0].clientY - swipeStartY;
 
-        // Gorizontal swipe — vertikal scroll'ni bloklash
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-            // Rasmni "ko'chirish" effekti
             const img = document.getElementById('modal-image');
             if (img) {
                 img.style.transform = `translateX(${dx * 0.4}px)`;
@@ -166,12 +164,11 @@ function initModalSwipe() {
         const dx = swipeStartX - endX;
         const dy = swipeStartY - endY;
 
-        // Faqat gorizontal swipe (50px+), vertikal emas (80px ichida)
         if (Math.abs(dx) > 50 && Math.abs(dy) < 80) {
             if (dx > 0) {
-                slideImage(1);   // chapga — keyingi
+                slideImage(1);
             } else {
-                slideImage(-1);  // o'ngga — oldingi
+                slideImage(-1);
             }
         }
     }, { passive: true });
@@ -574,7 +571,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!this.value) this.value = '+998';
         });
     }
-    // ⭐ Swipe listenerlarni ulash
     initModalSwipe();
 });
 
@@ -697,7 +693,6 @@ function closeModal(skipHistory = false) {
     }
 }
 
-// ⭐ RASMLARNI PRELOAD QILISH (tez ochiladi)
 function preloadModalImages() {
     if (!currentProduct || !currentProduct.images) return;
     currentProduct.images.forEach((imgUrl, idx) => {
@@ -710,17 +705,14 @@ function preloadModalImages() {
     });
 }
 
-// ⭐ YANGILANGAN updateImage — spinner va tez yuklash
 function updateImage() {
     const img = document.getElementById('modal-image');
     const spinner = document.querySelector('.modal-img-spinner');
 
     if (!img) return;
 
-    // Spinner ko'rinsin
     if (spinner) spinner.style.display = 'block';
 
-    // Eski holatni tozalash
     img.classList.remove('loaded');
     img.style.transform = '';
 
@@ -733,11 +725,9 @@ function updateImage() {
         img.classList.add('loaded');
         if (spinner) spinner.style.display = 'none';
     } else {
-        // ⭐ To'g'ridan-to'g'ri yuklash (double-fetch yo'q)
         img.onload = function() {
             img.classList.add('loaded');
             if (spinner) spinner.style.display = 'none';
-            // ⭐ Keyingi rasmlarni oldindan yuklash
             preloadModalImages();
         };
         img.onerror = function() {
@@ -748,7 +738,6 @@ function updateImage() {
         img.src = imgUrl;
     }
 
-    // Dots
     const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
@@ -794,7 +783,8 @@ function startCountdown() {
     countdownInterval = setInterval(tick, 1000);
 }
 
-// ⭐ YANGILANGAN submitOrder — brauzer qo'llab-quvvatlanadi
+
+// ==================== ⭐ BUYURTMA (yangilangan) ====================
 async function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
@@ -861,7 +851,10 @@ async function submitOrder(event) {
         try {
             const res = await fetch(`${API_URL}/api/public_order`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Telegram-Init-Data': tg.initData || ''
+                },
                 body: JSON.stringify(orderData)
             });
             const data = await res.json();
@@ -878,7 +871,7 @@ async function submitOrder(event) {
                 statusEl.className = "status err";
             }
         } catch (e) {
-            statusEl.innerText = "❌ Tarmoq xatosi: " + e.message;
+            statusEl.innerText = "❌ Tarmoq xatosi";
             statusEl.className = "status err";
         } finally {
             if (submitBtn) {
@@ -892,7 +885,6 @@ async function submitOrder(event) {
 
 // ==================== PROFIL ====================
 async function openProfile() {
-    // ⭐ Brauzerda profil ishlamaydi
     if (!isTelegram) {
         alert("Profil faqat Telegram orqali ishlaydi.\n\nIltimos, do'konni @MaxiMarketUzbot orqali oching.");
         return;
