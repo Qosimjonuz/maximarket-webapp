@@ -86,7 +86,7 @@ let activeModal = null;
 
 let imageObserver = null;
 
-// ⭐ Swipe
+// Swipe
 let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeActive = false;
@@ -117,6 +117,20 @@ document.addEventListener('visibilitychange', function() {
         }, 250);
     }
 });
+
+
+// ==================== ⭐ TASHRIF YOZISH ====================
+async function trackVisit() {
+    try {
+        await fetch(`${API_URL}/api/visit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ page: 'main' })
+        });
+    } catch (e) {
+        // Xato bo'lsa jim o'tish
+    }
+}
 
 
 // ==================== SWIPE ====================
@@ -784,7 +798,7 @@ function startCountdown() {
 }
 
 
-// ==================== ⭐ BUYURTMA (yangilangan) ====================
+// ==================== BUYURTMA ====================
 async function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
@@ -843,7 +857,7 @@ async function submitOrder(event) {
             closeModal();
         }, 500);
     } else {
-        // ⭐ Brauzer rejimi
+        // Brauzer rejimi
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerText = 'Yuborilmoqda...';
@@ -902,7 +916,10 @@ async function openProfile() {
     try {
         const res = await fetch(`${API_URL}/api/register_user`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData || ''
+            },
             body: JSON.stringify({
                 user_id: user.id,
                 username: user.username || "",
@@ -981,7 +998,10 @@ async function saveProfile() {
 
         const res = await fetch(`${API_URL}/api/update_user`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData || ''
+            },
             body: JSON.stringify({
                 user_id: tg.initDataUnsafe.user.id,
                 full_name: fullname,
@@ -1020,3 +1040,4 @@ initBanner();
 renderCategories();
 loadProducts();
 startAutoShuffle();
+trackVisit();
