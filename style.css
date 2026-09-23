@@ -33,7 +33,7 @@ body::before {
     pointer-events: none;
 }
 
-/* HEADER */
+/* ============ HEADER ============ */
 .app-header {
     display: flex;
     justify-content: space-between;
@@ -94,7 +94,7 @@ body::before {
     color: #fff;
 }
 
-/* BANNER */
+/* ============ BANNER ============ */
 .banner-carousel {
     position: relative;
     width: calc(100% - 24px);
@@ -136,7 +136,7 @@ body::before {
 }
 .banner-dots span.active { background: #fff; transform: scale(1.3); }
 
-/* QIDIRUV */
+/* ============ QIDIRUV ============ */
 .search-box {
     display: flex; align-items: center;
     background: #fff; border-radius: 10px;
@@ -155,7 +155,7 @@ body::before {
     display: flex; align-items: center; justify-content: center;
 }
 
-/* KATEGORIYALAR */
+/* ============ KATEGORIYALAR ============ */
 .categories-scroll {
     display: flex; gap: 8px;
     overflow-x: auto; padding: 0 12px 10px;
@@ -176,10 +176,9 @@ body::before {
 .cat-emoji { font-size: 16px; }
 .cat-name { font-size: 9px; font-weight: 600; color: #333; white-space: nowrap; }
 
-/* MAHSULOTLAR */
+/* ============ MAHSULOTLAR ============ */
 #products-container { padding: 0 12px; }
 
-/* 1-qator: yonboshga scroll */
 .products-horizontal {
     display: flex;
     flex-wrap: nowrap;
@@ -196,7 +195,6 @@ body::before {
     width: 198px;
 }
 
-/* Pastga qarab: 2 tadan grid */
 .products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -291,7 +289,7 @@ body::before {
     color: #333; font-size: 14px; font-weight: 600;
 }
 
-/* ⭐ YANA KO'RISH TUGMASI */
+/* ============ YANA KO'RISH ============ */
 .load-more-container {
     display: flex;
     justify-content: center;
@@ -342,7 +340,7 @@ body::before {
     margin: 0;
 }
 
-/* SKELETON LOADER */
+/* ============ SKELETON ============ */
 .products-grid-skeleton {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -393,7 +391,7 @@ body::before {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-/* BUYURTMA OYNASI */
+/* ============ BUYURTMA OYNASI ============ */
 .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: #fff; z-index: 999;
@@ -514,17 +512,49 @@ body::before {
     transition: background 0.15s;
 }
 .order-submit-btn:active { background: #1a237e; }
-
-.slider {
-    margin: 24px 0 16px;
+.order-submit-btn:disabled {
+    background: #90a4ae;
+    cursor: not-allowed;
 }
-.slider img {
+
+/* ============ SLIDER ============ */
+.slider { margin: 24px 0 16px; }
+
+.modal-img-wrap {
+    position: relative;
     width: 100%;
     height: 600px;
-    object-fit: cover;
     border-radius: 12px;
+    overflow: hidden;
     background: #f0f0f0;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.modal-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease-in, transform 0.25s;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.modal-img-wrap img.loaded { opacity: 1; }
+
+.modal-img-spinner {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 44px; height: 44px;
+    margin: -22px 0 0 -22px;
+    border: 4px solid rgba(21, 101, 192, 0.15);
+    border-top-color: #1565c0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .slider-controls {
@@ -600,91 +630,53 @@ body::before {
     gap: 8px;
     flex-wrap: wrap;
 }
-.order-old-price {
-    font-size: 12px;
-    color: #999;
-    text-decoration: line-through;
-}
-.order-new-price {
-    font-size: 20px;
-    font-weight: 800;
-    color: #2e7d32;
-}
+.order-old-price { font-size: 12px; color: #999; text-decoration: line-through; }
+.order-new-price { font-size: 20px; font-weight: 800; color: #2e7d32; }
 .order-discount-badge {
-    background: #e53935;
-    color: #fff;
-    padding: 3px 8px;
-    border-radius: 5px;
-    font-size: 11px;
-    font-weight: 700;
+    background: #e53935; color: #fff;
+    padding: 3px 8px; border-radius: 5px;
+    font-size: 11px; font-weight: 700;
 }
 
 .order-stats {
-    display: flex;
-    gap: 12px;
+    display: flex; gap: 12px;
     margin-bottom: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: center; flex-wrap: wrap;
 }
 .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #f8f9fa;
-    padding: 8px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    color: #333;
+    display: flex; align-items: center; gap: 6px;
+    background: #f8f9fa; padding: 8px 14px;
+    border-radius: 10px; font-size: 13px; color: #333;
 }
 .stat-item b { color: #1565c0; font-weight: 700; }
 .stat-icon { font-size: 16px; }
 
 .order-description {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 14px;
-    margin: 12px 0;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #444;
-    border: 1px solid #e0e0e0;
+    background: #f8f9fa; border-radius: 10px;
+    padding: 14px; margin: 12px 0;
+    font-size: 14px; line-height: 1.7;
+    color: #444; border: 1px solid #e0e0e0;
 }
 .order-description p { margin: 0 0 8px; }
 .order-description p:last-child { margin-bottom: 0; }
 
 .order-option-section {
-    margin: 14px 0;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 10px;
+    margin: 14px 0; padding: 12px;
+    background: #f8f9fa; border-radius: 10px;
 }
 .option-label {
-    font-size: 14px;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 14px; font-weight: 700;
+    color: #333; margin-bottom: 10px;
 }
-.option-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
+.option-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .option-btn {
-    padding: 10px 16px;
-    border-radius: 8px;
-    background: #fff;
-    border: 2px solid #e0e0e0;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
+    padding: 10px 16px; border-radius: 8px;
+    background: #fff; border: 2px solid #e0e0e0;
+    cursor: pointer; font-size: 14px;
+    font-weight: 600; color: #333;
     transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: auto;
-    margin: 0;
-    font-family: inherit;
+    display: flex; align-items: center; gap: 8px;
+    width: auto; margin: 0; font-family: inherit;
 }
 .option-btn.selected {
     border-color: #1565c0;
@@ -695,20 +687,16 @@ body::before {
 
 .color-opt-btn { padding: 8px 12px; }
 .option-color-circle {
-    width: 22px;
-    height: 22px;
+    width: 22px; height: 22px;
     border-radius: 50%;
     border: 2px solid #ddd;
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .status {
-    text-align: center;
-    padding: 10px;
-    font-size: 13px;
-    margin-top: 10px;
-    border-radius: 8px;
-    font-weight: 600;
+    text-align: center; padding: 10px;
+    font-size: 13px; margin-top: 10px;
+    border-radius: 8px; font-weight: 600;
     display: none;
 }
 .status.ok, .status.err { display: block; }
@@ -716,65 +704,42 @@ body::before {
 .status.err { background: #ffebee; color: #c62828; }
 
 .delivery-info {
-    text-align: center;
-    font-size: 12px;
-    color: #666;
-    margin-top: 16px;
-    padding: 12px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    line-height: 1.5;
+    text-align: center; font-size: 12px;
+    color: #666; margin-top: 16px;
+    padding: 12px; background: #f5f5f5;
+    border-radius: 8px; line-height: 1.5;
 }
 
 .order-bottom-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-width: 600px;
-    margin: 0 auto;
-    background: #fff;
-    border-top: 2px solid #e0e0e0;
+    position: fixed; bottom: 0;
+    left: 0; right: 0;
+    max-width: 600px; margin: 0 auto;
+    background: #fff; border-top: 2px solid #e0e0e0;
     padding: 8px 0;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
     z-index: 20;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
 }
 .order-bottom-menu button {
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-    color: #1565c0;
-    font-family: inherit;
-    margin: 0;
+    width: 100%; background: none; border: none;
+    padding: 8px; display: flex;
+    flex-direction: column; align-items: center;
+    gap: 2px; cursor: pointer;
+    color: #1565c0; font-family: inherit; margin: 0;
 }
 .order-bottom-menu button:active {
-    background: #f0f7ff;
-    border-radius: 8px;
+    background: #f0f7ff; border-radius: 8px;
 }
 .bottom-icon { font-size: 24px; }
-.bottom-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #1565c0;
-}
+.bottom-label { font-size: 11px; font-weight: 700; color: #1565c0; }
 
+/* ============ PROFIL MODAL ============ */
 .modal-overlay:not(#order-modal) .modal-content {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    max-width: 480px;
+    background: #fff; border-radius: 16px;
+    padding: 20px; max-width: 480px;
     width: calc(100% - 24px);
-    position: relative;
-    margin: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    position: relative; margin: auto;
+    margin-top: 20px; margin-bottom: 20px;
 }
 
 .profile-content { padding-top: 30px; }
@@ -824,12 +789,13 @@ body::before {
     padding: 0;
 }
 
+/* ============ 📱 MOBIL ============ */
 @media (max-width: 360px) {
     .products-horizontal .product-card-h { width: 178px; }
     .products-grid .product-card-h { width: 100%; }
     .product-image-h { height: 181px; }
     .buy-btn-h { font-size: 12px; padding: 8px; }
-    .slider img { height: 500px; }
+    .modal-img-wrap { height: 500px; }
     .banner-carousel { height: 115px; }
     .brand-text { font-size: 17px; }
     .back-btn { font-size: 28px; width: 44px; height: 44px; }
@@ -838,4 +804,186 @@ body::before {
     .countdown div { min-width: 40px; }
     .order-new-price { font-size: 18px; }
     .load-more-btn { min-width: 190px; font-size: 13px; padding: 13px 24px; }
+}
+
+/* ==================================================== */
+/* ⭐ KOPYUTER (DESKTOP) VERSIYA */
+/* ==================================================== */
+@media (min-width: 768px) {
+    body { padding: 0 0 40px 0; }
+
+    /* Kontent markazga */
+    .app-header,
+    .banner-carousel,
+    .search-box,
+    .categories-scroll,
+    #products-container {
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .app-header {
+        padding: 14px 20px 10px;
+        margin-bottom: 16px;
+    }
+
+    .banner-carousel {
+        height: 220px;
+        margin-top: 0;
+        margin-bottom: 16px;
+        border-radius: 16px;
+    }
+    .banner-emoji { font-size: 44px; margin-bottom: 8px; }
+    .banner-title { font-size: 26px; margin-bottom: 6px; }
+    .banner-subtitle { font-size: 15px; }
+    .banner-nav { width: 44px; height: 44px; font-size: 26px; }
+    .banner-nav.prev { left: 14px; }
+    .banner-nav.next { right: 14px; }
+    .banner-dots span { width: 10px; height: 10px; margin: 0 4px; }
+
+    .search-box { padding: 6px 16px; margin-bottom: 16px; border-radius: 12px; }
+    .search-box input { padding: 10px 0; font-size: 15px; }
+    .search-icon { font-size: 18px; }
+
+    /* Kategoriyalar — wrap va markazda */
+    .categories-scroll {
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow-x: visible;
+        padding: 0 20px 16px;
+        gap: 10px;
+    }
+    .category-btn {
+        min-width: 78px;
+        padding: 10px 14px;
+        border-radius: 12px;
+    }
+    .category-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(21,101,192,0.2);
+    }
+    .cat-emoji { font-size: 22px; }
+    .cat-name { font-size: 11px; }
+
+    #products-container { padding: 0 20px; }
+
+    /* ⭐ Birinchi 10 ta yonboshga emas, 5 ustunli grid */
+    .products-horizontal {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        overflow-x: visible;
+        padding-bottom: 0;
+    }
+    .products-horizontal .product-card-h {
+        width: 100%;
+    }
+
+    /* Grid: 3 ustun */
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .product-card-h {
+        border-radius: 14px;
+        padding: 10px;
+    }
+    .product-card-h:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+    .product-image-h { height: 220px; }
+    .product-title-h { font-size: 14px; min-height: 36px; }
+    .new-price-h { font-size: 15px; }
+    .old-price-h { font-size: 12px; }
+    .buy-btn-h { font-size: 14px; padding: 11px; }
+
+    /* Yana ko'rish */
+    .load-more-container { padding: 30px 20px 20px; }
+    .load-more-btn {
+        min-width: 280px;
+        padding: 16px 44px;
+        font-size: 16px;
+    }
+    .load-more-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(21,101,192,0.45);
+    }
+
+    /* ⭐ MODAL — markazlashtirilgan dialog */
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        padding: 30px 20px;
+        align-items: center;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .order-modal-content {
+        max-width: 640px;
+        min-height: auto;
+        max-height: 92vh;
+        border-radius: 20px;
+        overflow-y: auto;
+        padding-bottom: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .order-modal-header {
+        padding: 14px 20px;
+        border-radius: 20px 20px 0 0;
+    }
+    .order-modal-body { padding: 24px; }
+    .order-title { font-size: 22px; }
+    .order-new-price { font-size: 24px; }
+    .modal-img-wrap { height: 500px; }
+
+    .order-bottom-menu {
+        position: static;
+        max-width: none;
+        margin-top: 20px;
+        border-radius: 12px;
+        border-top: none;
+        border: 1.5px solid #e0e0e0;
+        box-shadow: none;
+    }
+    .order-bottom-menu button:hover {
+        background: #f0f7ff;
+        border-radius: 8px;
+    }
+
+    /* Profil modal */
+    .modal-overlay:not(#order-modal) .modal-content {
+        margin: 20px auto;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+}
+
+/* ==================================================== */
+/* ⭐ KATTA EKRAN (1200px+) */
+/* ==================================================== */
+@media (min-width: 1024px) {
+    .app-header,
+    .banner-carousel,
+    .search-box,
+    .categories-scroll,
+    #products-container {
+        max-width: 1280px;
+    }
+
+    .products-horizontal {
+        grid-template-columns: repeat(5, 1fr);
+    }
+    .products-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .products-grid-skeleton {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .product-image-h { height: 240px; }
+    .banner-carousel { height: 260px; }
 }

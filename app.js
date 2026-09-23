@@ -6,6 +6,9 @@ const API_URL = "https://maximarketbot-production.up.railway.app";
 
 const PLACEHOLDER_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
+// ⭐ Telegram yoki Brauzer?
+const isTelegram = !!(tg.initDataUnsafe && tg.initDataUnsafe.user);
+
 const CATEGORIES = [
     { id: "elektronika", name: "Elektronika", emoji: "📱" },
     { id: "kiyim", name: "Kiyim", emoji: "👕" },
@@ -66,12 +69,11 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
-// ⭐ YANA KO'RISH (Load More) — sozlamalar
-const FIRST_HORIZONTAL = 10;    // Tepada yonboshga
-const INITIAL_GRID_ROWS = 10;   // Boshlanishida 10 qator
-const LOAD_MORE_ROWS = 10;      // Har bosishda 10 qator qo'shiladi
-const GRID_COLS = 2;            // Bir qatorda 2 ta
-
+// Yana ko'rish
+const FIRST_HORIZONTAL = 10;
+const INITIAL_GRID_ROWS = 10;
+const LOAD_MORE_ROWS = 10;
+const GRID_COLS = 2;
 let gridRowsShown = INITIAL_GRID_ROWS;
 
 let selectedSize = null;
@@ -83,6 +85,11 @@ let profilePhotoUrl = "";
 let activeModal = null;
 
 let imageObserver = null;
+
+// ⭐ Swipe
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeActive = false;
 
 
 // ==================== SCREENSHOT HIMOYASI ====================
@@ -112,7 +119,63 @@ document.addEventListener('visibilitychange', function() {
 });
 
 
-// ==================== ⭐ YANA KO'RISH MANTIQI ====================
+// ==================== SWIPE ====================
+function initModalSwipe() {
+    const wrap = document.getElementById('modal-img-wrap');
+    if (!wrap) return;
+
+    wrap.addEventListener('touchstart', function(e) {
+        if (e.touches.length !== 1) return;
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+        swipeActive = true;
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', function(e) {
+        if (!swipeActive) return;
+        if (e.touches.length !== 1) return;
+
+        const dx = e.touches[0].clientX - swipeStartX;
+        const dy = e.touches[0].clientY - swipeStartY;
+
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+            const img = document.getElementById('modal-image');
+            if (img) {
+                img.style.transform = `translateX(${dx * 0.4}px)`;
+                img.style.transition = 'none';
+            }
+        }
+    }, { passive: true });
+
+    wrap.addEventListener('touchend', function(e) {
+        if (!swipeActive) return;
+        swipeActive = false;
+
+        const img = document.getElementById('modal-image');
+        if (img) {
+            img.style.transform = '';
+            img.style.transition = 'opacity 0.3s, transform 0.3s';
+        }
+
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const dx = swipeStartX - endX;
+        const dy = swipeStartY - endY;
+
+        if (Math.abs(dx) > 50 && Math.abs(dy) < 80) {
+            if (dx > 0) {
+                slideImage(1);
+            } else {
+                slideImage(-1);
+            }
+        }
+    }, { passive: true });
+}
+
+
+// ==================== YANA KO'RISH ====================
 function getDisplayedProducts() {
     const total = filteredProducts.length;
     if (total === 0) return { horizontal: [], grid: [], hasMore: false, remaining: 0 };
@@ -279,7 +342,7 @@ function renderCategories() {
 
 function setCategory(catId) {
     activeCategory = catId;
-    resetLoadMore(); // ⭐ Qayta boshlash
+    resetLoadMore();
     renderCategories();
     filterProducts();
 }
@@ -298,7 +361,7 @@ function filterProducts() {
         return matchesSearch && matchesCategory;
     });
     clearBtn.style.display = query ? 'flex' : 'none';
-    resetLoadMore(); // ⭐ Qayta boshlash
+    resetLoadMore();
     shuffleProducts();
     renderProducts();
 }
@@ -426,7 +489,7 @@ function buildProductCard(p) {
 }
 
 
-// ==================== ⭐ RENDER (YANA KO'RISH) ====================
+// ==================== RENDER ====================
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -438,21 +501,18 @@ function renderProducts() {
 
     let html = '';
 
-    // 1-qator: Yonboshga scroll (faqat 1-marta)
     if (horizontal.length > 0) {
         html += '<div class="products-horizontal">';
         horizontal.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
     }
 
-    // Pastga qarab: 2 tadan grid (yig'ilib boradi)
     if (grid.length > 0) {
         html += '<div class="products-grid">';
         grid.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
     }
 
-    // "Yana ko'rish" tugmasi
     if (hasMore) {
         html += `
             <div class="load-more-container">
@@ -472,7 +532,6 @@ function renderProducts() {
 
     container.innerHTML = html;
 
-    // Event listenerlar
     container.querySelectorAll('.product-card-h').forEach(card => {
         card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
     });
@@ -512,6 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!this.value) this.value = '+998';
         });
     }
+    initModalSwipe();
 });
 
 
@@ -633,19 +693,49 @@ function closeModal(skipHistory = false) {
     }
 }
 
+function preloadModalImages() {
+    if (!currentProduct || !currentProduct.images) return;
+    currentProduct.images.forEach((imgUrl, idx) => {
+        if (idx === currentImageIndex) return;
+        const url = getImageUrl(imgUrl);
+        if (url && !url.startsWith('data:')) {
+            const preloader = new Image();
+            preloader.src = url;
+        }
+    });
+}
+
 function updateImage() {
     const img = document.getElementById('modal-image');
-    img.src = PLACEHOLDER_PIXEL;
+    const spinner = document.querySelector('.modal-img-spinner');
+
+    if (!img) return;
+
+    if (spinner) spinner.style.display = 'block';
+
+    img.classList.remove('loaded');
+    img.style.transform = '';
 
     const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
         ? getImageUrl(currentProduct.images[currentImageIndex])
         : "";
 
-    if (imgUrl) {
-        const tempImg = new Image();
-        tempImg.onload = () => { img.src = imgUrl; };
-        tempImg.onerror = () => { img.src = PLACEHOLDER_PIXEL; };
-        tempImg.src = imgUrl;
+    if (!imgUrl) {
+        img.src = PLACEHOLDER_PIXEL;
+        img.classList.add('loaded');
+        if (spinner) spinner.style.display = 'none';
+    } else {
+        img.onload = function() {
+            img.classList.add('loaded');
+            if (spinner) spinner.style.display = 'none';
+            preloadModalImages();
+        };
+        img.onerror = function() {
+            img.src = PLACEHOLDER_PIXEL;
+            img.classList.add('loaded');
+            if (spinner) spinner.style.display = 'none';
+        };
+        img.src = imgUrl;
     }
 
     const dots = (currentProduct.images || []).map((_, i) =>
@@ -693,11 +783,14 @@ function startCountdown() {
     countdownInterval = setInterval(tick, 1000);
 }
 
-function submitOrder(event) {
+
+// ==================== ⭐ BUYURTMA (yangilangan) ====================
+async function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
     const phone = document.getElementById('order-phone').value.trim();
     const statusEl = document.getElementById('order-status');
+    const submitBtn = document.querySelector('.order-submit-btn');
 
     if (!name || name.length < 4) {
         statusEl.innerText = "❌ Ism kamida 4 harfdan iborat bo'lishi kerak!";
@@ -730,8 +823,7 @@ function submitOrder(event) {
         if (c) colorName = c.name;
     }
 
-    tg.sendData(JSON.stringify({
-        action: 'order',
+    const orderData = {
         product_id: String(currentProduct.id),
         product_title: currentProduct.title,
         price: currentProduct.discount_price,
@@ -739,20 +831,65 @@ function submitOrder(event) {
         customer_phone: phone,
         size: selectedSize || "",
         color: colorName
-    }));
+    };
 
-    statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
-    statusEl.className = "status ok";
+    if (isTelegram) {
+        // Telegram WebApp rejimi
+        tg.sendData(JSON.stringify({ action: 'order', ...orderData }));
+        statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
+        statusEl.className = "status ok";
+        setTimeout(() => {
+            try { tg.showAlert("Buyurtmangiz qabul qilindi!"); } catch(e) {}
+            closeModal();
+        }, 500);
+    } else {
+        // ⭐ Brauzer rejimi
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Yuborilmoqda...';
+        }
+        try {
+            const res = await fetch(`${API_URL}/api/public_order`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Telegram-Init-Data': tg.initData || ''
+                },
+                body: JSON.stringify(orderData)
+            });
+            const data = await res.json();
 
-    setTimeout(() => {
-        tg.showAlert("Buyurtmangiz qabul qilindi!");
-        closeModal();
-    }, 500);
+            if (data.success) {
+                statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
+                statusEl.className = "status ok";
+                setTimeout(() => {
+                    alert("Buyurtmangiz qabul qilindi!\n\nTez orada operatorlarimiz siz bilan bog'lanadi.");
+                    closeModal();
+                }, 500);
+            } else {
+                statusEl.innerText = "❌ " + (data.error || "Xatolik yuz berdi");
+                statusEl.className = "status err";
+            }
+        } catch (e) {
+            statusEl.innerText = "❌ Tarmoq xatosi";
+            statusEl.className = "status err";
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Tasdiqlash';
+            }
+        }
+    }
 }
 
 
 // ==================== PROFIL ====================
 async function openProfile() {
+    if (!isTelegram) {
+        alert("Profil faqat Telegram orqali ishlaydi.\n\nIltimos, do'konni @MaxiMarketUzbot orqali oching.");
+        return;
+    }
+
     activeModal = 'profile';
 
     enableTelegramBackButton(function() { closeProfile(true); });

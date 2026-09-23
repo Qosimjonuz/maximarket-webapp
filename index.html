@@ -81,7 +81,6 @@
 
             <div class="order-modal-body">
                 <form id="order-form" onsubmit="submitOrder(event)">
-                    <!-- 1. COUNTDOWN -->
                     <div class="countdown-block">
                         <p class="countdown-label">⏰ Aksiya tugashiga:</p>
                         <div class="countdown">
@@ -92,21 +91,17 @@
                         </div>
                     </div>
 
-                    <!-- 2. NAME -->
                     <label class="form-label">To'liq ismi sharif *</label>
                     <input type="text" id="order-name" placeholder="To'liq ismi sharif" required minlength="4">
 
-                    <!-- 3. PHONE -->
                     <label class="form-label">Telefon raqamingiz *</label>
                     <input type="tel" id="order-phone" placeholder="+998(__)-___-__-__" required>
 
-                    <!-- 4. SIZES (ko'chirildi) -->
                     <div id="size-section" class="order-option-section" style="display:none;">
                         <div class="option-label">📏 O'lchamni tanlang:</div>
                         <div class="option-list" id="modal-sizes"></div>
                     </div>
 
-                    <!-- 5. COLORS (ko'chirildi) -->
                     <div id="color-section" class="order-option-section" style="display:none;">
                         <div class="option-label">🎨 Rangni tanlang:</div>
                         <div class="option-list" id="modal-colors"></div>
@@ -114,12 +109,14 @@
 
                     <div id="order-status" class="status"></div>
 
-                    <!-- 6. SUBMIT -->
                     <button type="submit" class="order-submit-btn">Tasdiqlash</button>
 
-                    <!-- 7. IMAGE + SLIDER (yangi tuzilma) -->
+                    <!-- ⭐ YANGI: rasm + spinner wrapper + swipe -->
                     <div class="slider">
-                        <img id="modal-image" src="" alt="Mahsulot rasmi" loading="lazy" decoding="async">
+                        <div class="modal-img-wrap" id="modal-img-wrap">
+                            <div class="modal-img-spinner"></div>
+                            <img id="modal-image" src="" alt="Mahsulot rasmi" decoding="async">
+                        </div>
                         <div class="slider-controls">
                             <button type="button" class="slider-btn prev" onclick="slideImage(-1)">‹</button>
                             <div class="slider-dots" id="slider-dots"></div>
@@ -127,7 +124,6 @@
                         </div>
                     </div>
 
-                    <!-- 8. TITLE + PRICE + STOCK -->
                     <h2 id="modal-title" class="order-title"></h2>
 
                     <div class="order-price-block">
@@ -147,7 +143,6 @@
                         </div>
                     </div>
 
-                    <!-- 9. DESCRIPTION -->
                     <div id="modal-description" class="order-description"></div>
 
                     <p class="delivery-info">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach keyin to'lov qilasiz</p>
