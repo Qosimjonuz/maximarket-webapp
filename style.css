@@ -33,7 +33,7 @@ body::before {
     pointer-events: none;
 }
 
-/* HEADER */
+/* ============ HEADER ============ */
 .app-header {
     display: flex;
     justify-content: space-between;
@@ -94,7 +94,7 @@ body::before {
     color: #fff;
 }
 
-/* BANNER */
+/* ============ BANNER ============ */
 .banner-carousel {
     position: relative;
     width: calc(100% - 24px);
@@ -136,7 +136,7 @@ body::before {
 }
 .banner-dots span.active { background: #fff; transform: scale(1.3); }
 
-/* QIDIRUV */
+/* ============ QIDIRUV ============ */
 .search-box {
     display: flex; align-items: center;
     background: #fff; border-radius: 10px;
@@ -155,7 +155,7 @@ body::before {
     display: flex; align-items: center; justify-content: center;
 }
 
-/* KATEGORIYALAR */
+/* ============ KATEGORIYALAR ============ */
 .categories-scroll {
     display: flex; gap: 8px;
     overflow-x: auto; padding: 0 12px 10px;
@@ -176,7 +176,7 @@ body::before {
 .cat-emoji { font-size: 16px; }
 .cat-name { font-size: 9px; font-weight: 600; color: #333; white-space: nowrap; }
 
-/* MAHSULOTLAR */
+/* ============ MAHSULOTLAR ============ */
 #products-container { padding: 0 12px; }
 
 /* 1-qator: yonboshga scroll */
@@ -291,7 +291,7 @@ body::before {
     color: #333; font-size: 14px; font-weight: 600;
 }
 
-/* ⭐ YANA KO'RISH TUGMASI */
+/* ============ YANA KO'RISH TUGMASI ============ */
 .load-more-container {
     display: flex;
     justify-content: center;
@@ -342,7 +342,7 @@ body::before {
     margin: 0;
 }
 
-/* SKELETON LOADER */
+/* ============ SKELETON LOADER ============ */
 .products-grid-skeleton {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -393,7 +393,7 @@ body::before {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-/* BUYURTMA OYNASI */
+/* ============ BUYURTMA OYNASI ============ */
 .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: #fff; z-index: 999;
@@ -457,6 +457,7 @@ body::before {
     flex: 1;
 }
 
+/* COUNTDOWN */
 .countdown-block {
     text-align: center;
     margin: 0 0 14px;
@@ -476,6 +477,7 @@ body::before {
 .countdown span { font-size: 20px; font-weight: 900; color: #e65100; display: block; }
 .countdown small { font-size: 8px; color: #888; letter-spacing: 1px; font-weight: 700; }
 
+/* FORM */
 .form-label {
     display: block;
     font-size: 13px;
@@ -514,17 +516,54 @@ body::before {
     transition: background 0.15s;
 }
 .order-submit-btn:active { background: #1a237e; }
+.order-submit-btn:disabled {
+    background: #90a4ae;
+    cursor: not-allowed;
+}
 
+/* ⭐ SLIDER (rasm wrapper + swipe) */
 .slider {
     margin: 24px 0 16px;
 }
-.slider img {
+
+.modal-img-wrap {
+    position: relative;
     width: 100%;
     height: 600px;
-    object-fit: cover;
     border-radius: 12px;
+    overflow: hidden;
     background: #f0f0f0;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.modal-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease-in, transform 0.25s;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.modal-img-wrap img.loaded {
+    opacity: 1;
+}
+
+/* ⭐ MODAL SPINNER */
+.modal-img-spinner {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 44px; height: 44px;
+    margin: -22px 0 0 -22px;
+    border: 4px solid rgba(21, 101, 192, 0.15);
+    border-top-color: #1565c0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .slider-controls {
@@ -582,6 +621,7 @@ body::before {
     box-shadow: 0 0 8px rgba(21,101,192,0.5);
 }
 
+/* TITLE */
 .order-title {
     font-size: 18px;
     font-weight: 700;
@@ -591,6 +631,7 @@ body::before {
     line-height: 1.3;
 }
 
+/* NARX */
 .order-price-block {
     text-align: center;
     margin: 8px 0 12px;
@@ -619,6 +660,7 @@ body::before {
     font-weight: 700;
 }
 
+/* STATS */
 .order-stats {
     display: flex;
     gap: 12px;
@@ -639,6 +681,7 @@ body::before {
 .stat-item b { color: #1565c0; font-weight: 700; }
 .stat-icon { font-size: 16px; }
 
+/* DESCRIPTION */
 .order-description {
     background: #f8f9fa;
     border-radius: 10px;
@@ -652,6 +695,7 @@ body::before {
 .order-description p { margin: 0 0 8px; }
 .order-description p:last-child { margin-bottom: 0; }
 
+/* OPTION SECTIONS */
 .order-option-section {
     margin: 14px 0;
     padding: 12px;
@@ -702,6 +746,7 @@ body::before {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
+/* STATUS */
 .status {
     text-align: center;
     padding: 10px;
@@ -715,6 +760,7 @@ body::before {
 .status.ok { background: #e8f5e9; color: #2e7d32; }
 .status.err { background: #ffebee; color: #c62828; }
 
+/* DELIVERY */
 .delivery-info {
     text-align: center;
     font-size: 12px;
@@ -726,6 +772,7 @@ body::before {
     line-height: 1.5;
 }
 
+/* PASTKI MENYU */
 .order-bottom-menu {
     position: fixed;
     bottom: 0;
@@ -765,6 +812,7 @@ body::before {
     color: #1565c0;
 }
 
+/* PROFIL MODAL */
 .modal-overlay:not(#order-modal) .modal-content {
     background: #fff;
     border-radius: 16px;
@@ -824,12 +872,13 @@ body::before {
     padding: 0;
 }
 
+/* ============ MOBIL ============ */
 @media (max-width: 360px) {
     .products-horizontal .product-card-h { width: 178px; }
     .products-grid .product-card-h { width: 100%; }
     .product-image-h { height: 181px; }
     .buy-btn-h { font-size: 12px; padding: 8px; }
-    .slider img { height: 500px; }
+    .modal-img-wrap { height: 500px; }
     .banner-carousel { height: 115px; }
     .brand-text { font-size: 17px; }
     .back-btn { font-size: 28px; width: 44px; height: 44px; }
