@@ -96,6 +96,9 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .stat-card.green{background:linear-gradient(135deg,#2e7d32,#66bb6a)}
 .stat-card.orange{background:linear-gradient(135deg,#f57c00,#ffb74d)}
 .stat-card.purple{background:linear-gradient(135deg,#6a1b9a,#ab47bc)}
+.stat-card.red{background:linear-gradient(135deg,#c62828,#e53935)}
+.stat-card.teal{background:linear-gradient(135deg,#00695c,#26a69a)}
+.stat-card.pink{background:linear-gradient(135deg,#ad1457,#ec407a)}
 .stat-card-label{font-size:11px;opacity:.9;margin-bottom:4px;font-weight:600}
 .stat-card-value{font-size:22px;font-weight:900;margin-bottom:2px}
 .stat-card-count{font-size:11px;opacity:.85}
@@ -107,7 +110,126 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .user-actions{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .user-actions button{flex:1;min-width:120px;margin:0;padding:8px;font-size:12px}
 .message-box textarea{min-height:80px;font-size:14px}
+
+/* ⭐ ZAKASLAR RO'YXATI */
+.orders-tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.orders-tab{padding:7px 12px;border-radius:8px;background:#f8f9fa;border:2px solid transparent;font-size:12px;font-weight:700;cursor:pointer;color:#333;font-family:inherit;width:auto;margin:0;transition:all .15s}
+.orders-tab.active{background:#1565c0;color:#fff}
+.orders-tab:active{transform:scale(0.97)}
+.order-card{background:#f8f9fa;padding:12px;border-radius:10px;margin-bottom:8px;border-left:4px solid #1565c0}
+.order-card.bot{border-left-color:#2e7d32}
+.order-card.browser{border-left-color:#f57c00}
+.order-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.order-card-title{font-size:13px;font-weight:700;color:#222;flex:1;word-break:break-word}
+.order-card-source{font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;color:#fff;flex-shrink:0}
+.order-card-source.bot{background:#2e7d32}
+.order-card-source.browser{background:#f57c00}
+.order-card-row{font-size:11px;color:#555;margin-top:3px;word-break:break-word}
+.order-card-row b{color:#1565c0}
+.order-card-price{font-size:15px;font-weight:900;color:#e53935;margin-top:6px}
+.orders-summary{background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:12px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.orders-summary-label{font-size:12px;opacity:.9}
+.orders-summary-value{font-size:20px;font-weight:900}
+
 @media(max-width:380px){.stats-grid{grid-template-columns:1fr}}
+
+/* ⭐ ============================================================ */
+/* ⭐ KOMPYUTER (DESKTOP) VERSIYA */
+/* ⭐ ============================================================ */
+@media (min-width: 768px) {
+    body {
+        max-width: 1200px;
+        padding: 20px 24px 40px;
+    }
+
+    h1 {
+        font-size: 26px;
+        margin: 10px 0 20px;
+    }
+
+    .section {
+        padding: 22px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+    }
+
+    .section h2 {
+        font-size: 18px;
+    }
+
+    /* Login — kichikroq va markazda */
+    #login-section {
+        max-width: 460px;
+        margin: 40px auto;
+    }
+
+    /* Statistika — 4 ustunli grid */
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+    .stat-card-label { font-size: 12px; }
+    .stat-card-value { font-size: 26px; }
+    .stat-card-count { font-size: 12px; }
+
+    /* Forma — 2 ustun */
+    .grid-2 { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { grid-template-columns: repeat(6, 1fr); }
+    .grid-4 { grid-template-columns: repeat(8, 1fr); }
+
+    /* Kategoriya chip */
+    .chip { padding: 10px 14px; font-size: 13px; }
+    .color-chip { padding: 8px; }
+    .color-circle { width: 32px; height: 32px; }
+    .color-name { font-size: 10px; }
+
+    /* Image preview 4 ta katta */
+    .image-preview {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 600px;
+    }
+
+    /* Product item */
+    .product-item {
+        padding: 14px 16px;
+    }
+    .product-item-info b { font-size: 14px; }
+    .product-item-info small { font-size: 11px; }
+
+    /* Orders — 2 ustunli */
+    .orders-tabs { gap: 8px; }
+    .orders-tab { padding: 9px 18px; font-size: 13px; }
+
+    /* Foydalanuvchi ro'yxati — grid */
+    .user-item { padding: 12px 16px; }
+
+    /* Bottom nav — desktop'da tepada */
+    .bottom-nav {
+        max-width: 1200px;
+        border-radius: 12px;
+        margin: 12px auto 0;
+        border-top: none;
+        border: 1.5px solid #e0e0e0;
+        padding-bottom: 0;
+        position: relative;
+    }
+    .bottom-nav button {
+        padding: 12px;
+        font-size: 12px;
+    }
+    .bottom-icon { font-size: 24px; }
+
+    /* Session info */
+    .session-info { font-size: 12px; padding: 10px; }
+
+    /* Buttons */
+    button { font-size: 15px; }
+    button.small { font-size: 13px; padding: 8px 14px; }
+}
 </style>
 </head>
 <body>
@@ -134,7 +256,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 
 <!-- PANEL -->
 <div id="panel-section" class="hidden">
-  <div class="session-info">✅ Tizimga kirdingiz (24 soat)</div>
+  <div class="session-info">✅ Tizimga kirdingiz (12 soat)</div>
 
   <!-- PAGE 1: ADD PRODUCT -->
   <div id="page-add" class="page">
@@ -214,8 +336,9 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     </div>
   </div>
 
-  <!-- PAGE 3: STATISTICS + USERS -->
+  <!-- PAGE 3: STATISTICS -->
   <div id="page-stats" class="page hidden">
+    <!-- Sotuv statistikasi -->
     <div class="section">
       <h2>📊 Sotuv statistikasi</h2>
       <div class="info-note" id="stats-info">ℹ️ Statistika <b id="stats-start-date">-</b> dan boshlab hisoblanadi</div>
@@ -225,10 +348,73 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
         <div class="stat-card orange"><div class="stat-card-label">🗓 Bu oy</div><div class="stat-card-value" id="s-month-sum">0</div><div class="stat-card-count" id="s-month-count">0 buyurtma</div></div>
         <div class="stat-card purple"><div class="stat-card-label">📅 Bu yil</div><div class="stat-card-value" id="s-year-sum">0</div><div class="stat-card-count" id="s-year-count">0 buyurtma</div></div>
       </div>
-      <div class="stat-card" style="background:linear-gradient(135deg,#c62828,#e53935)"><div class="stat-card-label">🏆 Jami (boshlanishdan)</div><div class="stat-card-value" id="s-all-sum">0</div><div class="stat-card-count" id="s-all-count">0 buyurtma</div></div>
+      <div class="stat-card red" style="margin-bottom:10px"><div class="stat-card-label">🏆 Jami (boshlanishdan)</div><div class="stat-card-value" id="s-all-sum">0</div><div class="stat-card-count" id="s-all-count">0 buyurtma</div></div>
+
+      <!-- ⭐ Bot/Brauzer ajratish -->
+      <h2 style="margin-top:16px">🤖 Bot va Brauzer zakaslari</h2>
+      <div class="stats-grid">
+        <div class="stat-card teal"><div class="stat-card-label">🤖 Bot (bugun)</div><div class="stat-card-value" id="bot-today">0</div><div class="stat-card-count" id="bot-today-count">0 buyurtma</div></div>
+        <div class="stat-card pink"><div class="stat-card-label">🌐 Brauzer (bugun)</div><div class="stat-card-value" id="brw-today">0</div><div class="stat-card-count" id="brw-today-count">0 buyurtma</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card teal"><div class="stat-card-label">🤖 Bot (oy)</div><div class="stat-card-value" id="bot-month">0</div><div class="stat-card-count" id="bot-month-count">0 buyurtma</div></div>
+        <div class="stat-card pink"><div class="stat-card-label">🌐 Brauzer (oy)</div><div class="stat-card-value" id="brw-month">0</div><div class="stat-card-count" id="brw-month-count">0 buyurtma</div></div>
+      </div>
+
+      <!-- ⭐ Kunlik tashriflar -->
+      <h2 style="margin-top:16px">👣 Saytga tashriflar</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-card-label">📅 Bugun</div><div class="stat-card-value" id="v-today">0</div><div class="stat-card-count" id="v-today-unique">0 unikal</div></div>
+        <div class="stat-card green"><div class="stat-card-label">📆 Bu hafta</div><div class="stat-card-value" id="v-week">0</div></div>
+        <div class="stat-card orange"><div class="stat-card-label">🗓 Bu oy</div><div class="stat-card-value" id="v-month">0</div></div>
+        <div class="stat-card purple"><div class="stat-card-label">📅 Bu yil</div><div class="stat-card-value" id="v-year">0</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card teal"><div class="stat-card-label">🤖 WebApp</div><div class="stat-card-value" id="v-webapp">0</div><div class="stat-card-count">bugun</div></div>
+        <div class="stat-card pink"><div class="stat-card-label">🌐 Brauzer</div><div class="stat-card-value" id="v-browser">0</div><div class="stat-card-count">bugun</div></div>
+      </div>
+
       <button class="danger" style="width:100%;margin-top:10px" onclick="resetStats()">🔄 Statistikani bugundan qayta boshlash</button>
     </div>
 
+    <!-- ⭐ ZAKASLAR RO'YXATI -->
+    <div class="section">
+      <h2>🛒 Zakaslar ro'yxati</h2>
+      <div class="orders-tabs">
+        <button class="orders-tab active" data-period="today" onclick="switchOrdersPeriod('today')">📅 Bugun</button>
+        <button class="orders-tab" data-period="week" onclick="switchOrdersPeriod('week')">📆 Hafta</button>
+        <button class="orders-tab" data-period="month" onclick="switchOrdersPeriod('month')">🗓 Oy</button>
+        <button class="orders-tab" data-period="year" onclick="switchOrdersPeriod('year')">📅 Yil</button>
+      </div>
+      <div class="orders-tabs">
+        <button class="orders-tab active" data-source="all" onclick="switchOrdersSource('all')">🌐 Barchasi</button>
+        <button class="orders-tab" data-source="telegram" onclick="switchOrdersSource('telegram')">🤖 Bot</button>
+        <button class="orders-tab" data-source="browser" onclick="switchOrdersSource('browser')">🌐 Brauzer</button>
+      </div>
+      <div class="products-search">
+        <span class="products-search-icon">🔍</span>
+        <input type="text" id="orders-search-input" placeholder="Ism, telefon, mahsulot..." oninput="searchOrdersDebounced()">
+        <button class="products-search-clear" id="orders-search-clear" onclick="clearOrdersSearch()" style="display:none">✕</button>
+      </div>
+      <div class="orders-summary">
+        <div>
+          <div class="orders-summary-label">Jami summa</div>
+          <div class="orders-summary-value" id="orders-total-sum">0 so'm</div>
+        </div>
+        <div style="text-align:right">
+          <div class="orders-summary-label">Buyurtmalar</div>
+          <div class="orders-summary-value" id="orders-total-count">0</div>
+        </div>
+      </div>
+      <div id="orders-list">⏳ Yuklanmoqda...</div>
+      <div class="pagination">
+        <button id="o-prev" onclick="changeOrdersPage(-1)">‹</button>
+        <div class="pagination-info" id="orders-page-info">1 / 1</div>
+        <button id="o-next" onclick="changeOrdersPage(1)">›</button>
+      </div>
+    </div>
+
+    <!-- Foydalanuvchilar statistikasi -->
     <div class="section">
       <h2>👥 Obunachilar statistikasi</h2>
       <div class="stats-grid">
@@ -240,6 +426,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="stat-card" style="background:linear-gradient(135deg,#283593,#3f51b5)"><div class="stat-card-label">🏆 Jami obunachilar</div><div class="stat-card-value" id="u-total">0</div></div>
     </div>
 
+    <!-- Obunachilarga xabar -->
     <div class="section">
       <h2>📢 Obunachilarga xabar</h2>
       <div class="products-search" style="margin-bottom:8px">
@@ -252,8 +439,11 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
         <button class="small success" onclick="selectAllVisibleUsers()">✅ Ko'ringanlarni tanlash</button>
         <button class="small danger" onclick="deselectAllUsers()">❌ Tozalash</button>
       </div>
+      <div class="user-actions">
+        <button class="small" onclick="toggleUsersList()" id="toggle-users-btn">🔼 Ro'yxatni yopish</button>
+      </div>
       <div style="font-size:12px;font-weight:700;color:#1565c0;text-align:center;margin:6px 0" id="users-count-info">0 ta obunachi tanlangan</div>
-      <div id="users-list-container" style="max-height:400px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
+      <div id="users-list-container" style="max-height:500px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
         <div class="empty-result">"Yuklash" tugmasini bosing</div>
       </div>
       <div class="pagination">
@@ -284,6 +474,8 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 var API_URL="https://maximarketbot-production.up.railway.app";
 var TOKEN_KEY="maximarket_admin_token";
 var MAX_CATEGORIES=2,MAX_SIZES=4,MAX_COLORS=10,PER_PAGE=10,MAX_IMAGES=4;
+var USERS_PER_PAGE=12;
+var ORDERS_PER_PAGE=20;
 var captchaAnswer=0;
 var adminToken="";
 var selectedFiles=[null,null,null,null];
@@ -293,9 +485,17 @@ var allProducts=[],filteredProducts=[];
 var currentPage=1,totalPages=1;
 var searchQuery="",activeFilterCategory="all";
 var selectedUsers=[];
-var currentUsersPage=1,usersTotalPages=1,usersPerPage=50;
+var currentUsersPage=1,usersTotalPages=1;
 var userSearchDebounce=null;
 var visibleUsers=[];
+var usersListOpen=true;
+// Orders
+var currentOrdersPeriod="today";
+var currentOrdersSource="all";
+var currentOrdersPage=1;
+var ordersTotalPages=1;
+var ordersSearch="";
+var ordersSearchDebounce=null;
 
 var CATEGORIES=[
 {id:"elektronika",name:"Elektronika",emoji:"📱"},{id:"kiyim",name:"Kiyim",emoji:"👕"},
@@ -337,6 +537,18 @@ function toggleFilter(){
   document.getElementById('filter-header').classList.toggle('active');
   document.getElementById('filter-body').classList.toggle('open');
 }
+function toggleUsersList(){
+  usersListOpen=!usersListOpen;
+  var c=document.getElementById('users-list-container');
+  var btn=document.getElementById('toggle-users-btn');
+  if(usersListOpen){
+    c.style.display='block';
+    btn.innerText='🔼 Ro\'yxatni yopish';
+  }else{
+    c.style.display='none';
+    btn.innerText='🔽 Ro\'yxatni ochish';
+  }
+}
 
 function saveToken(t){adminToken=t;localStorage.setItem(TOKEN_KEY,t)}
 function loadToken(){var s=localStorage.getItem(TOKEN_KEY);if(s){adminToken=s;return true}return false}
@@ -363,7 +575,7 @@ function switchPage(page){
   document.querySelectorAll('#bottom-nav button').forEach(function(b){
     b.classList.toggle('active',b.getAttribute('data-page')===page);
   });
-  if(page==='stats'){loadStats();}
+  if(page==='stats'){loadStats();loadOrders();}
   if(page==='list'){loadProducts();}
 }
 
@@ -383,7 +595,7 @@ document.getElementById('login-btn').addEventListener('click',async function(){
   var s=document.getElementById('login-status'),b=this;
   if(!pwd){s.innerText="❌ Parolni kiriting!";s.className="status err";return}
   if(!cap){s.innerText="❌ Captcha javobini kiriting!";s.className="status err";return}
-  if(parseInt(cap)!==captchaAnswer){s.innerText="❌ Captcha xato! Yangi misol.";s.className="status err";generateCaptcha();return}
+  if(parseInt(cap)!==captchaAnswer){s.innerText="❌ Captcha xato!";s.className="status err";generateCaptcha();return}
   b.disabled=true;b.innerText='Tekshirilmoqda...';s.innerText='';s.className='';
   try{
     var r=await fetch(API_URL+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pwd})});
@@ -402,7 +614,14 @@ document.getElementById('login-btn').addEventListener('click',async function(){
 document.getElementById('password-input').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('login-btn').click()});
 document.getElementById('captcha-input').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('login-btn').click()});
 
-document.getElementById('logout-btn').addEventListener('click',function(){
+document.getElementById('logout-btn').addEventListener('click',async function(){
+  try{
+    await fetch(API_URL+'/api/logout',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:adminToken})
+    });
+  }catch(e){console.log('Logout xato:',e)}
   clearToken();
   selectedFiles=[null,null,null,null];selectedCategories=[];selectedSizes=[];selectedColors=[];editingProductId=null;
   document.getElementById('password-input').value='';
@@ -447,7 +666,7 @@ function bindChips(grid,sel,attr,arr,max,rnd){
       e.preventDefault();
       var v=this.getAttribute(attr),i=arr.indexOf(v);
       if(i>-1)arr.splice(i,1);
-      else{if(arr.length>=max){alert("Faqat "+max+" ta tanlash mumkin!");return}arr.push(v)}
+      else{if(arr.length>=max){alert("Faqat "+max+" ta!");return}arr.push(v)}
       rnd();
     });
   });
@@ -545,229 +764,82 @@ document.getElementById('p-images').addEventListener('change',function(e){
   this.value='';
 });
 
-// ============================================================
-// ⭐⭐⭐ RASM YUKLASH (TUZATILGAN) ⭐⭐⭐
-// ============================================================
-async function uploadImageWithRetry(file, maxAttempts) {
-  var lastError = "";
-
-  // 1) Avval serverni "uyg'otish" uchun kichik so'rov
-  try {
-    console.log("🔄 Serverni uyg'otish...");
-    await fetch(API_URL + '/api/products', { method: 'GET' });
-    console.log("✅ Server uyg'oq");
-  } catch (e) {
-    console.log("⚠️ Server wake-up xatolik:", e.message);
-  }
-
-  // 2) ImgBB'ga yuklashni urinish
-  for (var attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      console.log("📤 Urinish " + attempt + "/" + maxAttempts);
-      var fd = new FormData();
-      fd.append('image', file);
-      fd.append('token', adminToken);
-
-      var controller = new AbortController();
-      var tid = setTimeout(function () { controller.abort(); }, 120000); // 120s
-
-      var resp = await fetch(API_URL + '/api/upload_image', {
-        method: 'POST',
-        body: fd,
-        signal: controller.signal
-      });
+async function uploadImageWithRetry(file,maxAttempts){
+  var lastError="";
+  try{
+    await fetch(API_URL+'/api/products',{method:'GET'});
+  }catch(e){}
+  for(var attempt=1;attempt<=maxAttempts;attempt++){
+    try{
+      var fd=new FormData();
+      fd.append('image',file);
+      fd.append('token',adminToken);
+      var controller=new AbortController();
+      var tid=setTimeout(function(){controller.abort()},120000);
+      var resp=await fetch(API_URL+'/api/upload_image',{method:'POST',body:fd,signal:controller.signal});
       clearTimeout(tid);
-
-      console.log("📥 HTTP status:", resp.status);
-
       var data;
-      try {
-        data = await resp.json();
-      } catch (jsonErr) {
-        lastError = "Server JSON qaytarmadi (HTTP " + resp.status + ")";
-        console.log("❌", lastError);
-        if (attempt < maxAttempts) await new Promise(function (r) { setTimeout(r, 3000); });
+      try{data=await resp.json()}catch(jsonErr){
+        lastError="Server JSON qaytarmadi";
+        if(attempt<maxAttempts)await new Promise(function(r){setTimeout(r,3000)});
         continue;
       }
-
-      if (data.success && data.url) {
-        console.log("✅ Muvaffaqiyatli:", data.url);
-        window.lastUploadError = "";
-        return data.url;
-      }
-
-      // Xatoni saqlaymiz
-      lastError = data.error || ("HTTP " + resp.status);
-      console.log("❌ ImgBB xato:", lastError);
-
-      // Agar token xatosi bo'lsa - qayta urinish kerak emas
-      if (resp.status === 401) {
-        handleAuthError();
-        window.lastUploadError = "Sessiya tugagan";
-        return null;
-      }
-
-      // Agar rasm juda katta bo'lsa - qayta urinish kerak emas
-      if (resp.status === 400 && lastError.indexOf("5 MB") > -1) {
-        window.lastUploadError = lastError;
-        return null;
-      }
-
-    } catch (e) {
-      lastError = e.name === 'AbortError' ? "Timeout (120s)" : e.message;
-      console.log("❌ Urinish " + attempt + " xatolik:", lastError);
+      if(data.success&&data.url){window.lastUploadError="";return data.url}
+      lastError=data.error||("HTTP "+resp.status);
+      if(resp.status===401){handleAuthError();window.lastUploadError="Sessiya tugagan";return null}
+      if(resp.status===400&&lastError.indexOf("5 MB")>-1){window.lastUploadError=lastError;return null}
+    }catch(e){
+      lastError=e.name==='AbortError'?"Timeout":e.message;
     }
-
-    // Keyingi urinishdan oldin kutish
-    if (attempt < maxAttempts) {
-      console.log("⏳ 3 soniya kutish...");
-      await new Promise(function (r) { setTimeout(r, 3000); });
-    }
+    if(attempt<maxAttempts)await new Promise(function(r){setTimeout(r,3000)});
   }
-
-  window.lastUploadError = lastError || "Noma'lum xato";
-  console.log("🔴 Barcha urinishlar tugadi. Oxirgi xato:", window.lastUploadError);
+  window.lastUploadError=lastError||"Noma'lum xato";
   return null;
 }
 
-// ============================================================
-// ⭐ SAQLASH TUGMASI (TUZATILGAN)
-// ============================================================
-document.getElementById('add-btn').addEventListener('click', async function () {
-  var title = document.getElementById('p-title').value.trim();
-  var desc = document.getElementById('p-description').value.trim();
-  var price = parseInt(document.getElementById('p-price').value) || 0;
-  var discount = parseInt(document.getElementById('p-discount').value) || 0;
-  var stock = parseInt(document.getElementById('p-stock').value) || 0;
-  var s = document.getElementById('add-status');
-  var b = this;
-
-  if (!title || !price || !discount) {
-    s.innerText = "❗ Nomi, narx, chegirma kerak";
-    s.className = "status err";
-    return;
-  }
-
-  var hasImg = false;
-  for (var k = 0; k < MAX_IMAGES; k++) {
-    if (selectedFiles[k] && selectedFiles[k].file) { hasImg = true; break; }
-  }
-  if (!hasImg && !editingProductId) {
-    s.innerText = "❗ Kamida 1 ta rasm yuklang";
-    s.className = "status err";
-    return;
-  }
-
-  b.disabled = true;
-  b.innerText = 'Yuklanmoqda...';
-  s.innerText = '';
-  s.className = '';
-
-  try {
-    var urls = [];
-    var okCount = 0;
-    var failed = [];
-
-    for (var i = 0; i < MAX_IMAGES; i++) {
-      var it = selectedFiles[i];
-      if (!it) continue;
-
-      // Eski rasm (tahrirlashda) - o'zgartirmasdan qoldiramiz
-      if (it.existing && !it.file) {
-        urls.push(it.preview);
-        okCount++;
-        continue;
-      }
-
-      if (it.file) {
-        s.innerText = '⏳ ' + (i + 1) + '-rasm yuklanmoqda... (' + Math.round(it.newSize / 1024) + ' KB)';
-        s.className = "status ok";
-
-        var u = await uploadImageWithRetry(it.file, 4);
-
-        if (u) {
-          urls.push(u);
-          okCount++;
-          console.log("✅ Rasm " + (i + 1) + " yuklandi");
-        } else {
-          failed.push(i + 1);
-          console.log("❌ Rasm " + (i + 1) + " yuklanmadi");
-        }
+document.getElementById('add-btn').addEventListener('click',async function(){
+  var title=document.getElementById('p-title').value.trim();
+  var desc=document.getElementById('p-description').value.trim();
+  var price=parseInt(document.getElementById('p-price').value)||0;
+  var discount=parseInt(document.getElementById('p-discount').value)||0;
+  var stock=parseInt(document.getElementById('p-stock').value)||0;
+  var s=document.getElementById('add-status'),b=this;
+  if(!title||!price||!discount){s.innerText="❗ Nomi, narx, chegirma kerak";s.className="status err";return}
+  var hasImg=false;
+  for(var k=0;k<MAX_IMAGES;k++){if(selectedFiles[k]&&selectedFiles[k].file){hasImg=true;break}}
+  if(!hasImg&&!editingProductId){s.innerText="❗ Kamida 1 ta rasm yuklang";s.className="status err";return}
+  b.disabled=true;b.innerText='Yuklanmoqda...';s.innerText='';s.className='';
+  try{
+    var urls=[],okCount=0,failed=[];
+    for(var i=0;i<MAX_IMAGES;i++){
+      var it=selectedFiles[i];if(!it)continue;
+      if(it.existing&&!it.file){urls.push(it.preview);okCount++;continue}
+      if(it.file){
+        s.innerText='⏳ '+(i+1)+'-rasm yuklanmoqda...';s.className="status ok";
+        var u=await uploadImageWithRetry(it.file,4);
+        if(u){urls.push(u);okCount++}else{failed.push(i+1)}
       }
     }
-
-    // ⭐ TUZATILGAN XATO XABARI
-    if (okCount === 0) {
-      var errMsg = window.lastUploadError || "Noma'lum xato";
-      s.innerText = "❌ Rasm yuklanmadi: " + errMsg;
-      s.className = "status err";
-      b.disabled = false;
-      b.innerText = '💾 Saqlash';
-      return;
+    if(okCount===0){
+      s.innerText="❌ Rasm yuklanmadi: "+(window.lastUploadError||"Noma'lum");
+      s.className="status err";b.disabled=false;b.innerText='💾 Saqlash';return;
     }
-
-    if (failed.length > 0) {
-      var errMsg2 = window.lastUploadError || "";
-      if (!confirm(failed.length + " ta rasm yuklanmadi. Sabab: " + errMsg2 + "\n\nDavom etilsinmi?")) {
-        b.disabled = false;
-        b.innerText = '💾 Saqlash';
-        s.innerText = '';
-        s.className = '';
-        return;
+    if(failed.length>0){
+      if(!confirm(failed.length+" ta rasm yuklanmadi. Davom etilsinmi?")){
+        b.disabled=false;b.innerText='💾 Saqlash';s.innerText='';s.className='';return;
       }
     }
-
-    s.innerText = "⏳ Mahsulot saqlanmoqda...";
-    s.className = "status ok";
-
-    var body = {
-      token: adminToken,
-      title: title,
-      description: desc,
-      price: price,
-      discount_price: discount,
-      stock: stock,
-      categories: selectedCategories,
-      sizes: selectedSizes,
-      colors: selectedColors,
-      images: urls
-    };
-
-    var r, d;
-    if (editingProductId) {
-      r = await fetch(API_URL + '/api/products/' + editingProductId, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-    } else {
-      r = await fetch(API_URL + '/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-    }
-
-    if (r.status === 401) { handleAuthError(); return; }
-
-    d = await r.json();
-    if (d.success) {
-      s.innerText = (editingProductId ? "✅ Yangilandi!" : "✅ Qo'shildi!") +
-                    (failed.length > 0 ? " (" + failed.length + " rasm tushdi)" : "");
-      s.className = "status ok";
-      resetForm();
-      loadProducts();
-    } else {
-      s.innerText = "❌ " + (d.error || "Xatolik");
-      s.className = "status err";
-    }
-  } catch (e) {
-    s.innerText = "❌ " + e.message;
-    s.className = "status err";
-  } finally {
-    b.disabled = false;
-    b.innerText = '💾 Saqlash';
-  }
+    s.innerText="⏳ Saqlanmoqda...";s.className="status ok";
+    var body={token:adminToken,title:title,description:desc,price:price,discount_price:discount,stock:stock,categories:selectedCategories,sizes:selectedSizes,colors:selectedColors,images:urls};
+    var r,d;
+    if(editingProductId){r=await fetch(API_URL+'/api/products/'+editingProductId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
+    else{r=await fetch(API_URL+'/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
+    if(r.status===401){handleAuthError();return}
+    d=await r.json();
+    if(d.success){s.innerText=(editingProductId?"✅ Yangilandi!":"✅ Qo'shildi!");s.className="status ok";resetForm();loadProducts()}
+    else{s.innerText="❌ "+(d.error||"Xatolik");s.className="status err"}
+  }catch(e){s.innerText="❌ "+e.message;s.className="status err"}
+  finally{b.disabled=false;b.innerText='💾 Saqlash'}
 });
 
 function resetForm(){
@@ -842,7 +914,7 @@ function renderProductsPage(){
   pp.forEach(function(p){
     var sz=(p.sizes||[]).join(', '),ch='';
     if(p.colors&&p.colors.length>0){ch='<div class="product-colors">';p.colors.forEach(function(cid){var c=COLORS.find(function(x){return x.id===cid});if(c)ch+='<span style="background:'+c.hex+'" title="'+c.name+'"></span>'});ch+='</div>'}
-    h+='<div class="product-item"><div class="product-item-info"><b>'+(p.title||'')+'</b><small>💰 '+(p.discount_price||0).toLocaleString()+" so'm | 📦 "+(p.stock||0)+' dona | 👁 '+(p.views||0)+' | ✅ '+(p.sold||0)+'</small>'+(sz?'<small>📏 '+sz+'</small>':'')+ch+'</div><div class="btn-row"><button class="success small" data-edit="'+p.id+'">✏️</button><button class="danger small" data-del="'+p.id+'">🗑</button></div></div>';
+    h+='<div class="product-item"><div class="product-item-info"><b>'+escapeHtml(p.title||'')+'</b><small>💰 '+(p.discount_price||0).toLocaleString()+" so'm | 📦 "+(p.stock||0)+' dona | 👁 '+(p.views||0)+' | ✅ '+(p.sold||0)+'</small>'+(sz?'<small>📏 '+escapeHtml(sz)+'</small>':'')+ch+'</div><div class="btn-row"><button class="success small" data-edit="'+p.id+'">✏️</button><button class="danger small" data-del="'+p.id+'">🗑</button></div></div>';
   });
   l.innerHTML=h;
   l.querySelectorAll('[data-edit]').forEach(function(b){b.addEventListener('click',function(){editProduct(this.getAttribute('data-edit'))})});
@@ -868,7 +940,7 @@ function deleteProduct(id){
 }
 document.getElementById('refresh-btn').addEventListener('click',loadProducts);
 
-// STATS
+// ==================== STATS ====================
 async function loadStats(){
   try{
     var r=await fetch(API_URL+'/api/stats/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
@@ -891,8 +963,24 @@ async function loadStats(){
       document.getElementById('s-year-count').innerText=(d.year.count||0)+' buyurtma';
       document.getElementById('s-all-sum').innerText=(d.all_time.total||0).toLocaleString();
       document.getElementById('s-all-count').innerText=(d.all_time.count||0)+' buyurtma';
+
+      // Bot/Brauzer
+      if(d.today_bot){
+        document.getElementById('bot-today').innerText=(d.today_bot.total||0).toLocaleString();
+        document.getElementById('bot-today-count').innerText=(d.today_bot.count||0)+' buyurtma';
+        document.getElementById('bot-month').innerText=(d.month_bot.total||0).toLocaleString();
+        document.getElementById('bot-month-count').innerText=(d.month_bot.count||0)+' buyurtma';
+      }
+      if(d.today_browser){
+        document.getElementById('brw-today').innerText=(d.today_browser.total||0).toLocaleString();
+        document.getElementById('brw-today-count').innerText=(d.today_browser.count||0)+' buyurtma';
+        document.getElementById('brw-month').innerText=(d.month_browser.total||0).toLocaleString();
+        document.getElementById('brw-month-count').innerText=(d.month_browser.count||0)+' buyurtma';
+      }
     }
   }catch(e){console.log("Stats xatolik:",e)}
+
+  // Users stats
   try{
     var r2=await fetch(API_URL+'/api/stats/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
     var d2=await r2.json();
@@ -903,54 +991,182 @@ async function loadStats(){
       document.getElementById('u-year').innerText=d2.year||0;
       document.getElementById('u-total').innerText=d2.total||0;
     }
-  }catch(e){console.log("User stats xatolik:",e)}
+  }catch(e){}
+
+  // Visits stats
+  try{
+    var r3=await fetch(API_URL+'/api/stats/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
+    var d3=await r3.json();
+    if(d3.success){
+      document.getElementById('v-today').innerText=d3.today||0;
+      document.getElementById('v-today-unique').innerText=(d3.today_unique||0)+' unikal';
+      document.getElementById('v-week').innerText=d3.week||0;
+      document.getElementById('v-month').innerText=d3.month||0;
+      document.getElementById('v-year').innerText=d3.year||0;
+      document.getElementById('v-webapp').innerText=d3.today_webapp||0;
+      document.getElementById('v-browser').innerText=d3.today_browser||0;
+    }
+  }catch(e){}
 }
 
 async function resetStats(){
-  if(!confirm("Statistikani bugundan qayta boshlaysizmi?\n\nEski buyurtmalar saqlanadi, lekin hisobotda ko'rinmaydi."))return;
+  if(!confirm("Statistikani bugundan qayta boshlaysizmi?"))return;
   try{
     var r=await fetch(API_URL+'/api/stats/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
     if(r.status===401){handleAuthError();return}
     var d=await r.json();
-    if(d.success){
-      alert("✅ Statistika bugundan qayta boshlandi!");
-      loadStats();
-    }else{alert("Xatolik: "+(d.error||""))}
+    if(d.success){alert("✅ Statistika qayta boshlandi!");loadStats();}
+    else{alert("Xatolik: "+(d.error||""))}
   }catch(e){alert("Xatolik: "+e.message)}
 }
 
-// USERS LIST + SEARCH
+// ==================== ZAKASLAR RO'YXATI ====================
+function switchOrdersPeriod(period){
+  currentOrdersPeriod=period;
+  currentOrdersPage=1;
+  document.querySelectorAll('.orders-tab[data-period]').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-period')===period);
+  });
+  loadOrders();
+}
+function switchOrdersSource(source){
+  currentOrdersSource=source;
+  currentOrdersPage=1;
+  document.querySelectorAll('.orders-tab[data-source]').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-source')===source);
+  });
+  loadOrders();
+}
+function searchOrdersDebounced(){
+  var v=document.getElementById('orders-search-input').value;
+  document.getElementById('orders-search-clear').style.display=v.trim()?'flex':'none';
+  if(ordersSearchDebounce)clearTimeout(ordersSearchDebounce);
+  ordersSearchDebounce=setTimeout(function(){
+    ordersSearch=v.trim().toLowerCase();
+    currentOrdersPage=1;
+    loadOrders();
+  },400);
+}
+function clearOrdersSearch(){
+  document.getElementById('orders-search-input').value='';
+  document.getElementById('orders-search-clear').style.display='none';
+  ordersSearch='';
+  currentOrdersPage=1;
+  loadOrders();
+}
+function changeOrdersPage(dir){
+  currentOrdersPage+=dir;
+  if(currentOrdersPage<1)currentOrdersPage=1;
+  if(currentOrdersPage>ordersTotalPages)currentOrdersPage=ordersTotalPages;
+  loadOrders();
+}
+async function loadOrders(){
+  var l=document.getElementById('orders-list');
+  l.innerHTML='⏳ Yuklanmoqda...';
+  try{
+    var r=await fetch(API_URL+'/api/orders/list',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        token:adminToken,
+        period:currentOrdersPeriod,
+        source:currentOrdersSource,
+        search:ordersSearch,
+        page:currentOrdersPage,
+        per_page:ORDERS_PER_PAGE
+      })
+    });
+    if(r.status===401){handleAuthError();return}
+    var d=await r.json();
+    if(!d.success){l.innerHTML='<div class="empty-result">Xatolik</div>';return}
+
+    ordersTotalPages=d.total_pages||1;
+    document.getElementById('orders-page-info').innerText=currentOrdersPage+' / '+ordersTotalPages;
+    document.getElementById('o-prev').disabled=currentOrdersPage<=1;
+    document.getElementById('o-next').disabled=currentOrdersPage>=ordersTotalPages;
+    document.getElementById('orders-total-sum').innerText=(d.total_sum||0).toLocaleString()+' so\'m';
+    document.getElementById('orders-total-count').innerText=(d.total||0)+' ta';
+
+    var orders=d.orders||[];
+    if(orders.length===0){
+      l.innerHTML='<div class="empty-result">🔍 Zakas topilmadi</div>';
+      return;
+    }
+    var h='';
+    orders.forEach(function(o){
+      var source=o.source||'browser';
+      var sourceLabel=source==='telegram'?'🤖 Bot':'🌐 Brauzer';
+      var sourceClass=source==='telegram'?'bot':'browser';
+      var dt='';
+      try{
+        var dd=new Date(o.created_at);
+        dt=dd.toLocaleString('uz-UZ',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      }catch(e){dt=o.created_at||''}
+
+      h+='<div class="order-card '+sourceClass+'">';
+      h+='<div class="order-card-head">';
+      h+='<div class="order-card-title">'+escapeHtml(o.product_title||'')+'</div>';
+      h+='<div class="order-card-source '+sourceClass+'">'+sourceLabel+'</div>';
+      h+='</div>';
+      h+='<div class="order-card-row">👤 <b>'+escapeHtml(o.customer_name||'')+'</b></div>';
+      h+='<div class="order-card-row">📞 '+escapeHtml(o.customer_phone||'')+'</div>';
+      if(o.size)h+='<div class="order-card-row">📏 '+escapeHtml(o.size)+'</div>';
+      if(o.color)h+='<div class="order-card-row">🎨 '+escapeHtml(o.color)+'</div>';
+      h+='<div class="order-card-row">🕐 '+dt+'</div>';
+      h+='<div class="order-card-price">💰 '+(o.price||0).toLocaleString()+' so\'m</div>';
+      h+='</div>';
+    });
+    l.innerHTML=h;
+  }catch(e){
+    l.innerHTML='<div class="empty-result">Xatolik: '+e.message+'</div>';
+  }
+}
+
+// ==================== USERS ====================
 function searchUsersDebounced(){
   var v=document.getElementById('user-search-input').value;
   document.getElementById('user-search-clear').style.display=v.trim()?'flex':'none';
   if(userSearchDebounce)clearTimeout(userSearchDebounce);
   userSearchDebounce=setTimeout(function(){currentUsersPage=1;loadUsers();},400);
 }
-
 function clearUserSearch(){
   document.getElementById('user-search-input').value='';
   document.getElementById('user-search-clear').style.display='none';
   currentUsersPage=1;loadUsers();
 }
-
 async function loadUsers(){
   var c=document.getElementById('users-list-container');
   c.innerHTML='⏳ Yuklanmoqda...';
+  c.style.display=usersListOpen?'block':'none';
   var search=document.getElementById('user-search-input').value.trim();
   try{
-    var r=await fetch(API_URL+'/api/users/list',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken,search:search,page:currentUsersPage,per_page:usersPerPage})});
+    var r=await fetch(API_URL+'/api/users/list',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        token:adminToken,
+        search:search,
+        page:currentUsersPage,
+        per_page:USERS_PER_PAGE
+      })
+    });
     if(r.status===401){handleAuthError();return}
     var d=await r.json();
     if(!d.success){c.innerHTML='<div class="empty-result">Xatolik</div>';return}
     var users=d.users||[];
     visibleUsers=users;
     usersTotalPages=d.total_pages||1;
-    if(users.length===0){c.innerHTML='<div class="empty-result">'+(search?'🔍 Topilmadi':'Obunachilar yo\'q')+'</div>';updateUsersPagination();updateUsersCountInfo();return}
+    if(users.length===0){
+      c.innerHTML='<div class="empty-result">'+(search?'🔍 Topilmadi':'Obunachilar yo\'q')+'</div>';
+      updateUsersPagination();updateUsersCountInfo();return;
+    }
     var h='';
     users.forEach(function(u){
-      var nm=u.full_name||u.username||('ID: '+u.user_id);
+      var nm=escapeHtml(u.full_name||u.username||('ID: '+u.user_id));
+      var ph=u.phone?escapeHtml(u.phone):'';
+      var un=u.username?escapeHtml(u.username):'';
       var checked=selectedUsers.indexOf(u.user_id)>-1?'checked':'';
-      h+='<div class="user-item"><input type="checkbox" class="user-check" value="'+u.user_id+'" '+checked+'><div class="user-info"><b>'+nm+'</b><small>'+u.user_id+(u.phone?' • '+u.phone:'')+(u.username?' • @'+u.username:'')+'</small></div></div>';
+      h+='<div class="user-item"><input type="checkbox" class="user-check" value="'+u.user_id+'" '+checked+'><div class="user-info"><b>'+nm+'</b><small>'+u.user_id+(ph?' • '+ph:'')+(un?' • @'+un:'')+'</small></div></div>';
     });
     c.innerHTML=h;
     c.querySelectorAll('.user-check').forEach(function(cb){
@@ -965,55 +1181,67 @@ async function loadUsers(){
     updateUsersCountInfo();
   }catch(e){c.innerHTML='<div class="empty-result">Xatolik: '+e.message+'</div>'}
 }
-
 function updateUsersCountInfo(){
   document.getElementById('users-count-info').innerText=selectedUsers.length+' ta obunachi tanlangan';
 }
-
 function updateUsersPagination(){
   document.getElementById('users-page-info').innerText=currentUsersPage+' / '+usersTotalPages;
   document.getElementById('u-prev').disabled=currentUsersPage<=1;
   document.getElementById('u-next').disabled=currentUsersPage>=usersTotalPages;
 }
-
 function changeUsersPage(dir){
   currentUsersPage+=dir;
   if(currentUsersPage<1)currentUsersPage=1;
   if(currentUsersPage>usersTotalPages)currentUsersPage=usersTotalPages;
   loadUsers();
 }
-
 function selectAllVisibleUsers(){
   visibleUsers.forEach(function(u){
     if(selectedUsers.indexOf(u.user_id)===-1)selectedUsers.push(u.user_id);
   });
   document.querySelectorAll('.user-check').forEach(function(cb){cb.checked=true});
   updateUsersCountInfo();
-  alert("Ko'ringan "+visibleUsers.length+" ta obunachi tanlandi. Jami: "+selectedUsers.length);
+  alert("Ko'ringan "+visibleUsers.length+" ta tanlandi. Jami: "+selectedUsers.length);
 }
-
 function deselectAllUsers(){
   document.querySelectorAll('.user-check').forEach(function(cb){cb.checked=false});
   selectedUsers=[];
   updateUsersCountInfo();
   alert("Tanlov tozalandi");
 }
-
 async function sendMessage(){
   var msg=document.getElementById('broadcast-message').value.trim();
   var s=document.getElementById('send-status'),b=document.getElementById('send-message-btn');
   if(!msg){s.innerText="❌ Xabar matnini kiriting!";s.className="status err";return}
-  if(selectedUsers.length===0){s.innerText="❌ Kamida 1 ta foydalanuvchi tanlang!";s.className="status err";return}
+  if(selectedUsers.length===0){s.innerText="❌ Kamida 1 ta tanlang!";s.className="status err";return}
   if(!confirm(selectedUsers.length+" ta foydalanuvchiga xabar yuborilsinmi?"))return;
   b.disabled=true;b.innerText='Yuborilmoqda...';s.innerText='';s.className='';
   try{
-    var r=await fetch(API_URL+'/api/send_message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken,user_ids:selectedUsers,message:msg})});
+    var r=await fetch(API_URL+'/api/send_message',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:adminToken,user_ids:selectedUsers,message:msg})
+    });
     if(r.status===401){handleAuthError();return}
     var d=await r.json();
-    if(d.success){s.innerText="✅ Yuborildi: "+d.sent+" ta, ❌ Xatolik: "+d.failed+" ta";s.className="status ok";document.getElementById('broadcast-message').value=''}
-    else{s.innerText="❌ "+(d.error||"Xatolik");s.className="status err"}
+    if(d.success){
+      s.innerText="✅ Yuborildi: "+d.sent+", ❌ Xato: "+d.failed;
+      s.className="status ok";
+      document.getElementById('broadcast-message').value='';
+    }else{s.innerText="❌ "+(d.error||"Xatolik");s.className="status err"}
   }catch(e){s.innerText="❌ "+e.message;s.className="status err"}
   finally{b.disabled=false;b.innerText='📤 Tanlanganlarga yuborish'}
+}
+
+// ⭐ XSS HIMOYASI
+function escapeHtml(text){
+  if(text===null||text===undefined)return '';
+  return String(text)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
 }
 </script>
 </body>
