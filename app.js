@@ -902,7 +902,10 @@ async function openProfile() {
     try {
         const res = await fetch(`${API_URL}/api/register_user`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData || ''
+            },
             body: JSON.stringify({
                 user_id: user.id,
                 username: user.username || "",
@@ -981,7 +984,10 @@ async function saveProfile() {
 
         const res = await fetch(`${API_URL}/api/update_user`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData || ''
+            },
             body: JSON.stringify({
                 user_id: tg.initDataUnsafe.user.id,
                 full_name: fullname,
