@@ -69,11 +69,11 @@ let activeCategory = "all";
 let shuffleTimer = null;
 
 // ⭐ SOZLAMALAR
-const FIRST_HORIZONTAL = 10;       // Yashil hoshiyada 10 ta
-const INITIAL_GRID_ROWS = 10;      // Boshlang'ich: 10 qator (20 ta)
-const LOAD_MORE_ROWS = 5;          // Har yana ko'rishda: 5 qator (10 ta)
-const GRID_COLS = 2;               // 2 ustun
-const BIG_CARD_INTERVAL = 4 * GRID_COLS; // ⭐ Har 8 ta mahsulotdan keyin katta kartochka
+const FIRST_HORIZONTAL = 10;
+const INITIAL_GRID_ROWS = 10;
+const LOAD_MORE_ROWS = 5;
+const GRID_COLS = 2;
+const BIG_CARD_EVERY = 8;  // ⭐ Har 8 ta oddiy kartochkadan keyin katta
 
 let gridRowsShown = INITIAL_GRID_ROWS;
 
@@ -578,7 +578,38 @@ function renderProducts() {
 }
 
 
-// ⭐ GRID'NI TO'LDIRISH — HAR 8 TA MAHSULOTDAN KEYIN KATTA KARTOCHKA
+// ⭐ YANGI MANTIQ: har 8 ta oddiy kartochkadan keyin katta
+// Grid'ga mahsulot qo'shish (productIndex — mahsulotlar ro'yxatidagi joy)
+function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
+    let html = '';
+    let productIndex = startIndex;
+    let regularCount = startRegularCount;
+
+    while (productIndex < endIndex) {
+        // ⭐ 8 ta oddiy kartochkadan keyin KATTA
+        if (regularCount >= BIG_CARD_EVERY) {
+            const bigProduct = filteredProducts[productIndex];
+            if (bigProduct) {
+                html += buildBigProductCard(bigProduct);
+                productIndex++;
+                regularCount = 0;
+                continue;
+            }
+        }
+
+        const product = filteredProducts[productIndex];
+        if (!product) break;
+
+        html += buildProductCard(product);
+        productIndex++;
+        regularCount++;
+    }
+
+    return { html, endIndex: productIndex, regularCount };
+}
+
+
+// ⭐ GRID'NI TO'LDIRISH
 function fillMainGrid() {
     const grid = document.getElementById('main-grid');
     if (!grid) return;
@@ -586,53 +617,37 @@ function fillMainGrid() {
     const total = filteredProducts.length;
     const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
 
-    let html = '';
-
-    // ⭐ Har 8 ta mahsulotdan keyin katta kartochka (4 qator)
-    for (let i = 0; i < gridShown; i++) {
-        const product = filteredProducts[i];
-        if (!product) break;
-
-        // 8, 16, 24, 32... mahsulotlar katta kartochka bo'ladi
-        if (i > 0 && i % BIG_CARD_INTERVAL === 0) {
-            html += buildBigProductCard(product);
-        } else {
-            html += buildProductCard(product);
-        }
-    }
-
-    grid.innerHTML = html;
+    const result = addProductsToGrid(grid, 0, gridShown, 0);
+    grid.innerHTML = result.html;
 }
 
 
-// ⭐ YANA KO'RISH — FAQAT YANGI MAHSULOTLAR
+// ⭐ YANA KO'RISH
 function loadMoreProducts() {
-    const prevGridShown = Math.min(gridRowsShown * GRID_COLS, filteredProducts.length);
-    gridRowsShown += LOAD_MORE_ROWS;
-
     const total = filteredProducts.length;
-    const newGridShown = Math.min(gridRowsShown * GRID_COLS, total);
+    const currentShown = Math.min(gridRowsShown * GRID_COLS, total);
+
+    gridRowsShown += LOAD_MORE_ROWS;
+    const newShown = Math.min(gridRowsShown * GRID_COLS, total);
 
     const grid = document.getElementById('main-grid');
     if (!grid) return;
 
-    // Yangi mahsulotlar
-    const newProducts = filteredProducts.slice(prevGridShown, newGridShown);
-
-    let html = '';
-
-    newProducts.forEach((product, idx) => {
-        const absoluteIdx = prevGridShown + idx;
-
-        // ⭐ Har 8 ta mahsulotdan keyin katta kartochka
-        if (absoluteIdx > 0 && absoluteIdx % BIG_CARD_INTERVAL === 0) {
-            html += buildBigProductCard(product);
-        } else {
-            html += buildProductCard(product);
+    // Oldingi regularCount ni qayta hisoblash
+    let regularCount = 0;
+    let idx = 0;
+    while (idx < currentShown) {
+        if (regularCount >= BIG_CARD_EVERY) {
+            idx++; // katta kartochka
+            regularCount = 0;
+            continue;
         }
-    });
+        idx++;
+        regularCount++;
+    }
 
-    grid.insertAdjacentHTML('beforeend', html);
+    const result = addProductsToGrid(grid, currentShown, newShown, regularCount);
+    grid.insertAdjacentHTML('beforeend', result.html);
 
     attachAllListeners();
     initImageObserver();
