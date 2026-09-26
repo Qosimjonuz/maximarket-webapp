@@ -1071,3 +1071,158 @@ body::before {
     display: flex; align-items: center; justify-content: center;
     padding: 0;
 }
+/* ============================================================ */
+/* ⭐ KATTA KARTOCHKA — +30% BO'YGA */
+/* ============================================================ */
+
+/* Mobil ekranlar uchun */
+.big-product-card {
+    margin: 24px 0;
+}
+
+.big-product-image {
+    height: 494px;  /* 380 → 494 (+30%) */
+}
+
+.big-product-image .img-spinner {
+    width: 56px;
+    height: 56px;
+    margin: -28px 0 0 -28px;
+    border-width: 5px;
+}
+
+.big-product-body {
+    padding: 22px 18px 20px;
+    gap: 14px;
+}
+
+.big-product-title {
+    font-size: 26px;  /* 20 → 26 */
+    padding-right: 120px;
+}
+
+.big-product-desc {
+    font-size: 16px;  /* 14 → 16 */
+    line-height: 1.7;
+}
+
+.big-old-price {
+    font-size: 18px;
+}
+
+.big-new-price {
+    font-size: 36px;  /* 28 → 36 */
+}
+
+.big-buy-btn {
+    padding: 22px;
+    font-size: 23px;  /* 18 → 23 */
+    border-radius: 16px;
+}
+
+.big-product-card::before {
+    font-size: 14px;
+    padding: 8px 16px;
+    top: 18px;
+    right: 18px;
+}
+
+.big-product-image .discount-badge-h {
+    top: 16px;
+    left: 16px;
+    font-size: 16px;
+    padding: 8px 14px;
+}
+
+/* ============================================================ */
+/* ⭐ KICHIK MOBIL EKRANLAR (360px dan kichik) */
+/* ============================================================ */
+
+@media (max-width: 360px) {
+    .big-product-image {
+        height: 390px;  /* 300 → 390 (+30%) */
+    }
+    .big-product-title {
+        font-size: 22px;
+        padding-right: 100px;
+    }
+    .big-product-desc {
+        font-size: 14px;
+    }
+    .big-new-price {
+        font-size: 30px;
+    }
+    .big-buy-btn {
+        padding: 18px;
+        font-size: 20px;
+    }
+    .big-product-card::before {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+}
+
+/* ============================================================ */
+/* ⭐ KATTA EKRANLAR (kompyuter, 768px+) */
+/* ============================================================ */
+
+@media (min-width: 768px) {
+    .big-product-card {
+        padding: 24px;
+        gap: 28px;
+        margin: 28px 0;
+    }
+    .big-product-image {
+        width: 50%;
+        height: 650px;  /* 500 → 650 (+30%) */
+        border-radius: 16px;
+    }
+    .big-product-body {
+        padding: 20px 12px;
+        gap: 16px;
+    }
+    .big-product-title {
+        font-size: 32px;  /* 26 → 32 */
+        padding-right: 140px;
+    }
+    .big-product-desc {
+        font-size: 18px;
+    }
+    .big-new-price {
+        font-size: 44px;  /* 36 → 44 */
+    }
+    .big-old-price {
+        font-size: 20px;
+    }
+    .big-buy-btn {
+        padding: 26px;
+        font-size: 26px;
+    }
+    .big-product-card::before {
+        font-size: 16px;
+        padding: 10px 20px;
+        top: 20px;
+        right: 20px;
+    }
+    .big-product-image .discount-badge-h {
+        font-size: 18px;
+        padding: 10px 18px;
+    }
+}
+
+/* ============================================================ */
+/* ⭐ JUDA KATTA EKRANLAR (1024px+) */
+/* ============================================================ */
+
+@media (min-width: 1024px) {
+    .big-product-image {
+        width: 45%;
+        height: 720px;  /* Yana kattaroq */
+    }
+    .big-product-title {
+        font-size: 36px;
+    }
+    .big-new-price {
+        font-size: 48px;
+    }
+}
