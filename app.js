@@ -45,7 +45,7 @@ const COLORS = [
     { id: "chegirma-1", name: "Marjon", hex: "#ff7043" }
 ];
 
-// ⭐ 8 TA BANNER — 3-8 ga yangi rasmlar
+// 8 ta banner
 const banners = [
     { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
     { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
@@ -69,14 +69,16 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
-// Yana ko'rish
-const FIRST_HORIZONTAL = 10;
-const INITIAL_GRID_ROWS = 10;
-const LOAD_MORE_ROWS = 10;
-const GRID_COLS = 2;
+// ⭐ PAGINATION SOZLAMALARI
+const FIRST_HORIZONTAL = 10;       // Yashil hoshiyada 10 ta
+const INITIAL_GRID_ROWS = 10;      // Birinchi yuklashda 10 qator (20 ta)
+const LOAD_MORE_ROWS = 5;          // Keyingi har yuklashda 5 qator (10 ta)
+const GRID_COLS = 2;               // 2 ustun
+const BIG_CARD_AFTER_ROW = 13;     // 13-qatordan keyin katta kartochka
+
 let gridRowsShown = INITIAL_GRID_ROWS;
 
-// ⭐ Yashil hoshiya (featured products)
+// Yashil hoshiya
 let featuredProducts = [];
 const FEATURED_COUNT = 10;
 
@@ -92,7 +94,7 @@ let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeActive = false;
 
-// ⭐ Auto-scroll
+// Auto-scroll
 let autoScrollInterval = null;
 let autoScrollPaused = false;
 let autoLoadObserver = null;
@@ -156,8 +158,7 @@ function initModalSwipe() {
 }
 
 
-// ==================== ⭐ YASHIL HOSHIYA (FEATURED) ====================
-// Har sahifa yangilanganda — tasodifiy 10 ta mahsulot
+// ==================== YASHIL HOSHIYA ====================
 function pickFeaturedProducts() {
     if (products.length === 0) {
         featuredProducts = [];
@@ -167,38 +168,25 @@ function pickFeaturedProducts() {
     featuredProducts = shuffled.slice(0, Math.min(FEATURED_COUNT, shuffled.length));
 }
 
-// Pastdagi grid'da — yashil hoshiyadagilar ham qo'shiladi (pastga qarab 13 qator)
-function getFeaturedForGrid() {
-    // Featured products pastdagi grid'da ham ko'rinadi
-    return featuredProducts;
-}
 
-
-// ==================== ⭐ AUTO-SCROLL (birinchi qator) ====================
+// ==================== AUTO-SCROLL ====================
 function startAutoScroll() {
     const container = document.querySelector('.products-horizontal');
     if (!container || container.children.length < 3) return;
 
-    // Eski intervalni tozalash
     if (autoScrollInterval) clearInterval(autoScrollInterval);
 
-    // Foydalanuvchi scroll qilsa — to'xtatish
     container.addEventListener('touchstart', () => { autoScrollPaused = true; }, { passive: true });
     container.addEventListener('touchend', () => { setTimeout(() => { autoScrollPaused = false; }, 3000); }, { passive: true });
     container.addEventListener('scroll', () => { autoScrollPaused = true; setTimeout(() => { autoScrollPaused = false; }, 3000); }, { passive: true });
 
-    // ⭐ Sahifa ochilganda bir marta + har 3 sekundda
     autoScrollInterval = setInterval(() => {
         if (autoScrollPaused || !container) return;
-
         const maxScroll = container.scrollWidth - container.clientWidth;
         if (maxScroll <= 0) return;
-
         const currentScroll = container.scrollLeft;
-        const step = container.clientWidth * 0.6; // ~60% ekran
-
+        const step = container.clientWidth * 0.6;
         if (currentScroll >= maxScroll - 10) {
-            // Boshiga qaytish (silliq)
             container.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
             container.scrollTo({ left: currentScroll + step, behavior: 'smooth' });
@@ -207,34 +195,27 @@ function startAutoScroll() {
 }
 
 
-// ==================== ⭐ AUTO-LOAD "YANA KO'RISH" ====================
-// 10-qatordan keyin avtomatik "Yana ko'rish" bosiladi
+// ==================== AUTO-LOAD "YANA KO'RISH" ====================
 function setupAutoLoadMore() {
-    // Eski observer'ni tozalash
     if (autoLoadObserver) autoLoadObserver.disconnect();
-
     if (!('IntersectionObserver' in window)) return;
 
-    // Load more tugmasini kuzatish
     const checkAndObserve = () => {
         const loadMoreBtn = document.querySelector('.load-more-btn');
         if (loadMoreBtn) {
             autoLoadObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        // ⭐ Avtomatik bosish
                         loadMoreProducts();
                     }
                 });
             }, {
-                rootMargin: '200px 0px',  // 200px oldin ishga tushadi
+                rootMargin: '200px 0px',
                 threshold: 0.01
             });
             autoLoadObserver.observe(loadMoreBtn);
         }
     };
-
-    // DOM yangilangach biroz kutib, keyin kuzatish
     setTimeout(checkAndObserve, 500);
 }
 
@@ -446,9 +427,7 @@ async function loadProducts() {
             return;
         }
 
-        // ⭐ Yashil hoshiya uchun tasodifiy 10 ta
         pickFeaturedProducts();
-
         shuffleProducts();
         resetLoadMore();
         renderProducts();
@@ -515,7 +494,7 @@ function buildProductCard(p) {
     </div>`;
 }
 
-// ⭐ KATTA KARTOCHKA (13-qatordan keyin)
+// ⭐ KATTA KARTOCHKA
 function buildBigProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
@@ -561,7 +540,7 @@ function renderProducts() {
 
     let html = '';
 
-    // ⭐ YASHIL HOSHIYA — birinchi 10 ta (tasodifiy)
+    // Yashil hoshiya
     if (horizontal.length > 0) {
         html += `
             <div class="featured-section">
@@ -578,18 +557,22 @@ function renderProducts() {
         `;
     }
 
-    // ⭐ Pastga qarab grid (yashil hoshiyadagi mahsulotlar ham pastda)
+    // Pastga qarab grid
     if (grid.length > 0) {
-        html += '<div class="products-grid">';
+        html += '<div class="products-grid" id="main-grid">';
         grid.forEach(p => { html += buildProductCard(p); });
         html += '</div>';
     }
 
-    // ⭐ KATTA KARTOCHKA (13-qatordan keyin — grid ichida)
-    if (grid.length >= 26 && filteredProducts.length > 26) {
-        // 26 ta kartochka = 13 qator (2 tadan)
-        const bigProduct = filteredProducts[26];
-        html += buildBigProductCard(bigProduct);
+    // ⭐ KATTA KARTOCHKA — 13-qatordan keyin (agar yetarli mahsulot bo'lsa)
+    if (filteredProducts.length > BIG_CARD_AFTER_ROW * GRID_COLS) {
+        const bigProductIndex = BIG_CARD_AFTER_ROW * GRID_COLS; // 26
+        const bigProduct = filteredProducts[bigProductIndex];
+        if (bigProduct) {
+            html += '<div id="big-card-holder">';
+            html += buildBigProductCard(bigProduct);
+            html += '</div>';
+        }
     }
 
     // Yana ko'rish
@@ -608,71 +591,62 @@ function renderProducts() {
 
     container.innerHTML = html;
 
-    // Event listenerlar
-    container.querySelectorAll('.product-card-h').forEach(card => {
-        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
-    });
-    container.querySelectorAll('.buy-btn-h').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openModal(btn.getAttribute('data-buy'));
-        });
-    });
-    container.querySelectorAll('.big-product-card').forEach(card => {
-        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
-    });
-    container.querySelectorAll('.big-buy-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openModal(btn.getAttribute('data-buy'));
-        });
-    });
-
-    // ⭐ Auto-scroll va auto-load
+    attachProductListeners(container);
     initImageObserver();
     startAutoScroll();
     setupAutoLoadMore();
 }
 
 
-// ==================== YANA KO'RISH ====================
+// ==================== ⭐ YANA KO'RISH (tuzatilgan) ====================
 function getDisplayedProducts() {
     const total = filteredProducts.length;
     if (total === 0) return { horizontal: [], grid: [], hasMore: false, remaining: 0 };
 
-    // ⭐ Yashil hoshiya — tasodifiy 10 ta mahsulot
+    // Yashil hoshiya
     const horizontal = featuredProducts.slice(0, FIRST_HORIZONTAL);
 
-    // ⭐ Pastdagi grid — yashil hoshiyadagi mahsulotlardan keyingi barcha
-    const gridAvailable = total;
-    const gridShown = Math.min(gridRowsShown * GRID_COLS, gridAvailable);
+    // Pastdagi grid
+    const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
     const grid = filteredProducts.slice(0, gridShown);
-    const hasMore = gridShown < total;
-    const remaining = total - gridShown;
 
-    return { horizontal, grid, hasMore, remaining };
+    // ⭐ Katta kartochka: agar grid yetarli bo'lsa
+    const bigCardIndex = BIG_CARD_AFTER_ROW * GRID_COLS;
+    const hasBigCard = total > bigCardIndex;
+
+    // ⭐ Qolgan mahsulotlar hisoblash
+    // - Katta kartochka 1 ta mahsulot egallaydi
+    const totalDisplayed = gridShown + (hasBigCard ? 1 : 0);
+    const hasMore = totalDisplayed < total;
+    const remaining = total - totalDisplayed;
+
+    return { horizontal, grid, hasMore, remaining, hasBigCard, bigCardIndex };
 }
 
+// ⭐ YANGI: yana ko'rish (katta kartochka saqlanadi)
 function loadMoreProducts() {
     const prevRows = gridRowsShown;
     gridRowsShown += LOAD_MORE_ROWS;
 
-    // Faqat yangi qatorlarni qo'shish (o'chirmasdan)
-    const { grid } = getDisplayedProducts();
-    const container = document.querySelector('.products-grid');
-    if (container) {
-        const newItems = grid.slice(prevRows * GRID_COLS);
+    const total = filteredProducts.length;
+    const newGridShown = Math.min(gridRowsShown * GRID_COLS, total);
+
+    // Yangi mahsulotlar (faqat yangi qo'shilganlar)
+    const newItems = filteredProducts.slice(prevRows * GRID_COLS, newGridShown);
+
+    const grid = document.getElementById('main-grid');
+    if (grid && newItems.length > 0) {
         let html = '';
         newItems.forEach(p => { html += buildProductCard(p); });
-        container.insertAdjacentHTML('beforeend', html);
+        grid.insertAdjacentHTML('beforeend', html);
 
-        // Event listenerlarni yangi elementlarga ulash
-        const cards = container.querySelectorAll('.product-card-h');
+        // Yangi elementlarga listener
+        const cards = grid.querySelectorAll('.product-card-h');
         const lastCards = Array.from(cards).slice(-newItems.length);
         lastCards.forEach(card => {
             card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
         });
-        const buyBtns = container.querySelectorAll('.buy-btn-h');
+        const buyBtns = grid.querySelectorAll('.buy-btn-h');
         const lastBtns = Array.from(buyBtns).slice(-newItems.length);
         lastBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -682,11 +656,39 @@ function loadMoreProducts() {
         });
 
         initImageObserver();
-    } else {
-        renderProducts();
     }
 
-    // ⭐ Load more tugmasini yangilash
+    // ⭐ Katta kartochkani SAQLASH (agar mavjud bo'lsa)
+    const bigCardHolder = document.getElementById('big-card-holder');
+    const bigCardIndex = BIG_CARD_AFTER_ROW * GRID_COLS;
+    const hasBigCard = total > bigCardIndex;
+
+    if (hasBigCard && !bigCardHolder) {
+        // Katta kartochka hali qo'shilmagan — qo'shamiz
+        const bigProduct = filteredProducts[bigCardIndex];
+        if (bigProduct) {
+            const loadMoreContainer = document.querySelector('.load-more-container');
+            if (loadMoreContainer) {
+                const bigHtml = '<div id="big-card-holder">' + buildBigProductCard(bigProduct) + '</div>';
+                loadMoreContainer.insertAdjacentHTML('beforebegin', bigHtml);
+
+                // Listener
+                const newBigCard = document.querySelector('.big-product-card');
+                if (newBigCard) {
+                    newBigCard.addEventListener('click', () => openModal(newBigCard.getAttribute('data-id')));
+                    const bigBtn = newBigCard.querySelector('.big-buy-btn');
+                    if (bigBtn) {
+                        bigBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openModal(bigBtn.getAttribute('data-buy'));
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    // Load more tugmasini yangilash
     updateLoadMoreButton();
     setupAutoLoadMore();
 }
@@ -706,31 +708,32 @@ function updateLoadMoreButton() {
     } else {
         container.innerHTML = `<p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>`;
     }
-
-    // ⭐ Katta kartochka qo'shish
-    const grid = document.querySelector('.products-grid');
-    if (grid && !document.querySelector('.big-product-card')) {
-        const totalCards = grid.querySelectorAll('.product-card-h').length;
-        if (totalCards >= 26 && filteredProducts.length > 26) {
-            const bigProduct = filteredProducts[26];
-            grid.insertAdjacentHTML('afterend', buildBigProductCard(bigProduct));
-            const bigCard = document.querySelector('.big-product-card');
-            if (bigCard) {
-                bigCard.addEventListener('click', () => openModal(bigCard.getAttribute('data-id')));
-                const bigBtn = bigCard.querySelector('.big-buy-btn');
-                if (bigBtn) {
-                    bigBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openModal(bigBtn.getAttribute('data-buy'));
-                    });
-                }
-            }
-        }
-    }
 }
 
 function resetLoadMore() {
     gridRowsShown = INITIAL_GRID_ROWS;
+}
+
+// ⭐ Umumiy listenerlar
+function attachProductListeners(container) {
+    container.querySelectorAll('.product-card-h').forEach(card => {
+        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
+    });
+    container.querySelectorAll('.buy-btn-h').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(btn.getAttribute('data-buy'));
+        });
+    });
+    container.querySelectorAll('.big-product-card').forEach(card => {
+        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
+    });
+    container.querySelectorAll('.big-buy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(btn.getAttribute('data-buy'));
+        });
+    });
 }
 
 
@@ -798,7 +801,6 @@ async function openModal(id) {
     descEl.innerHTML = formatted;
     descEl.style.display = formatted ? 'block' : 'none';
 
-    // RAZMER
     const sizeSection = document.getElementById('size-section');
     const sizesList = document.getElementById('modal-sizes');
     if (currentProduct.sizes && currentProduct.sizes.length > 0) {
@@ -817,7 +819,6 @@ async function openModal(id) {
         sizeSection.style.display = 'none';
     }
 
-    // RANG
     const colorSection = document.getElementById('color-section');
     const colorsList = document.getElementById('modal-colors');
     if (currentProduct.colors && currentProduct.colors.length > 0) {
