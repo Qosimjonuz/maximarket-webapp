@@ -163,7 +163,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .low-stock-item-title{font-size:12px;font-weight:700;color:#222;flex:1;word-break:break-word}
 .low-stock-item-stock{background:#e53935;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap}
 
-/* ⭐ SALES LIST (sotuv ro'yxati) */
+/* ⭐ SALES LIST */
 .sales-list-item{background:#f8f9fa;padding:12px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .sales-list-num{background:#1565c0;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
 .sales-list-body{flex:1;min-width:0}
@@ -175,103 +175,45 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 /* ⭐ MODAL OVERLAY */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;justify-content:center;align-items:flex-start;overflow-y:auto;padding:20px 0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .modal-overlay.active{display:flex}
-.modal-close-btn{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;padding:0;margin:0;width:36px}
+.modal-close-btn{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;padding:0;margin:0}
 
 /* ⭐ MOBIL */
 @media(max-width:380px){.stats-grid{grid-template-columns:1fr}}
 
-/* ⭐ ============================================================ */
-/* ⭐ KOMPYUTER VERSIYA */
-/* ⭐ ============================================================ */
+/* ⭐ KOMPYUTER */
 @media (min-width: 768px) {
-    body {
-        max-width: 1200px;
-        padding: 20px 24px 40px;
-    }
-
-    h1 {
-        font-size: 26px;
-        margin: 10px 0 20px;
-    }
-
-    .section {
-        padding: 22px;
-        border-radius: 16px;
-        margin-bottom: 20px;
-    }
-
-    .section h2 {
-        font-size: 18px;
-    }
-
-    #login-section {
-        max-width: 460px;
-        margin: 40px auto;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-    }
-
-    .stat-card {
-        padding: 16px;
-    }
+    body { max-width: 1200px; padding: 20px 24px 40px; }
+    h1 { font-size: 26px; margin: 10px 0 20px; }
+    .section { padding: 22px; border-radius: 16px; margin-bottom: 20px; }
+    .section h2 { font-size: 18px; }
+    #login-section { max-width: 460px; margin: 40px auto; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat-card { padding: 16px; }
     .stat-card-label { font-size: 12px; }
     .stat-card-value { font-size: 26px; }
     .stat-card-count { font-size: 12px; }
-
     .grid-2 { grid-template-columns: 1fr 1fr; gap: 12px; }
     .grid-3 { grid-template-columns: repeat(6, 1fr); }
     .grid-4 { grid-template-columns: repeat(8, 1fr); }
-
     .chip { padding: 10px 14px; font-size: 13px; }
     .color-chip { padding: 8px; }
     .color-circle { width: 32px; height: 32px; }
     .color-name { font-size: 10px; }
-
-    .image-preview {
-        grid-template-columns: repeat(4, 1fr);
-        max-width: 600px;
-    }
-
-    .product-item {
-        padding: 14px 16px;
-    }
+    .image-preview { grid-template-columns: repeat(4, 1fr); max-width: 600px; }
+    .product-item { padding: 14px 16px; }
     .product-item-info b { font-size: 14px; }
     .product-item-info small { font-size: 11px; }
-
     .orders-tabs { gap: 8px; }
     .orders-tab { padding: 9px 18px; font-size: 13px; }
-
     .user-item { padding: 12px 16px; }
-
-    .bottom-nav {
-        max-width: 1200px;
-        border-radius: 12px;
-        margin: 12px auto 0;
-        border-top: none;
-        border: 1.5px solid #e0e0e0;
-        padding-bottom: 0;
-        position: relative;
-    }
-    .bottom-nav button {
-        padding: 12px;
-        font-size: 12px;
-    }
+    .bottom-nav { max-width: 1200px; border-radius: 12px; margin: 12px auto 0; border-top: none; border: 1.5px solid #e0e0e0; padding-bottom: 0; position: relative; }
+    .bottom-nav button { padding: 12px; font-size: 12px; }
     .bottom-icon { font-size: 24px; }
-
     .session-info { font-size: 12px; padding: 10px; }
-
     button { font-size: 15px; }
     button.small { font-size: 13px; padding: 8px 14px; }
-
-    .product-modal-content {
-        max-width: 700px;
-    }
-    .product-modal-image {
-        height: 400px;
-    }
+    .product-modal-content { max-width: 700px; }
+    .product-modal-image { height: 400px; }
 }
 </style>
 </head>
@@ -369,7 +311,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="pagination" id="products-pagination"></div>
     </div>
 
-    <!-- ⭐ KAM QOLGAN MAHSULOTLAR -->
     <div class="low-stock-section" id="low-stock-section" style="display:none">
       <div class="low-stock-header">
         <span class="low-stock-icon">⚠️</span>
@@ -382,7 +323,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 
   <!-- PAGE 3: STATISTICS -->
   <div id="page-stats" class="page hidden">
-    <!-- ⭐ 1. SOTUV STATISTIKASI -->
+    <!-- 1. SOTUV STATISTIKASI -->
     <div class="section">
       <h2>📊 Sotuv statistikasi</h2>
       <div class="info-note" id="stats-info">ℹ️ Statistika <b id="stats-start-date">-</b> dan boshlab</div>
@@ -416,14 +357,18 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="info-note" style="margin-top:10px">👆 Kartochkani bosing — mahsulotlar ro'yxatini ko'rish uchun</div>
     </div>
 
-    <!-- ⭐ 2. STATISTIKANI QAYTA BOSHLASH -->
+    <!-- 2. STATISTIKANI QAYTA BOSHLASH + ZAKASLAR TOZALASH -->
     <div class="section">
-      <h2>🔄 Sotuv statistikasini qayta boshlash</h2>
-      <div class="warn-note">⚠️ Bu tugma bosilganda <b>faqat sotuv statistikasi</b> 0 dan boshlanadi. Zakaslar va boshqa ma'lumotlar <b>saqlanadi</b>.</div>
-      <button class="danger" onclick="resetSalesStats()">🔄 Sotuv statistikasini bugundan qayta boshlash</button>
+      <h2>🔄 Statistikani qayta boshlash</h2>
+      <div class="warn-note">⚠️ <b>Sotuv statistikasi</b> — Bugun, Hafta, Oy, Yil va Jami barcha raqamlar 0 dan boshlanadi.</div>
+      <button class="danger" onclick="resetSalesStats()">🔄 Sotuv statistikasini qayta boshlash</button>
+
+      <h2 style="margin-top:20px">🗑 Zakaslar ro'yxatini tozalash</h2>
+      <div class="warn-note">⚠️ <b>Zakaslar ro'yxati</b> — barcha zakaslar ro'yxatdan o'chiriladi. Sotuv statistikasi saqlanadi.</div>
+      <button class="warning" onclick="clearOrdersHistory()">🗑 Zakaslar ro'yxatini tozalash</button>
     </div>
 
-    <!-- ⭐ 3. SAYTGA TASHRIFLAR -->
+    <!-- 3. SAYTGA TASHRIFLAR -->
     <div class="section">
       <h2>👣 Saytga tashriflar</h2>
       <div class="stats-grid">
@@ -438,7 +383,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       </div>
     </div>
 
-    <!-- ⭐ 4. ZAKASLAR RO'YXATI -->
+    <!-- 4. ZAKASLAR RO'YXATI -->
     <div class="section">
       <h2>🛒 Zakaslar ro'yxati</h2>
       <div class="orders-tabs">
@@ -473,7 +418,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="pagination" id="orders-pagination"></div>
     </div>
 
-    <!-- ⭐ 5. OBUNACHILAR STATISTIKASI -->
+    <!-- 5. OBUNACHILAR STATISTIKASI -->
     <div class="section">
       <h2>👥 Obunachilar statistikasi</h2>
       <div class="stats-grid">
@@ -485,7 +430,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="stat-card" style="background:linear-gradient(135deg,#283593,#3f51b5)"><div class="stat-card-label">🏆 Jami obunachilar</div><div class="stat-card-value" id="u-total">0</div></div>
     </div>
 
-    <!-- ⭐ 6. OBUNACHILARGA XABAR -->
+    <!-- 6. OBUNACHILARGA XABAR -->
     <div class="section">
       <h2>📢 Obunachilarga xabar</h2>
       <div class="products-search" style="margin-bottom:8px">
@@ -525,7 +470,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   <button data-page="stats" onclick="switchPage('stats')"><span class="bottom-icon">📊</span><span>Statistika</span></button>
 </div>
 
-<!-- ⭐ MAHSULOT MODAL -->
+<!-- MAHSULOT MODAL -->
 <div id="product-modal" class="modal-overlay">
   <div class="product-modal-content">
     <button class="modal-close-btn" onclick="closeProductModal()">✕</button>
@@ -559,7 +504,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<!-- ⭐ SOTUV RO'YXATI MODAL (davr bo'yicha) -->
+<!-- SOTUV RO'YXATI MODAL -->
 <div id="sales-list-modal" class="modal-overlay">
   <div class="product-modal-content">
     <button class="modal-close-btn" onclick="closeSalesModal()">✕</button>
@@ -594,7 +539,6 @@ var userSearchDebounce=null;
 var visibleUsers=[];
 var usersListOpen=true;
 
-// Orders
 var currentOrdersPeriod="today";
 var currentOrdersSource="all";
 var currentOrdersPage=1;
@@ -603,11 +547,9 @@ var ordersSearch="";
 var ordersCustomDate="";
 var ordersSearchDebounce=null;
 
-// Low stock
 var currentLowStockPage=1;
 var lowStockTotalPages=1;
 
-// Sales list
 var salesListPeriod="today";
 var salesListPage=1;
 var salesListTotalPages=1;
@@ -636,7 +578,6 @@ var COLORS=[
 {id:"yashil-och",name:"Och yashil",hex:"#66bb6a"},{id:"chegirma-1",name:"Marjon",hex:"#ff7043"}
 ];
 
-// ⭐ XSS HIMOYASI
 function escapeHtml(text){
   if(text===null||text===undefined)return '';
   return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
@@ -664,13 +605,8 @@ function toggleUsersList(){
   usersListOpen=!usersListOpen;
   var c=document.getElementById('users-list-container');
   var btn=document.getElementById('toggle-users-btn');
-  if(usersListOpen){
-    c.style.display='block';
-    btn.innerText='🔼 Ro\'yxatni yopish';
-  }else{
-    c.style.display='none';
-    btn.innerText='🔽 Ro\'yxatni ochish';
-  }
+  if(usersListOpen){c.style.display='block';btn.innerText='🔼 Ro\'yxatni yopish'}
+  else{c.style.display='none';btn.innerText='🔽 Ro\'yxatni ochish'}
 }
 
 function saveToken(t){adminToken=t;localStorage.setItem(TOKEN_KEY,t)}
@@ -745,7 +681,6 @@ document.getElementById('logout-btn').addEventListener('click',async function(){
   showLogin();
 });
 
-// ==================== KATEGORIYALAR ====================
 function renderCategories(){
   var g=document.getElementById('categories-grid'),h='';
   CATEGORIES.forEach(function(c){
@@ -992,7 +927,6 @@ function editProduct(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ==================== MAHSULOTLAR RO'YXATI ====================
 function searchProducts(){
   searchQuery=document.getElementById('products-search-input').value.trim().toLowerCase();
   document.getElementById('products-search-clear').style.display=searchQuery?'flex':'none';
@@ -1085,7 +1019,6 @@ function deleteProduct(id){
 }
 document.getElementById('refresh-btn').addEventListener('click',function(){loadProducts();loadLowStock();});
 
-// ⭐ KAM QOLGAN MAHSULOTLAR
 async function loadLowStock(){
   var section=document.getElementById('low-stock-section');
   var list=document.getElementById('low-stock-list');
@@ -1097,10 +1030,7 @@ async function loadLowStock(){
     });
     if(r.status===401){handleAuthError();return}
     var d=await r.json();
-    if(!d.success||d.total===0){
-      section.style.display='none';
-      return;
-    }
+    if(!d.success||d.total===0){section.style.display='none';return}
     section.style.display='block';
     lowStockTotalPages=d.total_pages||1;
     var s=(currentLowStockPage-1)*LOW_STOCK_PER_PAGE;
@@ -1115,23 +1045,16 @@ async function loadLowStock(){
     });
     list.innerHTML=h;
     renderPagination('low-stock-pagination',currentLowStockPage,lowStockTotalPages,'goToLowStockPage');
-  }catch(e){
-    section.style.display='none';
-  }
+  }catch(e){section.style.display='none'}
 }
 function goToLowStockPage(p){
   currentLowStockPage=p;loadLowStock();
   window.scrollTo({top:document.getElementById('low-stock-section').offsetTop-20,behavior:'smooth'});
 }
 
-// ==================== MAHSULOT MODAL ====================
 function openProductModal(id){
   var p=null;
   for(var i=0;i<allProducts.length;i++){if(String(allProducts[i].id)===String(id)){p=allProducts[i];break}}
-  if(!p){
-    // Low stock ro'yxatidan
-    for(var i=0;i<allProducts.length;i++){if(String(allProducts[i].id)===String(id)){p=allProducts[i];break}}
-  }
   if(!p){alert("Mahsulot topilmadi");return}
   currentModalProductId=id;
   document.getElementById('pm-image').src=(p.images&&p.images[0])||'https://via.placeholder.com/400x300?text=📦';
@@ -1165,14 +1088,9 @@ function editFromModal(){
   if(currentModalProductId){var id=currentModalProductId;closeProductModal();editProduct(id)}
 }
 function deleteFromModal(){
-  if(currentModalProductId){
-    var id=currentModalProductId;
-    closeProductModal();
-    deleteProduct(id);
-  }
+  if(currentModalProductId){var id=currentModalProductId;closeProductModal();deleteProduct(id)}
 }
 
-// ==================== STATS ====================
 async function loadStats(){
   try{
     var r=await fetch(API_URL+'/api/stats/sales',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:adminToken})});
@@ -1225,8 +1143,31 @@ async function loadStats(){
   }catch(e){}
 }
 
+// ⭐ ZAKASLAR RO'YXATINI TOZALASH
+async function clearOrdersHistory(){
+  if(!confirm("⚠️ ZAKASLAR RO'YXATI TOZALANADI!\n\nBarcha zakaslar ro'yxatdan o'chiriladi.\nSotuv statistikasi saqlanadi.\n\nDavom etilsinmi?"))return;
+  if(!confirm("Oxirgi tasdiq: Rostdan ham barcha zakaslar ro'yxatini tozalaysizmi?"))return;
+
+  try{
+    var r=await fetch(API_URL+'/api/orders/clear',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:adminToken})
+    });
+    if(r.status===401){handleAuthError();return}
+    var d=await r.json();
+    if(d.success){
+      alert("✅ Zakaslar ro'yxati tozalandi!");
+      loadOrders();
+    }else{
+      alert("Xatolik: "+(d.error||""));
+    }
+  }catch(e){alert("Xatolik: "+e.message)}
+}
+
+// ⭐ SOTUV STATISTIKASINI QAYTA BOSHLASH
 async function resetSalesStats(){
-  if(!confirm("Faqat SOTUV statistikasi bugundan qayta boshlanadi.\n\nZakaslar va boshqa ma'lumotlar saqlanadi.\n\nDavom etilsinmi?"))return;
+  if(!confirm("Sotuv statistikasi bugundan qayta boshlanadi.\n\nBugun, Hafta, Oy, Yil va Jami — barcha raqamlar 0 dan boshlanadi.\n\nDavom etilsinmi?"))return;
   try{
     var r=await fetch(API_URL+'/api/stats/reset-sales',{
       method:'POST',
@@ -1244,7 +1185,6 @@ async function resetSalesStats(){
   }catch(e){alert("Xatolik: "+e.message)}
 }
 
-// ==================== ZAKASLAR ====================
 function switchOrdersPeriod(period){
   currentOrdersPeriod=period;
   currentOrdersPage=1;
@@ -1359,7 +1299,6 @@ function goToOrdersPage(p){
   window.scrollTo({top:document.getElementById('orders-list').offsetTop-100,behavior:'smooth'});
 }
 
-// ==================== SOTUV RO'YXATI (davr bo'yicha) ====================
 function openSalesList(period){
   salesListPeriod=period;
   salesListPage=1;
@@ -1413,7 +1352,6 @@ function goToSalesPage(p){
   salesListPage=p;loadSalesList();
 }
 
-// ==================== USERS ====================
 function searchUsersDebounced(){
   var v=document.getElementById('user-search-input').value;
   document.getElementById('user-search-clear').style.display=v.trim()?'flex':'none';
@@ -1469,12 +1407,8 @@ async function loadUsers(){
     updateUsersCountInfo();
   }catch(e){c.innerHTML='<div class="empty-result">Xatolik: '+e.message+'</div>'}
 }
-function goToUsersPage(p){
-  currentUsersPage=p;loadUsers();
-}
-function updateUsersCountInfo(){
-  document.getElementById('users-count-info').innerText=selectedUsers.length+' ta obunachi tanlangan';
-}
+function goToUsersPage(p){currentUsersPage=p;loadUsers();}
+function updateUsersCountInfo(){document.getElementById('users-count-info').innerText=selectedUsers.length+' ta obunachi tanlangan';}
 function selectAllVisibleUsers(){
   visibleUsers.forEach(function(u){
     if(selectedUsers.indexOf(u.user_id)===-1)selectedUsers.push(u.user_id);
