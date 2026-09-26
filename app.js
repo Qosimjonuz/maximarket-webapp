@@ -68,20 +68,18 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
-// ⭐ PAGINATION SOZLAMALARI
+// ⭐ SOZLAMALAR
 const FIRST_HORIZONTAL = 10;       // Yashil hoshiyada 10 ta
 const INITIAL_GRID_ROWS = 10;      // Boshlang'ich: 10 qator (20 ta)
 const LOAD_MORE_ROWS = 5;          // Har yana ko'rishda: 5 qator (10 ta)
 const GRID_COLS = 2;               // 2 ustun
+const BIG_CARD_INTERVAL = 4 * GRID_COLS; // ⭐ Har 8 ta mahsulotdan keyin katta kartochka
 
 let gridRowsShown = INITIAL_GRID_ROWS;
 
 // Yashil hoshiya
 let featuredProducts = [];
 const FEATURED_COUNT = 10;
-
-// ⭐ Katta kartochkalar uchun hisoblagichlar
-let bigCardsShown = 0;             // Nechta katta kartochka ko'rsatildi
 
 let selectedSize = null;
 let selectedColor = null;
@@ -529,8 +527,7 @@ function buildBigProductCard(p) {
 }
 
 
-// ==================== ⭐ YANGI RENDER MANTIQI ====================
-// Katta kartochkalar grid ichida bo'ladi
+// ==================== RENDER ====================
 function renderProducts() {
     const container = document.getElementById('products-container');
     if (filteredProducts.length === 0) {
@@ -560,15 +557,15 @@ function renderProducts() {
     // Asosiy grid
     html += '<div class="products-grid" id="main-grid"></div>';
 
-    // Load more tugmasi
+    // Load more
     html += '<div class="load-more-container" id="load-more-container"></div>';
 
     container.innerHTML = html;
 
-    // ⭐ Asosiy grid'ni to'ldirish
+    // ⭐ Grid'ni to'ldirish
     fillMainGrid();
 
-    // Load more tugmasini yangilash
+    // Load more tugmasi
     updateLoadMoreButton();
 
     // Listenerlar
@@ -581,7 +578,7 @@ function renderProducts() {
 }
 
 
-// ⭐ Grid'ni to'ldirish: har 5 qatordan keyin katta kartochka
+// ⭐ GRID'NI TO'LDIRISH — HAR 8 TA MAHSULOTDAN KEYIN KATTA KARTOCHKA
 function fillMainGrid() {
     const grid = document.getElementById('main-grid');
     if (!grid) return;
@@ -590,31 +587,25 @@ function fillMainGrid() {
     const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
 
     let html = '';
-    let regularCount = 0;
 
-    // Har 5 qatordan keyin katta kartochka
+    // ⭐ Har 8 ta mahsulotdan keyin katta kartochka (4 qator)
     for (let i = 0; i < gridShown; i++) {
         const product = filteredProducts[i];
         if (!product) break;
 
-        // Har 10 ta mahsulotdan keyin (5 qator) — katta kartochka
-        if (i > 0 && i % (LOAD_MORE_ROWS * GRID_COLS) === 0 && i < total) {
-            // Katta mahsulot uchun keyingi mahsulotni olamiz
-            const bigProduct = filteredProducts[i];
-            if (bigProduct) {
-                html += buildBigProductCard(bigProduct);
-                continue; // bu mahsulot katta kartochka sifatida ishlatildi
-            }
+        // 8, 16, 24, 32... mahsulotlar katta kartochka bo'ladi
+        if (i > 0 && i % BIG_CARD_INTERVAL === 0) {
+            html += buildBigProductCard(product);
+        } else {
+            html += buildProductCard(product);
         }
-
-        html += buildProductCard(product);
-        regularCount++;
     }
 
     grid.innerHTML = html;
 }
 
-// ⭐ Qo'shimcha: yana ko'rish (faqat yangi mahsulotlar + katta kartochka)
+
+// ⭐ YANA KO'RISH — FAQAT YANGI MAHSULOTLAR
 function loadMoreProducts() {
     const prevGridShown = Math.min(gridRowsShown * GRID_COLS, filteredProducts.length);
     gridRowsShown += LOAD_MORE_ROWS;
@@ -630,12 +621,11 @@ function loadMoreProducts() {
 
     let html = '';
 
-    // ⭐ Katta kartochka: agar bu "yana ko'rish" da yangi bosqichga o'tsak
-    // Har 5 qatordan keyin bitta katta kartochka
     newProducts.forEach((product, idx) => {
-        // Katta kartochka har LOAD_MORE_ROWS*GRID_COLS mahsulotdan keyin
         const absoluteIdx = prevGridShown + idx;
-        if (absoluteIdx > 0 && absoluteIdx % (LOAD_MORE_ROWS * GRID_COLS) === 0) {
+
+        // ⭐ Har 8 ta mahsulotdan keyin katta kartochka
+        if (absoluteIdx > 0 && absoluteIdx % BIG_CARD_INTERVAL === 0) {
             html += buildBigProductCard(product);
         } else {
             html += buildProductCard(product);
@@ -650,7 +640,8 @@ function loadMoreProducts() {
     setupAutoLoadMore();
 }
 
-// ⭐ Barcha listenerlar
+
+// ⭐ BARCHA LISTENERLAR
 function attachAllListeners() {
     document.querySelectorAll('.product-card-h').forEach(card => {
         if (!card.dataset.listenerAttached) {
@@ -684,6 +675,7 @@ function attachAllListeners() {
     });
 }
 
+
 function updateLoadMoreButton() {
     const total = filteredProducts.length;
     const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
@@ -705,7 +697,6 @@ function updateLoadMoreButton() {
 
 function resetLoadMore() {
     gridRowsShown = INITIAL_GRID_ROWS;
-    bigCardsShown = 0;
 }
 
 
