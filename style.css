@@ -179,6 +179,7 @@ body::before {
 /* ============ MAHSULOTLAR ============ */
 #products-container { padding: 0 12px; }
 
+/* Yashil hoshiya — yonboshga scroll */
 .products-horizontal {
     display: flex;
     flex-wrap: nowrap;
@@ -195,6 +196,7 @@ body::before {
     width: 198px;
 }
 
+/* Grid — 2 ustun */
 .products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -215,10 +217,11 @@ body::before {
 }
 .product-card-h:active { transform: scale(0.97); }
 
+/* ⭐ MAYDA KARTOCHKA — 25% BALANDROQ (204px → 255px) */
 .product-image-h {
     position: relative;
     width: 100%;
-    height: 204px;
+    height: 255px;
     border-radius: 8px;
     overflow: hidden;
     background: #f0f0f0;
@@ -356,7 +359,7 @@ body::before {
 }
 .skeleton-img {
     width: 100%;
-    height: 180px;
+    height: 220px;
     border-radius: 8px;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -391,7 +394,287 @@ body::before {
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-/* ============ BUYURTMA OYNASI ============ */
+/* ============================================================ */
+/* ⭐ YASHIL HOSHIYA */
+/* ============================================================ */
+
+.featured-section {
+    border: 3px solid #4caf50;
+    border-radius: 16px;
+    padding: 12px 8px 8px;
+    margin-bottom: 16px;
+    background: linear-gradient(180deg, #f1f8e9 0%, #ffffff 100%);
+    position: relative;
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.15);
+}
+
+.featured-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px 10px;
+    border-bottom: 2px dashed #a5d6a7;
+    margin-bottom: 10px;
+}
+
+.featured-icon {
+    font-size: 20px;
+    animation: pulseStar 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseStar {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.featured-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #2e7d32;
+    letter-spacing: 0.3px;
+}
+
+.featured-section .products-horizontal {
+    padding: 0 4px 6px;
+}
+
+/* ============================================================ */
+/* ⭐ KATTA KARTOCHKA — MODAL KABI KATTA (TO'LIQ EKRAN) */
+/* ============================================================ */
+
+.big-product-card {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 16px;
+    padding: 0;
+    margin: 20px 0;
+    box-shadow: 0 8px 32px rgba(21, 101, 192, 0.18);
+    border: 2px solid #e3f2fd;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.big-product-card:active {
+    transform: scale(0.98);
+}
+
+/* ⭐ Rasm — balandligi kattaroq */
+.big-product-image {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    border-radius: 0;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
+}
+
+.big-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.big-product-image img.loaded {
+    opacity: 1;
+}
+
+.big-product-image .img-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 48px;
+    height: 48px;
+    margin: -24px 0 0 -24px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #1565c0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 1;
+}
+
+.big-product-image:has(img.loaded) .img-spinner {
+    display: none;
+}
+
+.big-product-image .discount-badge-h {
+    top: 14px;
+    left: 14px;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+/* ⭐ Matn qismi — kattaroq */
+.big-product-body {
+    padding: 18px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.big-product-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1.3;
+    padding-right: 100px;
+    word-break: break-word;
+}
+
+.big-product-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.big-product-price-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.big-old-price {
+    font-size: 16px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.big-new-price {
+    font-size: 28px;
+    font-weight: 900;
+    color: #e53935;
+}
+
+.big-buy-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    color: #fff;
+    border: none;
+    padding: 18px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+    margin-top: 8px;
+    transition: transform 0.15s;
+    font-family: inherit;
+}
+
+.big-buy-btn:active {
+    transform: scale(0.97);
+}
+
+/* "TOP TAKLIF" belgisi */
+.big-product-card::before {
+    content: '🔥 TOP TAKLIF';
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: linear-gradient(135deg, #ff6f00, #e53935);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    z-index: 3;
+    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+}
+
+/* ============================================================ */
+/* ⭐ MOBIL EKRANLAR (kichik) */
+/* ============================================================ */
+
+@media (max-width: 360px) {
+    .products-horizontal .product-card-h { width: 178px; }
+    .products-grid .product-card-h { width: 100%; }
+    .product-image-h { height: 230px; }
+    .buy-btn-h { font-size: 12px; padding: 8px; }
+    .modal-img-wrap { height: 500px; }
+    .banner-carousel { height: 115px; }
+    .brand-text { font-size: 17px; }
+    .back-btn { font-size: 28px; width: 44px; height: 44px; }
+    .header-spacer { width: 44px; }
+    .countdown span { font-size: 18px; }
+    .countdown div { min-width: 40px; }
+    .order-new-price { font-size: 18px; }
+    .load-more-btn { min-width: 190px; font-size: 13px; padding: 13px 24px; }
+
+    /* Katta kartochka — mobil */
+    .big-product-image { height: 300px; }
+    .big-product-title { font-size: 17px; padding-right: 80px; }
+    .big-product-desc { font-size: 13px; }
+    .big-new-price { font-size: 24px; }
+    .big-buy-btn { padding: 16px; font-size: 16px; }
+    .big-product-card::before { font-size: 10px; padding: 5px 10px; }
+}
+
+/* ============================================================ */
+/* ⭐ KATTA EKRANLAR (kompyuter) */
+/* ============================================================ */
+
+@media (min-width: 768px) {
+    .products-horizontal .product-card-h { width: 220px; }
+    .product-image-h { height: 270px; }
+
+    .big-product-card {
+        flex-direction: row;
+        padding: 20px;
+        gap: 24px;
+    }
+    .big-product-image {
+        width: 50%;
+        height: 500px;
+        border-radius: 14px;
+        flex-shrink: 0;
+    }
+    .big-product-body {
+        flex: 1;
+        padding: 12px 8px;
+        justify-content: center;
+    }
+    .big-product-title {
+        font-size: 26px;
+        padding-right: 120px;
+    }
+    .big-product-desc {
+        font-size: 16px;
+        -webkit-line-clamp: 6;
+    }
+    .big-new-price {
+        font-size: 36px;
+    }
+    .big-buy-btn {
+        padding: 20px;
+        font-size: 20px;
+    }
+    .big-product-card::before {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
+
+/* ============================================================ */
+/* ⭐ MODAL (BUYURTMA BERISH) — o'zgarmagan */
+/* ============================================================ */
+
 .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: #fff; z-index: 999;
@@ -517,7 +800,7 @@ body::before {
     cursor: not-allowed;
 }
 
-/* ============ SLIDER ============ */
+/* Slider */
 .slider { margin: 24px 0 16px; }
 
 .modal-img-wrap {
@@ -733,7 +1016,7 @@ body::before {
 .bottom-icon { font-size: 24px; }
 .bottom-label { font-size: 11px; font-weight: 700; color: #1565c0; }
 
-/* ============ PROFIL MODAL ============ */
+/* Profil modal */
 .modal-overlay:not(#order-modal) .modal-content {
     background: #fff; border-radius: 16px;
     padding: 20px; max-width: 480px;
@@ -787,656 +1070,4 @@ body::before {
     cursor: pointer; z-index: 10;
     display: flex; align-items: center; justify-content: center;
     padding: 0;
-}
-
-/* ============ 📱 MOBIL ============ */
-@media (max-width: 360px) {
-    .products-horizontal .product-card-h { width: 178px; }
-    .products-grid .product-card-h { width: 100%; }
-    .product-image-h { height: 181px; }
-    .buy-btn-h { font-size: 12px; padding: 8px; }
-    .modal-img-wrap { height: 500px; }
-    .banner-carousel { height: 115px; }
-    .brand-text { font-size: 17px; }
-    .back-btn { font-size: 28px; width: 44px; height: 44px; }
-    .header-spacer { width: 44px; }
-    .countdown span { font-size: 18px; }
-    .countdown div { min-width: 40px; }
-    .order-new-price { font-size: 18px; }
-    .load-more-btn { min-width: 190px; font-size: 13px; padding: 13px 24px; }
-}
-
-/* ==================================================== */
-/* ⭐ KOPYUTER (DESKTOP) VERSIYA */
-/* ==================================================== */
-@media (min-width: 768px) {
-    body { padding: 0 0 40px 0; }
-
-    /* Kontent markazga */
-    .app-header,
-    .banner-carousel,
-    .search-box,
-    .categories-scroll,
-    #products-container {
-        max-width: 1100px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .app-header {
-        padding: 14px 20px 10px;
-        margin-bottom: 16px;
-    }
-
-    .banner-carousel {
-        height: 220px;
-        margin-top: 0;
-        margin-bottom: 16px;
-        border-radius: 16px;
-    }
-    .banner-emoji { font-size: 44px; margin-bottom: 8px; }
-    .banner-title { font-size: 26px; margin-bottom: 6px; }
-    .banner-subtitle { font-size: 15px; }
-    .banner-nav { width: 44px; height: 44px; font-size: 26px; }
-    .banner-nav.prev { left: 14px; }
-    .banner-nav.next { right: 14px; }
-    .banner-dots span { width: 10px; height: 10px; margin: 0 4px; }
-
-    .search-box { padding: 6px 16px; margin-bottom: 16px; border-radius: 12px; }
-    .search-box input { padding: 10px 0; font-size: 15px; }
-    .search-icon { font-size: 18px; }
-
-    /* Kategoriyalar — wrap va markazda */
-    .categories-scroll {
-        flex-wrap: wrap;
-        justify-content: center;
-        overflow-x: visible;
-        padding: 0 20px 16px;
-        gap: 10px;
-    }
-    .category-btn {
-        min-width: 78px;
-        padding: 10px 14px;
-        border-radius: 12px;
-    }
-    .category-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(21,101,192,0.2);
-    }
-    .cat-emoji { font-size: 22px; }
-    .cat-name { font-size: 11px; }
-
-    #products-container { padding: 0 20px; }
-
-    /* ⭐ Birinchi 10 ta yonboshga emas, 5 ustunli grid */
-    .products-horizontal {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 16px;
-        overflow-x: visible;
-        padding-bottom: 0;
-    }
-    .products-horizontal .product-card-h {
-        width: 100%;
-    }
-
-    /* Grid: 3 ustun */
-    .products-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-top: 16px;
-    }
-
-    .product-card-h {
-        border-radius: 14px;
-        padding: 10px;
-    }
-    .product-card-h:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    }
-    .product-image-h { height: 220px; }
-    .product-title-h { font-size: 14px; min-height: 36px; }
-    .new-price-h { font-size: 15px; }
-    .old-price-h { font-size: 12px; }
-    .buy-btn-h { font-size: 14px; padding: 11px; }
-
-    /* Yana ko'rish */
-    .load-more-container { padding: 30px 20px 20px; }
-    .load-more-btn {
-        min-width: 280px;
-        padding: 16px 44px;
-        font-size: 16px;
-    }
-    .load-more-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(21,101,192,0.45);
-    }
-
-    /* ⭐ MODAL — markazlashtirilgan dialog */
-    .modal-overlay {
-        background: rgba(0, 0, 0, 0.6);
-        padding: 30px 20px;
-        align-items: center;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-    }
-
-    .order-modal-content {
-        max-width: 640px;
-        min-height: auto;
-        max-height: 92vh;
-        border-radius: 20px;
-        overflow-y: auto;
-        padding-bottom: 20px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-
-    .order-modal-header {
-        padding: 14px 20px;
-        border-radius: 20px 20px 0 0;
-    }
-    .order-modal-body { padding: 24px; }
-    .order-title { font-size: 22px; }
-    .order-new-price { font-size: 24px; }
-    .modal-img-wrap { height: 500px; }
-
-    .order-bottom-menu {
-        position: static;
-        max-width: none;
-        margin-top: 20px;
-        border-radius: 12px;
-        border-top: none;
-        border: 1.5px solid #e0e0e0;
-        box-shadow: none;
-    }
-    .order-bottom-menu button:hover {
-        background: #f0f7ff;
-        border-radius: 8px;
-    }
-
-    /* Profil modal */
-    .modal-overlay:not(#order-modal) .modal-content {
-        margin: 20px auto;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-}
-
-/* ==================================================== */
-/* ⭐ KATTA EKRAN (1200px+) */
-/* ==================================================== */
-@media (min-width: 1024px) {
-    .app-header,
-    .banner-carousel,
-    .search-box,
-    .categories-scroll,
-    #products-container {
-        max-width: 1280px;
-    }
-
-    .products-horizontal {
-        grid-template-columns: repeat(5, 1fr);
-    }
-    .products-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    .products-grid-skeleton {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    .product-image-h { height: 240px; }
-    .banner-carousel { height: 260px; }
-}
-/* ============================================================ */
-/* ⭐ YASHIL HOSHIYA (FEATURED SECTION) */
-/* ============================================================ */
-
-.featured-section {
-    border: 3px solid #4caf50;
-    border-radius: 16px;
-    padding: 12px 8px 8px;
-    margin-bottom: 16px;
-    background: linear-gradient(180deg, #f1f8e9 0%, #ffffff 100%);
-    position: relative;
-    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.15);
-}
-
-.featured-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px 10px;
-    border-bottom: 2px dashed #a5d6a7;
-    margin-bottom: 10px;
-}
-
-.featured-icon {
-    font-size: 20px;
-    animation: pulseStar 1.5s ease-in-out infinite;
-}
-
-@keyframes pulseStar {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-}
-
-.featured-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: #2e7d32;
-    letter-spacing: 0.3px;
-    text-shadow: 0 1px 2px rgba(46, 125, 50, 0.15);
-}
-
-/* Yashil hoshiya ichidagi scroll */
-.featured-section .products-horizontal {
-    padding: 0 4px 6px;
-    scroll-snap-type: x proximity;
-}
-
-.featured-section .products-horizontal .product-card-h {
-    scroll-snap-align: start;
-}
-
-/* ============================================================ */
-/* ⭐ KATTA KARTOCHKA (13-qatordan keyin) */
-/* ============================================================ */
-
-.big-product-card {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border-radius: 16px;
-    padding: 12px;
-    margin: 20px 0;
-    box-shadow: 0 6px 24px rgba(21, 101, 192, 0.15);
-    border: 2px solid #e3f2fd;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-}
-
-.big-product-card::before {
-    content: '🔥 TOP TAKLIF';
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: linear-gradient(135deg, #ff6f00, #e53935);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 5px 12px;
-    border-radius: 0 14px 0 12px;
-    letter-spacing: 0.5px;
-    z-index: 3;
-}
-
-.big-product-card:active {
-    transform: scale(0.98);
-}
-
-.big-product-image {
-    position: relative;
-    width: 100%;
-    height: 340px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #f0f0f0;
-    margin-bottom: 12px;
-}
-
-.big-product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    opacity: 0;
-    transition: opacity 0.3s ease-in;
-}
-
-.big-product-image img.loaded {
-    opacity: 1;
-}
-
-.big-product-image .img-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 44px;
-    height: 44px;
-    margin: -22px 0 0 -22px;
-    border: 4px solid #e0e0e0;
-    border-top-color: #1565c0;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    z-index: 1;
-}
-
-.big-product-image:has(img.loaded) .img-spinner {
-    display: none;
-}
-
-.big-product-body {
-    padding: 4px 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.big-product-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: #1a1a1a;
-    line-height: 1.3;
-    padding-right: 90px;
-}
-
-.big-product-desc {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.5;
-}
-
-.big-product-price-block {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-}
-
-.big-old-price {
-    font-size: 14px;
-    color: #999;
-    text-decoration: line-through;
-}
-
-.big-new-price {
-    font-size: 24px;
-    font-weight: 900;
-    color: #e53935;
-}
-
-.big-buy-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #2e7d32, #43a047);
-    color: #fff;
-    border: none;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.35);
-    margin-top: 6px;
-    transition: transform 0.15s;
-}
-
-.big-buy-btn:active {
-    transform: scale(0.97);
-}
-
-/* ============================================================ */
-/* ⭐ DESKTOP (kompyuter) */
-/* ============================================================ */
-
-@media (min-width: 768px) {
-    .featured-section {
-        padding: 16px 14px 14px;
-        border-width: 3px;
-    }
-    .featured-header {
-        padding: 6px 12px 12px;
-    }
-    .featured-title {
-        font-size: 16px;
-    }
-    .featured-icon {
-        font-size: 24px;
-    }
-
-    .big-product-card {
-        flex-direction: row;
-        padding: 16px;
-        gap: 20px;
-        margin: 24px 0;
-    }
-    .big-product-image {
-        width: 45%;
-        height: 380px;
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-    .big-product-body {
-        flex: 1;
-        padding: 8px;
-        justify-content: center;
-    }
-    .big-product-title {
-        font-size: 22px;
-        padding-right: 100px;
-    }
-    .big-product-desc {
-        font-size: 14px;
-    }
-    .big-new-price {
-        font-size: 28px;
-    }
-    .big-buy-btn {
-        padding: 16px;
-        font-size: 17px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .big-product-image {
-        width: 40%;
-        height: 420px;
-    }
-    .big-product-title {
-        font-size: 24px;
-    }
-    .big-new-price {
-        font-size: 32px;
-    }
-}
-/* ============================================================ */
-/* ⭐ KATTA KARTOCHKA — TUZATILGAN */
-/* ============================================================ */
-
-.big-product-card {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border-radius: 16px;
-    padding: 10px;
-    margin: 16px 0;
-    box-shadow: 0 6px 24px rgba(21, 101, 192, 0.15);
-    border: 2px solid #e3f2fd;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* ⭐ Rasm balandligini kamaytirish */
-.big-product-image {
-    position: relative;
-    width: 100%;
-    height: 240px;  /* 340 → 240 */
-    border-radius: 12px;
-    overflow: hidden;
-    background: #f0f0f0;
-    margin-bottom: 10px;
-    flex-shrink: 0;
-}
-
-.big-product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    opacity: 0;
-    transition: opacity 0.3s ease-in;
-}
-
-.big-product-image img.loaded {
-    opacity: 1;
-}
-
-.big-product-body {
-    padding: 4px 6px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-height: 0;
-}
-
-/* ⭐ Sarlavhani ixchamlash */
-.big-product-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: #1a1a1a;
-    line-height: 1.3;
-    padding-right: 70px;  /* "TOP TAKLIF" belgisi uchun */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: break-word;
-}
-
-/* ⭐ Tavsifni qisqartirish */
-.big-product-desc {
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;  /* faqat 2 qator */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: break-word;
-}
-
-/* ⭐ Narx bloki */
-.big-product-price-block {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-}
-
-.big-old-price {
-    font-size: 12px;
-    color: #999;
-    text-decoration: line-through;
-}
-
-.big-new-price {
-    font-size: 20px;
-    font-weight: 900;
-    color: #e53935;
-}
-
-/* ⭐ Tugma */
-.big-buy-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #2e7d32, #43a047);
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.35);
-    margin-top: 6px;
-    transition: transform 0.15s;
-    font-family: inherit;
-}
-
-.big-buy-btn:active {
-    transform: scale(0.97);
-}
-
-/* ⭐ "TOP TAKLIF" belgisini ixchamlash */
-.big-product-card::before {
-    content: '🔥 TOP';
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: linear-gradient(135deg, #ff6f00, #e53935);
-    color: #fff;
-    font-size: 9px;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 0 14px 0 10px;
-    letter-spacing: 0.3px;
-    z-index: 3;
-}
-
-/* ⭐ Kichik ekranlar uchun */
-@media (max-width: 360px) {
-    .big-product-image {
-        height: 200px;
-    }
-    .big-product-title {
-        font-size: 14px;
-        padding-right: 60px;
-    }
-    .big-product-desc {
-        font-size: 11px;
-    }
-    .big-new-price {
-        font-size: 18px;
-    }
-    .big-buy-btn {
-        padding: 10px;
-        font-size: 13px;
-    }
-}
-
-/* ⭐ Katta ekranlar uchun */
-@media (min-width: 768px) {
-    .big-product-card {
-        flex-direction: row;
-        padding: 16px;
-        gap: 20px;
-        margin: 20px 0;
-    }
-    .big-product-image {
-        width: 45%;
-        height: 340px;
-        margin-bottom: 0;
-        flex-shrink: 0;
-    }
-    .big-product-body {
-        flex: 1;
-        padding: 8px;
-        justify-content: center;
-    }
-    .big-product-title {
-        font-size: 20px;
-        padding-right: 90px;
-        -webkit-line-clamp: 3;
-    }
-    .big-product-desc {
-        font-size: 14px;
-        -webkit-line-clamp: 4;
-    }
-    .big-new-price {
-        font-size: 26px;
-    }
-    .big-buy-btn {
-        padding: 14px;
-        font-size: 16px;
-    }
 }
