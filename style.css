@@ -1226,3 +1226,107 @@ body::before {
         font-size: 48px;
     }
 }
+/* ============================================================ */
+/* ⭐ KOMPYUTER VERSIYA — KARTOCHKA VA BANNER TUZATISH */
+/* ============================================================ */
+
+@media (min-width: 768px) {
+
+    /* ⭐ BANNER — kattaroq va chiroyli */
+    .banner-carousel {
+        width: calc(100% - 40px) !important;
+        max-width: 1200px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        height: 320px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
+        margin-bottom: 24px !important;
+    }
+    .banner-slide {
+        border-radius: 20px !important;
+    }
+    .banner-nav {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 30px !important;
+    }
+    .banner-nav.prev { left: 20px !important; }
+    .banner-nav.next { right: 20px !important; }
+    .banner-dots {
+        bottom: 16px !important;
+    }
+    .banner-dots span {
+        width: 12px !important;
+        height: 12px !important;
+        margin: 0 5px !important;
+    }
+
+    /* ⭐ MAHSULOT KARTOCHKALARI — 4 ustun, ixcham */
+    .products-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 20px !important;
+        margin-top: 20px !important;
+    }
+    .products-grid .product-card-h {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Yashil hoshiyadagi kartochkalar */
+    .featured-section .products-horizontal .product-card-h {
+        width: 240px !important;
+        flex: 0 0 auto !important;
+    }
+
+    /* Karta dizayni */
+    .product-card-h {
+        padding: 12px !important;
+        border-radius: 14px !important;
+    }
+    .product-card-h:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    }
+    .product-image-h {
+        height: 260px !important;
+    }
+    .product-title-h {
+        font-size: 14px !important;
+        min-height: 38px !important;
+    }
+    .new-price-h {
+        font-size: 16px !important;
+    }
+    .old-price-h {
+        font-size: 12px !important;
+    }
+    .buy-btn-h {
+        font-size: 14px !important;
+        padding: 11px !important;
+    }
+
+    /* Katta kartochka */
+    .big-product-card {
+        grid-column: 1 / -1 !important;
+        padding: 24px !important;
+        gap: 28px !important;
+    }
+    .big-product-image {
+        height: 500px !important;
+    }
+    .big-product-title {
+        font-size: 28px !important;
+    }
+    .big-new-price {
+        font-size: 40px !important;
+    }
+}
+
+/* ⭐ JUDA KATTA EKRANLAR */
+@media (min-width: 1400px) {
+    .products-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+}
