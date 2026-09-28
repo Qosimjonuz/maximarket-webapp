@@ -68,16 +68,14 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
-// ⭐ SOZLAMALAR
 const FIRST_HORIZONTAL = 10;
 const INITIAL_GRID_ROWS = 10;
 const LOAD_MORE_ROWS = 5;
 const GRID_COLS = 2;
-const BIG_CARD_EVERY = 8;  // ⭐ Har 8 ta oddiy kartochkadan keyin katta
+const BIG_CARD_EVERY = 8;
 
 let gridRowsShown = INITIAL_GRID_ROWS;
 
-// Yashil hoshiya
 let featuredProducts = [];
 const FEATURED_COUNT = 10;
 
@@ -88,12 +86,10 @@ let profilePhotoUrl = "";
 let activeModal = null;
 let imageObserver = null;
 
-// Swipe
 let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeActive = false;
 
-// Auto-scroll
 let autoScrollInterval = null;
 let autoScrollPaused = false;
 let autoLoadObserver = null;
@@ -159,10 +155,7 @@ function initModalSwipe() {
 
 // ==================== YASHIL HOSHIYA ====================
 function pickFeaturedProducts() {
-    if (products.length === 0) {
-        featuredProducts = [];
-        return;
-    }
+    if (products.length === 0) { featuredProducts = []; return; }
     const shuffled = [...products].sort(() => Math.random() - 0.5);
     featuredProducts = shuffled.slice(0, Math.min(FEATURED_COUNT, shuffled.length));
 }
@@ -204,14 +197,9 @@ function setupAutoLoadMore() {
         if (loadMoreBtn) {
             autoLoadObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        loadMoreProducts();
-                    }
+                    if (entry.isIntersecting) loadMoreProducts();
                 });
-            }, {
-                rootMargin: '200px 0px',
-                threshold: 0.01
-            });
+            }, { rootMargin: '200px 0px', threshold: 0.01 });
             autoLoadObserver.observe(loadMoreBtn);
         }
     };
@@ -253,10 +241,7 @@ function initImageObserver() {
                 imageObserver.unobserve(img);
             }
         });
-    }, {
-        rootMargin: '300px 0px',
-        threshold: 0.01
-    });
+    }, { rootMargin: '300px 0px', threshold: 0.01 });
 
     document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
 }
@@ -420,12 +405,10 @@ async function loadProducts() {
         const data = await response.json();
         products = data.products || [];
         filteredProducts = [...products];
-
         if (products.length === 0) {
             container.innerHTML = '<p class="loading">📦 Hozircha mahsulotlar yo\'q</p>';
             return;
         }
-
         pickFeaturedProducts();
         shuffleProducts();
         resetLoadMore();
@@ -493,7 +476,6 @@ function buildProductCard(p) {
     </div>`;
 }
 
-// ⭐ KATTA KARTOCHKA
 function buildBigProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
@@ -537,7 +519,6 @@ function renderProducts() {
 
     let html = '';
 
-    // Yashil hoshiya
     if (featuredProducts.length > 0) {
         html += `
             <div class="featured-section">
@@ -554,39 +535,26 @@ function renderProducts() {
         `;
     }
 
-    // Asosiy grid
     html += '<div class="products-grid" id="main-grid"></div>';
-
-    // Load more
     html += '<div class="load-more-container" id="load-more-container"></div>';
 
     container.innerHTML = html;
 
-    // ⭐ Grid'ni to'ldirish
     fillMainGrid();
-
-    // Load more tugmasi
     updateLoadMoreButton();
-
-    // Listenerlar
     attachAllListeners();
-
-    // Image observer + auto-scroll + auto-load
     initImageObserver();
     startAutoScroll();
     setupAutoLoadMore();
 }
 
 
-// ⭐ YANGI MANTIQ: har 8 ta oddiy kartochkadan keyin katta
-// Grid'ga mahsulot qo'shish (productIndex — mahsulotlar ro'yxatidagi joy)
 function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
     let html = '';
     let productIndex = startIndex;
     let regularCount = startRegularCount;
 
     while (productIndex < endIndex) {
-        // ⭐ 8 ta oddiy kartochkadan keyin KATTA
         if (regularCount >= BIG_CARD_EVERY) {
             const bigProduct = filteredProducts[productIndex];
             if (bigProduct) {
@@ -596,7 +564,6 @@ function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
                 continue;
             }
         }
-
         const product = filteredProducts[productIndex];
         if (!product) break;
 
@@ -604,46 +571,36 @@ function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
         productIndex++;
         regularCount++;
     }
-
     return { html, endIndex: productIndex, regularCount };
 }
 
 
-// ⭐ GRID'NI TO'LDIRISH
 function fillMainGrid() {
     const grid = document.getElementById('main-grid');
     if (!grid) return;
-
     const total = filteredProducts.length;
     const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
-
     const result = addProductsToGrid(grid, 0, gridShown, 0);
     grid.innerHTML = result.html;
 }
 
 
-// ⭐ YANA KO'RISH
 function loadMoreProducts() {
     const total = filteredProducts.length;
     const currentShown = Math.min(gridRowsShown * GRID_COLS, total);
-
     gridRowsShown += LOAD_MORE_ROWS;
     const newShown = Math.min(gridRowsShown * GRID_COLS, total);
 
     const grid = document.getElementById('main-grid');
     if (!grid) return;
 
-    // Oldingi regularCount ni qayta hisoblash
     let regularCount = 0;
     let idx = 0;
     while (idx < currentShown) {
         if (regularCount >= BIG_CARD_EVERY) {
-            idx++; // katta kartochka
-            regularCount = 0;
-            continue;
+            idx++; regularCount = 0; continue;
         }
-        idx++;
-        regularCount++;
+        idx++; regularCount++;
     }
 
     const result = addProductsToGrid(grid, currentShown, newShown, regularCount);
@@ -656,7 +613,6 @@ function loadMoreProducts() {
 }
 
 
-// ⭐ BARCHA LISTENERLAR
 function attachAllListeners() {
     document.querySelectorAll('.product-card-h').forEach(card => {
         if (!card.dataset.listenerAttached) {
@@ -710,9 +666,7 @@ function updateLoadMoreButton() {
     }
 }
 
-function resetLoadMore() {
-    gridRowsShown = INITIAL_GRID_ROWS;
-}
+function resetLoadMore() { gridRowsShown = INITIAL_GRID_ROWS; }
 
 
 // ==================== TELEFON FORMATLASH ====================
@@ -1009,11 +963,14 @@ async function openProfile() {
     if (!user) return;
 
     try {
+        // ⭐ X-Telegram-Init-Data header qo'shildi
         const res = await fetch(`${API_URL}/api/register_user`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData || ''
+            },
             body: JSON.stringify({
-                user_id: user.id,
                 username: user.username || "",
                 tg_name: user.first_name + (user.last_name ? ' ' + user.last_name : '')
             })
@@ -1083,11 +1040,15 @@ async function saveProfile() {
             photoUrl = await uploadImageToServer(fileInput.files[0]);
             if (!photoUrl) photoUrl = profilePhotoUrl;
         }
+
+        // ⭐ X-Telegram-Init-Data header qo'shildi + user_id olib tashlandi
         const res = await fetch(`${API_URL}/api/update_user`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData || ''
+            },
             body: JSON.stringify({
-                user_id: tg.initDataUnsafe.user.id,
                 full_name: fullname,
                 phone: phone,
                 photo: photoUrl
