@@ -1,14 +1,88 @@
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+/* ============================================================
+ * MaxiMarket Admin — JavaScript
+ * Versiya: 3.0 (XSS himoyasi kuchaytirildi)
+ * ============================================================ */
 
-const API_URL = "https://maximarketbot-production.up.railway.app";
+var API_URL = "https://maximarketbot-production.up.railway.app";
+var TOKEN_KEY = "maximarket_admin_token";
 
-const PLACEHOLDER_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+var MAX_CATEGORIES = 2;
+var MAX_SIZES = 4;
+var MAX_COLORS = 10;
+var MAX_IMAGES = 4;
+var PER_PAGE = 10;
+var USERS_PER_PAGE = 12;
+var ORDERS_PER_PAGE = 10;
+var LOW_STOCK_PER_PAGE = 10;
+var SALES_PER_PAGE = 10;
 
-const isTelegram = !!(tg.initDataUnsafe && tg.initDataUnsafe.user);
+var captchaAnswer = 0;
+var adminToken = "";
+var selectedFiles = [null, null, null, null];
+var selectedCategories = [];
+var selectedSizes = [];
+var selectedColors = [];
+var editingProductId = null;
+var allProducts = [];
+var filteredProducts = [];
+var currentPage = 1;
+var totalPages = 1;
+var searchQuery = "";
+var activeFilterCategory = "all";
+var activeOqimFilter = "all";
 
-const CATEGORIES = [
+var selectedUsers = [];
+var currentUsersPage = 1;
+var usersTotalPages = 1;
+var userSearchDebounce = null;
+var visibleUsers = [];
+var usersListOpen = true;
+
+var currentOrdersPeriod = "today";
+var currentOrdersSource = "all";
+var currentOrdersPage = 1;
+var ordersTotalPages = 1;
+var ordersSearch = "";
+var ordersCustomDate = "";
+var ordersSearchDebounce = null;
+
+var currentLowStockPage = 1;
+var lowStockTotalPages = 1;
+
+var salesListPeriod = "today";
+var salesListPage = 1;
+var salesListTotalPages = 1;
+
+var currentModalProductId = null;
+
+
+// ⭐⭐⭐ XSS HIMOYASI — kuchaytirilgan ⭐⭐⭐
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/`/g, '&#96;');
+}
+
+// ⭐ Xavfsiz atribut uchun (URL, id va h.k.)
+function escapeAttr(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/`/g, '&#96;');
+}
+
+
+// ⭐ Ma'lumotlar
+var CATEGORIES = [
     { id: "elektronika", name: "Elektronika", emoji: "📱" },
     { id: "kiyim", name: "Kiyim", emoji: "👕" },
     { id: "poyabzallar", name: "Poyabzallar", emoji: "👟" },
@@ -26,7 +100,9 @@ const CATEGORIES = [
     { id: "boshqa", name: "Boshqa", emoji: "📦" }
 ];
 
-const COLORS = [
+var SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "Universal"];
+
+var COLORS = [
     { id: "qora", name: "Qora", hex: "#000000" },
     { id: "oq", name: "Oq", hex: "#ffffff" },
     { id: "qizil", name: "Qizil", hex: "#e53935" },
@@ -45,1053 +121,1119 @@ const COLORS = [
     { id: "chegirma-1", name: "Marjon", hex: "#ff7043" }
 ];
 
-const banners = [
-    { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
-    { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
-    { image: "https://i.ibb.co/QVPj1Pn/file-0000000009a0820da87ac5c4a57dbabb.png" },
-    { image: "https://i.ibb.co/5NgCbCt/file-00000000a72081f79b62cc44f1e32790.png" },
-    { image: "https://i.ibb.co/TD1HzzkN/file-00000000f36481fabf1dac154c72871d.png" },
-    { image: "https://i.ibb.co/HTZSXLGS/file-00000000d9a882469c4566009ff02551.png" },
-    { image: "https://i.ibb.co/Dg1VsRWw/file-0000000040c481f4bef55e37debd0805.png" },
-    { image: "https://i.ibb.co/v4RV71wR/file-0000000030208246b19018466ca29709.png" }
-];
 
-let currentBannerIndex = 0;
-let bannerInterval = null;
-const BANNER_DELAY = 4000;
-
-let products = [];
-let filteredProducts = [];
-let currentProduct = null;
-let currentImageIndex = 0;
-let countdownInterval = null;
-let activeCategory = "all";
-let shuffleTimer = null;
-
-const FIRST_HORIZONTAL = 10;
-const INITIAL_GRID_ROWS = 10;
-const LOAD_MORE_ROWS = 5;
-const GRID_COLS = 2;
-const BIG_CARD_EVERY = 8;
-
-let gridRowsShown = INITIAL_GRID_ROWS;
-
-let featuredProducts = [];
-const FEATURED_COUNT = 10;
-
-let selectedSize = null;
-let selectedColor = null;
-let currentUser = null;
-let profilePhotoUrl = "";
-let activeModal = null;
-let imageObserver = null;
-
-let swipeStartX = 0;
-let swipeStartY = 0;
-let swipeActive = false;
-
-let autoScrollInterval = null;
-let autoScrollPaused = false;
-let autoLoadObserver = null;
-
-
-// ==================== SCREENSHOT HIMOYASI ====================
-document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
-document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && ['s','S','p','P','u','U'].indexOf(e.key) !== -1) {
-        e.preventDefault(); return false;
-    }
-    if (e.key === 'PrintScreen') {
-        e.preventDefault();
-        try { navigator.clipboard.writeText(''); } catch (err) {}
-        return false;
-    }
-});
-document.addEventListener('visibilitychange', function() {
-    if (document.hidden) document.body.classList.add('privacy-blur');
-    else setTimeout(() => document.body.classList.remove('privacy-blur'), 250);
-});
-
-
-// ==================== SWIPE ====================
-function initModalSwipe() {
-    const wrap = document.getElementById('modal-img-wrap');
-    if (!wrap) return;
-
-    wrap.addEventListener('touchstart', function(e) {
-        if (e.touches.length !== 1) return;
-        swipeStartX = e.touches[0].clientX;
-        swipeStartY = e.touches[0].clientY;
-        swipeActive = true;
-    }, { passive: true });
-
-    wrap.addEventListener('touchmove', function(e) {
-        if (!swipeActive || e.touches.length !== 1) return;
-        const dx = e.touches[0].clientX - swipeStartX;
-        const dy = e.touches[0].clientY - swipeStartY;
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-            const img = document.getElementById('modal-image');
-            if (img) { img.style.transform = `translateX(${dx * 0.4}px)`; img.style.transition = 'none'; }
-        }
-    }, { passive: true });
-
-    wrap.addEventListener('touchend', function(e) {
-        if (!swipeActive) return;
-        swipeActive = false;
-        const img = document.getElementById('modal-image');
-        if (img) { img.style.transform = ''; img.style.transition = 'opacity 0.3s, transform 0.3s'; }
-        if (!e.changedTouches || e.changedTouches.length === 0) return;
-        const endX = e.changedTouches[0].clientX;
-        const endY = e.changedTouches[0].clientY;
-        const dx = swipeStartX - endX;
-        const dy = swipeStartY - endY;
-        if (Math.abs(dx) > 50 && Math.abs(dy) < 80) {
-            if (dx > 0) slideImage(1); else slideImage(-1);
-        }
-    }, { passive: true });
+// ==================== CAPTCHA ====================
+function generateCaptcha() {
+    var ops = ['+', '-', '×'];
+    var op = ops[Math.floor(Math.random() * ops.length)];
+    var a, b, ans;
+    if (op === '+') { a = Math.floor(Math.random() * 20) + 1; b = Math.floor(Math.random() * 20) + 1; ans = a + b; }
+    else if (op === '-') { a = Math.floor(Math.random() * 20) + 5; b = Math.floor(Math.random() * (a - 1)) + 1; ans = a - b; }
+    else { a = Math.floor(Math.random() * 9) + 2; b = Math.floor(Math.random() * 9) + 2; ans = a * b; }
+    captchaAnswer = ans;
+    document.getElementById('captcha-question').innerText = a + ' ' + op + ' ' + b + ' = ?';
+    document.getElementById('captcha-input').value = '';
 }
 
 
-// ==================== YASHIL HOSHIYA ====================
-function pickFeaturedProducts() {
-    if (products.length === 0) { featuredProducts = []; return; }
-    const shuffled = [...products].sort(() => Math.random() - 0.5);
-    featuredProducts = shuffled.slice(0, Math.min(FEATURED_COUNT, shuffled.length));
+// ==================== COLLAPSIBLE / FILTER ====================
+function toggleCollapsible(name) {
+    var h = document.querySelector('[onclick="toggleCollapsible(\'' + name + '\')"]');
+    var b = document.getElementById(name + '-body');
+    if (b) b.classList.toggle('open');
+    if (h) h.classList.toggle('open');
+}
+function toggleFilter() {
+    document.getElementById('filter-header').classList.toggle('active');
+    document.getElementById('filter-body').classList.toggle('open');
+}
+function toggleUsersList() {
+    usersListOpen = !usersListOpen;
+    var c = document.getElementById('users-list-container');
+    var btn = document.getElementById('toggle-users-btn');
+    if (usersListOpen) { c.style.display = 'block'; btn.innerText = '🔼 Ro\'yxatni yopish'; }
+    else { c.style.display = 'none'; btn.innerText = '🔽 Ro\'yxatni ochish'; }
 }
 
 
-// ==================== AUTO-SCROLL ====================
-function startAutoScroll() {
-    const container = document.querySelector('.featured-section .products-horizontal');
-    if (!container || container.children.length < 3) return;
+// ==================== TOKEN ====================
+function saveToken(t) { adminToken = t; localStorage.setItem(TOKEN_KEY, t); }
+function loadToken() { var s = localStorage.getItem(TOKEN_KEY); if (s) { adminToken = s; return true; } return false; }
+function clearToken() { adminToken = ""; localStorage.removeItem(TOKEN_KEY); }
+function handleAuthError() { clearToken(); alert("⚠️ Sessiya muddati tugagan."); showLogin(); }
 
-    if (autoScrollInterval) clearInterval(autoScrollInterval);
 
-    container.addEventListener('touchstart', () => { autoScrollPaused = true; }, { passive: true });
-    container.addEventListener('touchend', () => { setTimeout(() => { autoScrollPaused = false; }, 3000); }, { passive: true });
-    container.addEventListener('scroll', () => { autoScrollPaused = true; setTimeout(() => { autoScrollPaused = false; }, 3000); }, { passive: true });
-
-    autoScrollInterval = setInterval(() => {
-        if (autoScrollPaused || !container) return;
-        const maxScroll = container.scrollWidth - container.clientWidth;
-        if (maxScroll <= 0) return;
-        const currentScroll = container.scrollLeft;
-        const step = container.clientWidth * 0.6;
-        if (currentScroll >= maxScroll - 10) {
-            container.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-            container.scrollTo({ left: currentScroll + step, behavior: 'smooth' });
-        }
-    }, 3500);
+// ==================== SAHIFALAR ====================
+function showLogin() {
+    document.getElementById('login-section').classList.remove('hidden');
+    document.getElementById('panel-section').classList.add('hidden');
+    document.getElementById('bottom-nav').classList.add('hidden');
+    generateCaptcha();
 }
-
-
-// ==================== AUTO-LOAD ====================
-function setupAutoLoadMore() {
-    if (autoLoadObserver) autoLoadObserver.disconnect();
-    if (!('IntersectionObserver' in window)) return;
-
-    const checkAndObserve = () => {
-        const loadMoreBtn = document.querySelector('.load-more-btn');
-        if (loadMoreBtn) {
-            autoLoadObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) loadMoreProducts();
-                });
-            }, { rootMargin: '200px 0px', threshold: 0.01 });
-            autoLoadObserver.observe(loadMoreBtn);
-        }
-    };
-    setTimeout(checkAndObserve, 500);
+function showPanel() {
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('panel-section').classList.remove('hidden');
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    renderCategories(); renderSizes(); renderColors(); renderFilterChips();
+    loadProducts();
 }
-
-
-// ==================== IMAGE OBSERVER ====================
-function initImageObserver() {
-    if (!('IntersectionObserver' in window)) {
-        document.querySelectorAll('img[data-src]').forEach(img => {
-            img.src = img.getAttribute('data-src');
-            img.removeAttribute('data-src');
-            img.classList.add('loaded');
-        });
-        return;
-    }
-
-    if (imageObserver) imageObserver.disconnect();
-
-    imageObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                const realSrc = img.getAttribute('data-src');
-                if (realSrc) {
-                    const loader = new Image();
-                    loader.onload = () => {
-                        img.src = realSrc;
-                        img.removeAttribute('data-src');
-                        img.classList.add('loaded');
-                    };
-                    loader.onerror = () => {
-                        img.removeAttribute('data-src');
-                        img.classList.add('loaded');
-                    };
-                    loader.src = realSrc;
-                }
-                imageObserver.unobserve(img);
-            }
-        });
-    }, { rootMargin: '300px 0px', threshold: 0.01 });
-
-    document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
-}
-
-
-// ==================== BACK BUTTON ====================
-function enableTelegramBackButton(handler) {
-    if (tg.BackButton && typeof tg.BackButton.show === 'function') {
-        try { tg.BackButton.show(); tg.BackButton.onClick(handler); } catch (e) {}
-    }
-}
-function disableTelegramBackButton() {
-    if (tg.BackButton && typeof tg.BackButton.hide === 'function') {
-        try { tg.BackButton.offClick(); tg.BackButton.hide(); } catch (e) {}
-    }
-}
-
-
-// ==================== BANNER ====================
-function initBanner() {
-    updateBanner();
-    const dotsEl = document.getElementById('banner-dots');
-    dotsEl.innerHTML = banners.map((_, i) =>
-        `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
-    ).join('');
-    startBannerAutoSlide();
-}
-function startBannerAutoSlide() {
-    if (bannerInterval) clearInterval(bannerInterval);
-    bannerInterval = setInterval(() => slideBanner(1), BANNER_DELAY);
-}
-function slideBanner(dir) {
-    currentBannerIndex = (currentBannerIndex + dir + banners.length) % banners.length;
-    updateBanner();
-    startBannerAutoSlide();
-}
-function goToBanner(index) {
-    currentBannerIndex = index;
-    updateBanner();
-    startBannerAutoSlide();
-}
-function updateBanner() {
-    const banner = banners[currentBannerIndex];
-    const slide = document.getElementById('banner-slide');
-    slide.style.opacity = '0';
-    setTimeout(() => {
-        if (banner.image) {
-            const img = new Image();
-            img.onload = () => {
-                slide.style.background = `url("${banner.image}") center/cover no-repeat`;
-                slide.innerHTML = '';
-                slide.style.opacity = '1';
-            };
-            img.onerror = () => {
-                slide.style.background = 'linear-gradient(135deg, #1565c0, #42a5f5)';
-                slide.innerHTML = '';
-                slide.style.opacity = '1';
-            };
-            img.src = banner.image;
-        } else {
-            slide.style.background = banner.bg;
-            slide.innerHTML = `
-                <div class="banner-emoji">${banner.emoji}</div>
-                <div class="banner-title">${banner.title}</div>
-                <div class="banner-subtitle">${banner.subtitle}</div>
-            `;
-            slide.style.opacity = '1';
-        }
-    }, 200);
-    document.querySelectorAll('#banner-dots span').forEach((dot, i) => {
-        dot.classList.toggle('active', i === currentBannerIndex);
+function switchPage(page) {
+    document.querySelectorAll('.page').forEach(function (el) { el.classList.add('hidden'); });
+    document.getElementById('page-' + page).classList.remove('hidden');
+    document.querySelectorAll('#bottom-nav button').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-page') === page);
     });
+    if (page === 'stats') { loadStats(); loadOrders(); loadUsers(); }
+    if (page === 'list') { loadProducts(); loadLowStock(); }
 }
 
 
-// ==================== KATEGORIYALAR ====================
+// ==================== OQIM FILTER ====================
+function switchOqimFilter(filter) {
+    activeOqimFilter = filter;
+    currentPage = 1;
+    document.querySelectorAll('.orders-tab[data-oqim]').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-oqim') === filter);
+    });
+    applyFilters();
+}
+
+
+// ==================== KATEGORIYA / SIZE / COLOR ====================
 function renderCategories() {
-    const scroll = document.getElementById('categories-scroll');
-    let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">
-        <span class="cat-emoji">🌐</span><span class="cat-name">Barchasi</span>
-    </button>`;
-    CATEGORIES.forEach(cat => {
-        html += `<button class="category-btn ${activeCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')">
-            <span class="cat-emoji">${cat.emoji}</span><span class="cat-name">${cat.name}</span>
-        </button>`;
+    var g = document.getElementById('categories-grid'), h = '';
+    CATEGORIES.forEach(function (c) {
+        var s = selectedCategories.indexOf(c.id) > -1;
+        h += '<label class="chip' + (s ? ' selected' : '') + '" data-cat="' + escapeAttr(c.id) + '"><input type="checkbox"' + (s ? ' checked' : '') + '><span>' + c.emoji + ' ' + escapeHtml(c.name) + '</span></label>';
     });
-    scroll.innerHTML = html;
+    g.innerHTML = h;
+    bindChips(g, '.chip[data-cat]', 'data-cat', selectedCategories, MAX_CATEGORIES, renderCategories);
 }
-function setCategory(catId) {
-    activeCategory = catId;
-    resetLoadMore();
-    renderCategories();
-    filterProducts();
-}
-
-
-// ==================== QIDIRUV ====================
-function filterProducts() {
-    const query = document.getElementById('search-input').value.trim().toLowerCase();
-    const clearBtn = document.getElementById('search-clear');
-    filteredProducts = products.filter(p => {
-        const matchesSearch = !query ||
-            (p.title || '').toLowerCase().includes(query) ||
-            (p.description || '').toLowerCase().includes(query);
-        const matchesCategory = activeCategory === 'all' ||
-            (p.categories && p.categories.includes(activeCategory));
-        return matchesSearch && matchesCategory;
+function renderSizes() {
+    var g = document.getElementById('sizes-grid'), h = '';
+    SIZES.forEach(function (sz) {
+        var s = selectedSizes.indexOf(sz) > -1;
+        h += '<label class="chip' + (s ? ' selected' : '') + '" data-size="' + escapeAttr(sz) + '"><input type="checkbox"' + (s ? ' checked' : '') + '><span>' + escapeHtml(sz) + '</span></label>';
     });
-    clearBtn.style.display = query ? 'flex' : 'none';
-    resetLoadMore();
-    shuffleProducts();
-    renderProducts();
+    g.innerHTML = h;
+    bindChips(g, '.chip[data-size]', 'data-size', selectedSizes, MAX_SIZES, renderSizes);
 }
-function clearSearch() {
-    document.getElementById('search-input').value = '';
-    filterProducts();
+function renderColors() {
+    var g = document.getElementById('colors-grid'), h = '';
+    COLORS.forEach(function (c) {
+        var s = selectedColors.indexOf(c.id) > -1;
+        h += '<div class="color-chip' + (s ? ' selected' : '') + '" data-color="' + escapeAttr(c.id) + '"><div class="color-circle" style="background:' + escapeAttr(c.hex) + '"></div><div class="color-name">' + escapeHtml(c.name) + '</div></div>';
+    });
+    g.innerHTML = h;
+    g.querySelectorAll('.color-chip').forEach(function (el) {
+        el.addEventListener('click', function () {
+            var v = this.getAttribute('data-color'), i = selectedColors.indexOf(v);
+            if (i > -1) selectedColors.splice(i, 1);
+            else { if (selectedColors.length >= MAX_COLORS) { alert("Faqat " + MAX_COLORS + " ta rang!"); return; } selectedColors.push(v); }
+            renderColors();
+        });
+    });
+}
+function bindChips(grid, sel, attr, arr, max, rnd) {
+    grid.querySelectorAll(sel).forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+            var v = this.getAttribute(attr), i = arr.indexOf(v);
+            if (i > -1) arr.splice(i, 1);
+            else { if (arr.length >= max) { alert("Faqat " + max + " ta!"); return; } arr.push(v); }
+            rnd();
+        });
+    });
 }
 
 
-// ==================== SHUFFLE ====================
-const SHUFFLE_INTERVAL = 25 * 60 * 1000;
-function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+// ==================== FILTER CHIPS ====================
+function renderFilterChips() {
+    var c = document.getElementById('filter-chips');
+    var h = '<div class="filter-chip' + (activeFilterCategory === 'all' ? ' active' : '') + '" data-filter="all">🌐 Barchasi</div>';
+    CATEGORIES.forEach(function (cat) {
+        h += '<div class="filter-chip' + (activeFilterCategory === cat.id ? ' active' : '') + '" data-filter="' + escapeAttr(cat.id) + '">' + cat.emoji + ' ' + escapeHtml(cat.name) + '</div>';
+    });
+    c.innerHTML = h;
+    c.querySelectorAll('.filter-chip').forEach(function (el) {
+        el.addEventListener('click', function () {
+            activeFilterCategory = this.getAttribute('data-filter');
+            renderFilterChips(); applyFilters();
+        });
+    });
 }
-function shuffleProducts() {
-    const lastShuffle = localStorage.getItem('lastShuffle');
-    const now = Date.now();
-    if (!lastShuffle || now - parseInt(lastShuffle) > SHUFFLE_INTERVAL) {
-        shuffleArray(filteredProducts);
-        localStorage.setItem('lastShuffle', now.toString());
-    }
+
+
+// ==================== RASM SIQISH ====================
+function compressImage(file, cb) {
+    var r = new FileReader();
+    r.onload = function (e) {
+        var img = new Image();
+        img.onload = function () {
+            var cv = document.createElement('canvas'), w = img.width, ht = img.height, MAX = 800;
+            if (w > MAX || ht > MAX) {
+                if (w > ht) { ht = Math.round(ht * MAX / w); w = MAX; }
+                else { w = Math.round(w * MAX / ht); ht = MAX; }
+            }
+            cv.width = w; cv.height = ht;
+            cv.getContext('2d').drawImage(img, 0, 0, w, ht);
+            cv.toBlob(function (blob) {
+                var nf = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+                var cr = new FileReader();
+                cr.onload = function (ev) { cb({ file: nf, preview: ev.target.result, compressed: true, newSize: nf.size }); };
+                cr.readAsDataURL(nf);
+            }, 'image/jpeg', 0.6);
+        };
+        img.src = e.target.result;
+    };
+    r.readAsDataURL(file);
 }
-function startAutoShuffle() {
-    if (shuffleTimer) clearInterval(shuffleTimer);
-    shuffleTimer = setInterval(() => {
-        const lastShuffle = localStorage.getItem('lastShuffle');
-        const now = Date.now();
-        if (!lastShuffle || now - parseInt(lastShuffle) > SHUFFLE_INTERVAL) {
-            shuffleArray(products);
-            filteredProducts = [...products];
-            shuffleArray(filteredProducts);
-            localStorage.setItem('lastShuffle', now.toString());
-            pickFeaturedProducts();
-            resetLoadMore();
-            renderProducts();
+
+
+// ==================== RASM SLOT ====================
+function renderImageSlots() {
+    var c = document.getElementById('image-preview');
+    c.innerHTML = '';
+    for (var i = 0; i < MAX_IMAGES; i++) {
+        var slot = document.createElement('div');
+        slot.className = 'image-slot' + (i === 0 ? ' main-slot' : '');
+        slot.setAttribute('data-slot', i);
+        var lbl = document.createElement('div');
+        lbl.className = 'slot-label';
+        lbl.innerText = i === 0 ? '⭐ Asosiy' : (i + 1);
+        slot.appendChild(lbl);
+        if (selectedFiles[i]) {
+            var im = document.createElement('img');
+            im.src = selectedFiles[i].preview;
+            slot.appendChild(im);
+            var rm = document.createElement('button');
+            rm.type = 'button'; rm.className = 'remove-btn'; rm.innerText = '✕';
+            rm.setAttribute('data-remove', i);
+            rm.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var si = parseInt(this.getAttribute('data-remove'));
+                selectedFiles[si] = null;
+                renderImageSlots();
+            });
+            slot.appendChild(rm);
+        } else {
+            var em = document.createElement('div');
+            em.className = 'empty-icon'; em.innerText = '📷';
+            slot.appendChild(em);
         }
-    }, 60 * 1000);
-}
-
-
-// ==================== MAHSULOTLAR ====================
-async function loadProducts() {
-    const container = document.getElementById('products-container');
-    container.innerHTML = buildSkeleton(6);
-    try {
-        const response = await fetch(`${API_URL}/api/products`);
-        const data = await response.json();
-        products = data.products || [];
-        filteredProducts = [...products];
-        if (products.length === 0) {
-            container.innerHTML = '<p class="loading">📦 Hozircha mahsulotlar yo\'q</p>';
-            return;
-        }
-        pickFeaturedProducts();
-        shuffleProducts();
-        resetLoadMore();
-        renderProducts();
-    } catch (error) {
-        container.innerHTML = '<p class="loading">❌ Xatolik. Qayta urinib ko\'ring.</p>';
+        slot.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-btn')) return;
+            var si = parseInt(this.getAttribute('data-slot'));
+            openFilePicker(si);
+        });
+        c.appendChild(slot);
     }
 }
 
-function buildSkeleton(count) {
-    let html = '<div class="products-grid-skeleton">';
-    for (let i = 0; i < count; i++) {
-        html += `
-            <div class="skeleton-card">
-                <div class="skeleton-img"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-                <div class="skeleton-btn"></div>
-            </div>
-        `;
-    }
-    html += '</div>';
-    return html;
-}
-
-function getImageUrl(url) {
-    if (!url) return "";
-    if (url.startsWith('http')) return url;
-    return `${API_URL}/api/image/${url}`;
-}
-
-function buildProductCard(p) {
-    const discountPercent = p.price > 0 && p.discount_price > 0
-        ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
-    const productId = String(p.id);
-    const colorsHtml = (p.colors && p.colors.length > 0)
-        ? '<div class="product-colors-mini">' + p.colors.slice(0, 5).map(cid => {
-            const c = COLORS.find(x => x.id === cid);
-            return c ? `<span style="background:${c.hex};" title="${c.name}"></span>` : '';
-        }).join('') + '</div>'
-        : '';
-
-    const realImg = getImageUrl(p.images && p.images[0]);
-
-    return `
-    <div class="product-card-h" data-id="${productId}">
-        <div class="product-image-h">
-            <div class="img-spinner"></div>
-            <img
-                src="${PLACEHOLDER_PIXEL}"
-                data-src="${realImg || ''}"
-                alt="${(p.title || '').substring(0, 30)}"
-                decoding="async"
-                class="product-img"
-            >
-            ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
-        </div>
-        <div class="product-title-h">${(p.title || '').substring(0, 40)}</div>
-        ${colorsHtml}
-        <div class="product-price-h">
-            ${p.price > p.discount_price ? `<span class="old-price-h">${p.price.toLocaleString()}</span>` : ''}
-            <span class="new-price-h">${(p.discount_price || 0).toLocaleString()} so'm</span>
-        </div>
-        <button class="buy-btn-h" data-buy="${productId}">🛒 Sotib olish</button>
-    </div>`;
-}
-
-function buildBigProductCard(p) {
-    const discountPercent = p.price > 0 && p.discount_price > 0
-        ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
-    const productId = String(p.id);
-    const realImg = getImageUrl(p.images && p.images[0]);
-    const description = (p.description || '').substring(0, 150);
-
-    return `
-    <div class="big-product-card" data-id="${productId}">
-        <div class="big-product-image">
-            <div class="img-spinner"></div>
-            <img
-                src="${PLACEHOLDER_PIXEL}"
-                data-src="${realImg || ''}"
-                alt="${(p.title || '').substring(0, 30)}"
-                decoding="async"
-                class="product-img"
-            >
-            ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
-        </div>
-        <div class="big-product-body">
-            <div class="big-product-title">${p.title || ''}</div>
-            ${description ? `<div class="big-product-desc">${description}${(p.description || '').length > 150 ? '...' : ''}</div>` : ''}
-            <div class="big-product-price-block">
-                ${p.price > p.discount_price ? `<span class="big-old-price">${p.price.toLocaleString()} so'm</span>` : ''}
-                <span class="big-new-price">${(p.discount_price || 0).toLocaleString()} so'm</span>
-            </div>
-            <button class="big-buy-btn" data-buy="${productId}">🛒 Sotib olish</button>
-        </div>
-    </div>`;
+function openFilePicker(slotIdx) {
+    var i = document.createElement('input');
+    i.type = 'file'; i.accept = 'image/*';
+    i.onchange = function (e) {
+        var f = e.target.files[0];
+        if (!f) return;
+        if (f.size > 15 * 1024 * 1024) { alert("Rasm 15 MB dan oshmasin!"); return; }
+        var s = document.getElementById('add-status');
+        s.innerText = "⏳ Siqilmoqda..."; s.className = "status ok";
+        compressImage(f, function (r) {
+            selectedFiles[slotIdx] = r;
+            renderImageSlots();
+            s.innerText = "✅ Qo'shildi (" + Math.round(r.newSize / 1024) + " KB)";
+            s.className = "status ok";
+            setTimeout(function () { if (s.innerText.indexOf('✅') === 0) { s.innerText = ''; s.className = ''; } }, 3000);
+        });
+    };
+    i.click();
 }
 
 
-// ==================== RENDER ====================
-function renderProducts() {
-    const container = document.getElementById('products-container');
-    if (filteredProducts.length === 0) {
-        container.innerHTML = '<p class="loading">🔍 Mahsulot topilmadi</p>';
-        return;
-    }
-
-    let html = '';
-
-    if (featuredProducts.length > 0) {
-        html += `
-            <div class="featured-section">
-                <div class="featured-header">
-                    <span class="featured-icon">⭐</span>
-                    <span class="featured-title">Siz uchun sotuvga keltirdik</span>
-                </div>
-                <div class="products-horizontal" id="featured-scroll">
-        `;
-        featuredProducts.slice(0, FIRST_HORIZONTAL).forEach(p => { html += buildProductCard(p); });
-        html += `
-                </div>
-            </div>
-        `;
-    }
-
-    html += '<div class="products-grid" id="main-grid"></div>';
-    html += '<div class="load-more-container" id="load-more-container"></div>';
-
-    container.innerHTML = html;
-
-    fillMainGrid();
-    updateLoadMoreButton();
-    attachAllListeners();
-    initImageObserver();
-    startAutoScroll();
-    setupAutoLoadMore();
-}
-
-
-function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
-    let html = '';
-    let productIndex = startIndex;
-    let regularCount = startRegularCount;
-
-    while (productIndex < endIndex) {
-        if (regularCount >= BIG_CARD_EVERY) {
-            const bigProduct = filteredProducts[productIndex];
-            if (bigProduct) {
-                html += buildBigProductCard(bigProduct);
-                productIndex++;
-                regularCount = 0;
+// ==================== IMGBB YUKLASH ====================
+async function uploadImageWithRetry(file, maxAttempts) {
+    var lastError = "";
+    try { await fetch(API_URL + '/api/products', { method: 'GET' }); } catch (e) {}
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            var fd = new FormData();
+            fd.append('image', file);
+            fd.append('token', adminToken);
+            var controller = new AbortController();
+            var tid = setTimeout(function () { controller.abort(); }, 120000);
+            var resp = await fetch(API_URL + '/api/upload_image', { method: 'POST', body: fd, signal: controller.signal });
+            clearTimeout(tid);
+            var data;
+            try { data = await resp.json(); } catch (jsonErr) {
+                lastError = "Server JSON qaytarmadi";
+                if (attempt < maxAttempts) await new Promise(function (r) { setTimeout(r, 3000); });
                 continue;
             }
-        }
-        const product = filteredProducts[productIndex];
-        if (!product) break;
-
-        html += buildProductCard(product);
-        productIndex++;
-        regularCount++;
+            if (data.success && data.url) { window.lastUploadError = ""; return data.url; }
+            lastError = data.error || ("HTTP " + resp.status);
+            if (resp.status === 401) { handleAuthError(); window.lastUploadError = "Sessiya tugagan"; return null; }
+        } catch (e) { lastError = e.name === 'AbortError' ? "Timeout" : e.message; }
+        if (attempt < maxAttempts) await new Promise(function (r) { setTimeout(r, 3000); });
     }
-    return { html, endIndex: productIndex, regularCount };
+    window.lastUploadError = lastError || "Noma'lum xato";
+    return null;
 }
 
 
-function fillMainGrid() {
-    const grid = document.getElementById('main-grid');
-    if (!grid) return;
-    const total = filteredProducts.length;
-    const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
-    const result = addProductsToGrid(grid, 0, gridShown, 0);
-    grid.innerHTML = result.html;
-}
+// ==================== MAHSULOT SAQLASH ====================
+async function saveProduct() {
+    var oqim_id = document.getElementById('p-oqim').value.trim();
+    var title = document.getElementById('p-title').value.trim();
+    var desc = document.getElementById('p-description').value.trim();
+    var price = parseInt(document.getElementById('p-price').value) || 0;
+    var discount = parseInt(document.getElementById('p-discount').value) || 0;
+    var stock = parseInt(document.getElementById('p-stock').value) || 0;
+    var s = document.getElementById('add-status');
+    var b = document.getElementById('add-btn');
 
+    if (!oqim_id) { s.innerText = "❗ Oqim ID majburiy!"; s.className = "status err"; return; }
+    if (!title) { s.innerText = "❗ Mahsulot nomi kerak!"; s.className = "status err"; return; }
+    if (!price || !discount) { s.innerText = "❗ Narx va chegirma kerak!"; s.className = "status err"; return; }
 
-function loadMoreProducts() {
-    const total = filteredProducts.length;
-    const currentShown = Math.min(gridRowsShown * GRID_COLS, total);
-    gridRowsShown += LOAD_MORE_ROWS;
-    const newShown = Math.min(gridRowsShown * GRID_COLS, total);
-
-    const grid = document.getElementById('main-grid');
-    if (!grid) return;
-
-    let regularCount = 0;
-    let idx = 0;
-    while (idx < currentShown) {
-        if (regularCount >= BIG_CARD_EVERY) {
-            idx++; regularCount = 0; continue;
-        }
-        idx++; regularCount++;
+    var hasImg = false;
+    for (var k = 0; k < MAX_IMAGES; k++) {
+        if (selectedFiles[k] && selectedFiles[k].file) { hasImg = true; break; }
     }
+    if (!hasImg && !editingProductId) { s.innerText = "❗ Kamida 1 ta rasm!"; s.className = "status err"; return; }
 
-    const result = addProductsToGrid(grid, currentShown, newShown, regularCount);
-    grid.insertAdjacentHTML('beforeend', result.html);
-
-    attachAllListeners();
-    initImageObserver();
-    updateLoadMoreButton();
-    setupAutoLoadMore();
-}
-
-
-function attachAllListeners() {
-    document.querySelectorAll('.product-card-h').forEach(card => {
-        if (!card.dataset.listenerAttached) {
-            card.dataset.listenerAttached = '1';
-            card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
-        }
-    });
-    document.querySelectorAll('.buy-btn-h').forEach(btn => {
-        if (!btn.dataset.listenerAttached) {
-            btn.dataset.listenerAttached = '1';
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openModal(btn.getAttribute('data-buy'));
-            });
-        }
-    });
-    document.querySelectorAll('.big-product-card').forEach(card => {
-        if (!card.dataset.listenerAttached) {
-            card.dataset.listenerAttached = '1';
-            card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
-        }
-    });
-    document.querySelectorAll('.big-buy-btn').forEach(btn => {
-        if (!btn.dataset.listenerAttached) {
-            btn.dataset.listenerAttached = '1';
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openModal(btn.getAttribute('data-buy'));
-            });
-        }
-    });
-}
-
-
-function updateLoadMoreButton() {
-    const total = filteredProducts.length;
-    const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
-    const remaining = total - gridShown;
-    const container = document.getElementById('load-more-container');
-    if (!container) return;
-
-    if (remaining > 0) {
-        container.innerHTML = `
-            <button class="load-more-btn" onclick="loadMoreProducts()">
-                <span class="load-more-icon">⬇️</span>
-                <span>Yana ko'rish (${remaining} ta qoldi)</span>
-            </button>
-        `;
-    } else {
-        container.innerHTML = `<p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>`;
-    }
-}
-
-function resetLoadMore() { gridRowsShown = INITIAL_GRID_ROWS; }
-
-
-// ==================== TELEFON FORMATLASH ====================
-function formatPhone(value) {
-    let digits = value.replace(/\D/g, '');
-    if (digits.startsWith('998')) digits = digits.slice(3);
-    digits = digits.slice(0, 9);
-    let result = '+998';
-    if (digits.length > 0) result += '(' + digits.slice(0, 2);
-    if (digits.length >= 2) result += ')';
-    if (digits.length > 2) result += '-' + digits.slice(2, 5);
-    if (digits.length > 5) result += '-' + digits.slice(5, 7);
-    if (digits.length > 7) result += '-' + digits.slice(7, 9);
-    return result;
-}
-document.addEventListener('DOMContentLoaded', function() {
-    const phoneInput = document.getElementById('order-phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function() { this.value = formatPhone(this.value); });
-        phoneInput.addEventListener('focus', function() { if (!this.value) this.value = '+998'; });
-    }
-    initModalSwipe();
-});
-
-
-// ==================== MODAL ====================
-function formatDescription(text) {
-    if (!text || !text.trim()) return '';
-    return text.split('\n').map(l => l.trim()).filter(l => l).map(l => `<p>${l}</p>`).join('');
-}
-
-async function openModal(id) {
-    currentProduct = products.find(p => String(p.id) === String(id));
-    if (!currentProduct) return;
-
-    activeModal = 'order';
-    enableTelegramBackButton(function() { closeModal(true); });
-    try { history.pushState({ modal: 'order' }, '', '#order'); } catch (e) {}
-
-    currentImageIndex = 0;
-    selectedSize = null;
-    selectedColor = null;
-
-    document.getElementById('modal-title').innerText = currentProduct.title || '';
-
-    const oldPriceEl = document.getElementById('modal-old-price');
-    const discountBadgeEl = document.getElementById('modal-discount-badge');
-    if (currentProduct.price > currentProduct.discount_price) {
-        oldPriceEl.innerText = currentProduct.price.toLocaleString() + " so'm";
-        oldPriceEl.style.display = 'inline';
-        const percent = Math.round((1 - currentProduct.discount_price / currentProduct.price) * 100);
-        discountBadgeEl.innerText = '-' + percent + '%';
-        discountBadgeEl.style.display = 'inline-block';
-    } else {
-        oldPriceEl.style.display = 'none';
-        discountBadgeEl.style.display = 'none';
-    }
-    document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
-    document.getElementById('modal-stock').innerText = currentProduct.stock || 0;
-    document.getElementById('modal-sold').innerText = currentProduct.sold || 0;
-
-    const descEl = document.getElementById('modal-description');
-    const formatted = formatDescription(currentProduct.description);
-    descEl.innerHTML = formatted;
-    descEl.style.display = formatted ? 'block' : 'none';
-
-    const sizeSection = document.getElementById('size-section');
-    const sizesList = document.getElementById('modal-sizes');
-    if (currentProduct.sizes && currentProduct.sizes.length > 0) {
-        sizeSection.style.display = 'block';
-        sizesList.innerHTML = currentProduct.sizes.map(sz =>
-            `<button type="button" class="option-btn size-btn" data-size="${sz}">${sz}</button>`
-        ).join('');
-        sizesList.querySelectorAll('.size-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                sizesList.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedSize = this.getAttribute('data-size');
-            });
-        });
-    } else {
-        sizeSection.style.display = 'none';
-    }
-
-    const colorSection = document.getElementById('color-section');
-    const colorsList = document.getElementById('modal-colors');
-    if (currentProduct.colors && currentProduct.colors.length > 0) {
-        colorSection.style.display = 'block';
-        colorsList.innerHTML = currentProduct.colors.map(cid => {
-            const c = COLORS.find(x => x.id === cid);
-            if (!c) return '';
-            return `<button type="button" class="option-btn color-opt-btn" data-color="${c.id}">
-                <div class="option-color-circle" style="background:${c.hex};"></div>
-                <span>${c.name}</span>
-            </button>`;
-        }).join('');
-        colorsList.querySelectorAll('.color-opt-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                colorsList.querySelectorAll('.color-opt-btn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedColor = this.getAttribute('data-color');
-            });
-        });
-    } else {
-        colorSection.style.display = 'none';
-    }
-
-    updateImage();
-    startCountdown();
-    document.getElementById('order-modal').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    b.disabled = true; b.innerText = 'Yuklanmoqda...'; s.innerText = ''; s.className = '';
 
     try {
-        await fetch(`${API_URL}/api/increment_view`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ product_id: String(currentProduct.id) })
-        });
-    } catch (e) {}
-}
-
-function closeModal(skipHistory = false) {
-    document.getElementById('order-modal').classList.remove('active');
-    document.body.style.overflow = '';
-    if (countdownInterval) clearInterval(countdownInterval);
-    document.getElementById('order-form').reset();
-    document.getElementById('order-status').innerText = '';
-    document.getElementById('order-status').className = 'status';
-    disableTelegramBackButton();
-    if (!skipHistory && activeModal === 'order') {
-        activeModal = null;
-        try { if (history.state && history.state.modal === 'order') history.back(); } catch (e) {}
-    } else {
-        activeModal = null;
-    }
-}
-
-function preloadModalImages() {
-    if (!currentProduct || !currentProduct.images) return;
-    currentProduct.images.forEach((imgUrl, idx) => {
-        if (idx === currentImageIndex) return;
-        const url = getImageUrl(imgUrl);
-        if (url && !url.startsWith('data:')) {
-            const preloader = new Image();
-            preloader.src = url;
-        }
-    });
-}
-
-function updateImage() {
-    const img = document.getElementById('modal-image');
-    const spinner = document.querySelector('.modal-img-spinner');
-    if (!img) return;
-    if (spinner) spinner.style.display = 'block';
-    img.classList.remove('loaded');
-    img.style.transform = '';
-    const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
-        ? getImageUrl(currentProduct.images[currentImageIndex])
-        : "";
-    if (!imgUrl) {
-        img.src = PLACEHOLDER_PIXEL;
-        img.classList.add('loaded');
-        if (spinner) spinner.style.display = 'none';
-    } else {
-        img.onload = function() {
-            img.classList.add('loaded');
-            if (spinner) spinner.style.display = 'none';
-            preloadModalImages();
-        };
-        img.onerror = function() {
-            img.src = PLACEHOLDER_PIXEL;
-            img.classList.add('loaded');
-            if (spinner) spinner.style.display = 'none';
-        };
-        img.src = imgUrl;
-    }
-    const dots = (currentProduct.images || []).map((_, i) =>
-        `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
-    document.getElementById('slider-dots').innerHTML = dots;
-}
-
-function slideImage(dir) {
-    if (!currentProduct.images || currentProduct.images.length === 0) return;
-    currentImageIndex = (currentImageIndex + dir + currentProduct.images.length) % currentProduct.images.length;
-    updateImage();
-}
-
-function startCountdown() {
-    if (countdownInterval) clearInterval(countdownInterval);
-    const RESET_KEY = 'countdown_reset_' + currentProduct.id;
-    const DAY = 24 * 60 * 60 * 1000;
-    const THREE_DAYS = 72 * 60 * 60 * 1000;
-    const now = Date.now();
-    let resetTime = parseInt(localStorage.getItem(RESET_KEY) || '0');
-    if (!resetTime || (now - resetTime) >= DAY) {
-        resetTime = now;
-        localStorage.setItem(RESET_KEY, resetTime.toString());
-    }
-    const endTime = resetTime + THREE_DAYS;
-    function tick() {
-        const diff = Math.max(0, endTime - Date.now());
-        const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-        const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-        const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
-        const seconds = Math.floor((diff % (60 * 1000)) / 1000);
-        document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
-        document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
-        document.getElementById('cd-minutes').innerText = String(minutes).padStart(2, '0');
-        document.getElementById('cd-seconds').innerText = String(seconds).padStart(2, '0');
-    }
-    tick();
-    countdownInterval = setInterval(tick, 1000);
-}
-
-async function submitOrder(event) {
-    event.preventDefault();
-    const name = document.getElementById('order-name').value.trim();
-    const phone = document.getElementById('order-phone').value.trim();
-    const statusEl = document.getElementById('order-status');
-    const submitBtn = document.querySelector('.order-submit-btn');
-
-    if (!name || name.length < 4) { statusEl.innerText = "❌ Ism kamida 4 harf!"; statusEl.className = "status err"; return; }
-    const phoneDigits = phone.replace(/\D/g, '');
-    if (phoneDigits.length < 12) { statusEl.innerText = "❌ Telefon to'liq emas!"; statusEl.className = "status err"; return; }
-    if (currentProduct.sizes && currentProduct.sizes.length > 0 && !selectedSize) { statusEl.innerText = "❌ O'lchamni tanlang!"; statusEl.className = "status err"; return; }
-    if (currentProduct.colors && currentProduct.colors.length > 0 && !selectedColor) { statusEl.innerText = "❌ Rangni tanlang!"; statusEl.className = "status err"; return; }
-
-    let colorName = "";
-    if (selectedColor) {
-        const c = COLORS.find(x => x.id === selectedColor);
-        if (c) colorName = c.name;
-    }
-
-    const orderData = {
-        product_id: String(currentProduct.id),
-        product_title: currentProduct.title,
-        price: currentProduct.discount_price,
-        customer_name: name,
-        customer_phone: phone,
-        size: selectedSize || "",
-        color: colorName
-    };
-
-    if (isTelegram) {
-        tg.sendData(JSON.stringify({ action: 'order', ...orderData }));
-        statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
-        statusEl.className = "status ok";
-        setTimeout(() => {
-            try { tg.showAlert("Buyurtmangiz qabul qilindi!"); } catch(e) {}
-            closeModal();
-        }, 500);
-    } else {
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Yuborilmoqda...'; }
-        try {
-            const res = await fetch(`${API_URL}/api/public_order`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData || '' },
-                body: JSON.stringify(orderData)
-            });
-            const data = await res.json();
-            if (data.success) {
-                statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
-                statusEl.className = "status ok";
-                setTimeout(() => {
-                    alert("Buyurtmangiz qabul qilindi!\n\nTez orada operatorlarimiz siz bilan bog'lanadi.");
-                    closeModal();
-                }, 500);
-            } else {
-                statusEl.innerText = "❌ " + (data.error || "Xatolik");
-                statusEl.className = "status err";
+        var urls = [], okCount = 0, failed = [];
+        for (var i = 0; i < MAX_IMAGES; i++) {
+            var it = selectedFiles[i];
+            if (!it) continue;
+            if (it.existing && !it.file) { urls.push(it.preview); okCount++; continue; }
+            if (it.file) {
+                s.innerText = '⏳ ' + (i + 1) + '-rasm yuklanmoqda...';
+                s.className = "status ok";
+                var u = await uploadImageWithRetry(it.file, 4);
+                if (u) { urls.push(u); okCount++; }
+                else { failed.push(i + 1); }
             }
-        } catch (e) {
-            statusEl.innerText = "❌ Tarmoq xatosi";
-            statusEl.className = "status err";
-        } finally {
-            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Tasdiqlash'; }
         }
+        if (okCount === 0) {
+            s.innerText = "❌ Rasm yuklanmadi: " + (window.lastUploadError || "Noma'lum");
+            s.className = "status err";
+            b.disabled = false; b.innerText = '💾 Saqlash';
+            return;
+        }
+        if (failed.length > 0) {
+            if (!confirm(failed.length + " ta rasm yuklanmadi. Davom etilsinmi?")) {
+                b.disabled = false; b.innerText = '💾 Saqlash';
+                s.innerText = ''; s.className = '';
+                return;
+            }
+        }
+
+        s.innerText = "⏳ Saqlanmoqda..."; s.className = "status ok";
+
+        var body = {
+            token: adminToken,
+            oqim_id: oqim_id,
+            title: title,
+            description: desc,
+            price: price,
+            discount_price: discount,
+            stock: stock,
+            categories: selectedCategories,
+            sizes: selectedSizes,
+            colors: selectedColors,
+            images: urls
+        };
+
+        var r, d;
+        if (editingProductId) {
+            r = await fetch(API_URL + '/api/products/' + editingProductId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        } else {
+            r = await fetch(API_URL + '/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        }
+        if (r.status === 401) { handleAuthError(); return; }
+        d = await r.json();
+        if (d.success) {
+            s.innerText = (editingProductId ? "✅ Yangilandi!" : "✅ Qo'shildi!");
+            s.className = "status ok";
+            resetForm();
+            loadProducts();
+            loadLowStock();
+        } else {
+            s.innerText = "❌ " + (d.error || "Xatolik");
+            s.className = "status err";
+        }
+    } catch (e) {
+        s.innerText = "❌ " + e.message;
+        s.className = "status err";
+    } finally {
+        b.disabled = false;
+        b.innerText = '💾 Saqlash';
     }
 }
 
+function resetForm() {
+    ['p-oqim', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    selectedFiles = [null, null, null, null];
+    selectedCategories = [];
+    selectedSizes = [];
+    selectedColors = [];
+    editingProductId = null;
+    renderImageSlots(); renderCategories(); renderSizes(); renderColors();
+    document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
+    document.getElementById('cancel-btn').classList.add('hidden');
+}
 
-// ==================== PROFIL ====================
-async function openProfile() {
-    if (!isTelegram) {
-        alert("Profil faqat Telegram orqali ishlaydi.\n\nIltimos, do'konni @MaxiMarketUzbot orqali oching.");
+function cancelEdit() {
+    resetForm();
+    document.getElementById('add-status').innerText = "Tahrirlash bekor qilindi";
+    document.getElementById('add-status').className = "status ok";
+}
+
+function editProduct(id) {
+    var p = null;
+    for (var i = 0; i < allProducts.length; i++) {
+        if (String(allProducts[i].id) === String(id)) { p = allProducts[i]; break; }
+    }
+    if (!p) return;
+    editingProductId = id;
+    document.getElementById('p-oqim').value = p.oqim_id || '';
+    document.getElementById('p-title').value = p.title || '';
+    document.getElementById('p-description').value = p.description || '';
+    document.getElementById('p-price').value = p.price || '';
+    document.getElementById('p-discount').value = p.discount_price || '';
+    document.getElementById('p-stock').value = p.stock || 0;
+    selectedCategories = p.categories || [];
+    selectedSizes = p.sizes || [];
+    selectedColors = p.colors || [];
+    selectedFiles = [null, null, null, null];
+    var imgs = p.images || [];
+    for (var j = 0; j < imgs.length && j < MAX_IMAGES; j++) {
+        selectedFiles[j] = { file: null, preview: imgs[j], existing: true };
+    }
+    renderCategories(); renderSizes(); renderColors(); renderImageSlots();
+    document.getElementById('form-title').innerText = "✏️ Tahrirlash";
+    document.getElementById('cancel-btn').classList.remove('hidden');
+    closeProductModal();
+    switchPage('add');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// ==================== MAHSULOTLAR RO'YXATI ====================
+function searchProducts() {
+    searchQuery = document.getElementById('products-search-input').value.trim().toLowerCase();
+    document.getElementById('products-search-clear').style.display = searchQuery ? 'flex' : 'none';
+    applyFilters();
+}
+function clearProductsSearch() {
+    document.getElementById('products-search-input').value = '';
+    searchQuery = '';
+    document.getElementById('products-search-clear').style.display = 'none';
+    applyFilters();
+}
+
+function applyFilters() {
+    filteredProducts = allProducts.filter(function (p) {
+        var ms = !searchQuery ||
+            (p.title || '').toLowerCase().includes(searchQuery) ||
+            (p.description || '').toLowerCase().includes(searchQuery);
+        var mc = activeFilterCategory === 'all' ||
+            (p.categories && p.categories.indexOf(activeFilterCategory) > -1);
+        var mo = true;
+        if (activeOqimFilter === 'has') mo = !!p.oqim_id;
+        else if (activeOqimFilter === 'no') mo = !p.oqim_id;
+        return ms && mc && mo;
+    });
+    totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    document.getElementById('filtered-count').innerText = filteredProducts.length;
+    document.getElementById('total-count').innerText = allProducts.length;
+    renderProductsPage();
+}
+
+
+function renderPagination(containerId, current, total, callbackName) {
+    var c = document.getElementById(containerId);
+    if (!c) return;
+    if (total <= 1) { c.innerHTML = ''; return; }
+    var h = '';
+    if (current > 1) h += '<button onclick="' + callbackName + '(' + (current - 1) + ')">‹</button>';
+    var start = Math.max(1, current - 2);
+    var end = Math.min(total, start + 4);
+    if (end - start < 4) start = Math.max(1, end - 4);
+    for (var i = start; i <= end; i++) {
+        h += '<button class="' + (i === current ? 'active' : '') + '" onclick="' + callbackName + '(' + i + ')">' + i + '</button>';
+    }
+    if (current < total) h += '<button onclick="' + callbackName + '(' + (current + 1) + ')">›</button>';
+    c.innerHTML = h;
+}
+
+
+// ==================== MAHSULOTLAR SAHIFASI (XSS himoya) ====================
+function renderProductsPage() {
+    var l = document.getElementById('products-list');
+    if (filteredProducts.length === 0) {
+        l.innerHTML = '<div class="empty-result">🔍 Mahsulot topilmadi</div>';
+        renderPagination('products-pagination', 1, 1, 'goToProductPage');
         return;
     }
-    activeModal = 'profile';
-    enableTelegramBackButton(function() { closeProfile(true); });
-    try { history.pushState({ modal: 'profile' }, '', '#profile'); } catch (e) {}
+    var s = (currentPage - 1) * PER_PAGE;
+    var e = Math.min(s + PER_PAGE, filteredProducts.length);
+    var pp = filteredProducts.slice(s, e);
+    var h = '';
 
-    document.getElementById('profile-modal').classList.add('active');
-    const user = tg.initDataUnsafe?.user;
-    if (!user) return;
-
-    try {
-        // ⭐ X-Telegram-Init-Data header qo'shildi
-        const res = await fetch(`${API_URL}/api/register_user`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Telegram-Init-Data': tg.initData || ''
-            },
-            body: JSON.stringify({
-                username: user.username || "",
-                tg_name: user.first_name + (user.last_name ? ' ' + user.last_name : '')
-            })
-        });
-        const data = await res.json();
-        if (data.success) {
-            currentUser = data;
-            document.getElementById('profile-number').innerText = '#' + data.user_number;
-            document.getElementById('profile-fullname').value = data.full_name || (user.first_name + (user.last_name ? ' ' + user.last_name : ''));
-            document.getElementById('profile-phone').value = data.phone || '';
-            document.getElementById('profile-date').value = data.registered_at ?
-                new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
-            if (data.photo) {
-                profilePhotoUrl = data.photo;
-                document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy">`;
-            }
+    pp.forEach(function (p, idx) {
+        var globalNum = s + idx + 1;
+        var sz = (p.sizes || []).join(', ');
+        var ch = '';
+        if (p.colors && p.colors.length > 0) {
+            ch = '<div class="product-colors">';
+            p.colors.forEach(function (cid) {
+                var c = COLORS.find(function (x) { return x.id === cid; });
+                if (c) ch += '<span style="background:' + escapeAttr(c.hex) + '" title="' + escapeAttr(c.name) + '"></span>';
+            });
+            ch += '</div>';
         }
-    } catch (err) {}
+        var stockColor = p.stock <= 10 ? '#e53935' : '#2e7d32';
+
+        var oqimBadge = p.oqim_id
+            ? '<div class="oqim-badge has">✅ Oqim: ' + escapeHtml(p.oqim_id) + '</div>'
+            : '<div class="oqim-badge no">❌ Oqim yo\'q</div>';
+
+        var itemClass = p.oqim_id ? 'has-oqim' : 'no-oqim';
+        var safeId = escapeAttr(p.id);
+
+        h += '<div class="product-item ' + itemClass + '" onclick="openProductModal(\'' + safeId + '\')">';
+        h += '<div class="product-item-info">';
+        h += '<b>' + (globalNum) + '. ' + escapeHtml(p.title || '') + '</b>';
+        h += '<small>💰 ' + (p.discount_price || 0).toLocaleString() + " so'm | <span style='color:" + stockColor + ";font-weight:700'>📦 " + (p.stock || 0) + '</span> | 👁 ' + (p.views || 0) + ' | ✅ ' + (p.sold || 0) + '</small>';
+        if (sz) h += '<small>📏 ' + escapeHtml(sz) + '</small>';
+        h += ch;
+        h += oqimBadge;
+        h += '</div>';
+        h += '<div class="btn-row" onclick="event.stopPropagation()">';
+        h += '<button class="success small" data-edit="' + safeId + '">✏️</button>';
+        h += '<button class="danger small" data-del="' + safeId + '">🗑</button>';
+        h += '</div></div>';
+    });
+    l.innerHTML = h;
+
+    l.querySelectorAll('[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () { editProduct(this.getAttribute('data-edit')); });
+    });
+    l.querySelectorAll('[data-del]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            if (confirm("O'chirishni tasdiqlaysizmi?")) deleteProduct(this.getAttribute('data-del'));
+        });
+    });
+
+    renderPagination('products-pagination', currentPage, totalPages, 'goToProductPage');
 }
 
-function closeProfile(skipHistory = false) {
-    document.getElementById('profile-modal').classList.remove('active');
-    disableTelegramBackButton();
-    if (!skipHistory && activeModal === 'profile') {
-        activeModal = null;
-        try { if (history.state && history.state.modal === 'profile') history.back(); } catch (e) {}
-    } else {
-        activeModal = null;
-    }
+function goToProductPage(p) {
+    currentPage = p;
+    renderProductsPage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function previewProfilePhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        document.getElementById('profile-avatar').innerHTML =
-            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    };
-    reader.readAsDataURL(file);
-}
-
-function uploadImageToServer(file) {
-    return new Promise(function(resolve) {
-        var formData = new FormData();
-        formData.append('image', file);
-        fetch(API_URL + '/api/upload_image', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
-            .then(function(d) { resolve(d.success ? d.url : null); })
-            .catch(function() { resolve(null); });
+function loadProducts() {
+    var l = document.getElementById('products-list');
+    l.innerHTML = '⏳ Yuklanmoqda...';
+    fetch(API_URL + '/api/products').then(function (r) { return r.json(); }).then(function (d) {
+        allProducts = d.products || [];
+        filteredProducts = allProducts.slice();
+        totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
+        currentPage = 1;
+        document.getElementById('total-count').innerText = allProducts.length;
+        document.getElementById('filtered-count').innerText = filteredProducts.length;
+        renderProductsPage();
+    }).catch(function (e) {
+        l.innerHTML = '<p style="color:#c62828">Xatolik: ' + escapeHtml(e.message) + '</p>';
     });
 }
 
-async function saveProfile() {
-    if (!currentUser) return;
-    const fullname = document.getElementById('profile-fullname').value.trim();
-    const phone = document.getElementById('profile-phone').value.trim();
-    const statusEl = document.getElementById('profile-status');
-    const fileInput = document.getElementById('profile-photo');
-
-    statusEl.innerText = "⏳ Saqlanmoqda...";
-    statusEl.className = "status ok";
-
-    try {
-        let photoUrl = profilePhotoUrl;
-        if (fileInput.files[0]) {
-            photoUrl = await uploadImageToServer(fileInput.files[0]);
-            if (!photoUrl) photoUrl = profilePhotoUrl;
-        }
-
-        // ⭐ X-Telegram-Init-Data header qo'shildi + user_id olib tashlandi
-        const res = await fetch(`${API_URL}/api/update_user`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Telegram-Init-Data': tg.initData || ''
-            },
-            body: JSON.stringify({
-                full_name: fullname,
-                phone: phone,
-                photo: photoUrl
-            })
-        });
-        const data = await res.json();
-        if (data.success) {
-            statusEl.innerText = "✅ Profil saqlandi!";
-            statusEl.className = "status ok";
-            profilePhotoUrl = photoUrl;
-        } else {
-            statusEl.innerText = "❌ " + (data.error || "Xatolik");
-            statusEl.className = "status err";
-        }
-    } catch (err) {
-        statusEl.innerText = "❌ " + err.message;
-        statusEl.className = "status err";
-    }
+function deleteProduct(id) {
+    if (!confirm("Mahsulotni o'chirishni tasdiqlaysizmi?")) return;
+    fetch(API_URL + '/api/products/' + id, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: adminToken })
+    })
+        .then(function (r) { if (r.status === 401) { handleAuthError(); return; } return r.json(); })
+        .then(function (d) {
+            if (d && d.success) { loadProducts(); loadLowStock(); }
+            else if (d) alert("Xatolik: " + (d.error || ""));
+        })
+        .catch(function (e) { alert("Xatolik: " + e.message); });
 }
 
 
-// ==================== TASHRIF ====================
-async function trackVisit() {
+// ==================== KAM QOLGAN ====================
+async function loadLowStock() {
+    var section = document.getElementById('low-stock-section');
+    var list = document.getElementById('low-stock-list');
     try {
-        await fetch(`${API_URL}/api/visit`, {
+        var r = await fetch(API_URL + '/api/products/low-stock', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ page: 'main' })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken, page: currentLowStockPage, per_page: LOW_STOCK_PER_PAGE })
         });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (!d.success || d.total === 0) { section.style.display = 'none'; return; }
+        section.style.display = 'block';
+        lowStockTotalPages = d.total_pages || 1;
+        var s = (currentLowStockPage - 1) * LOW_STOCK_PER_PAGE;
+        var h = '';
+        d.products.forEach(function (p, idx) {
+            var num = s + idx + 1;
+            var safeId = escapeAttr(p.id);
+            h += '<div class="low-stock-item" onclick="openProductModal(\'' + safeId + '\')">';
+            h += '<div class="low-stock-item-info">';
+            h += '<div class="low-stock-item-title">' + num + '. ' + escapeHtml(p.title || '') + '</div>';
+            h += '<div class="low-stock-item-stock">📦 ' + (p.stock || 0) + ' dona</div>';
+            h += '</div></div>';
+        });
+        list.innerHTML = h;
+        renderPagination('low-stock-pagination', currentLowStockPage, lowStockTotalPages, 'goToLowStockPage');
+    } catch (e) {
+        section.style.display = 'none';
+    }
+}
+function goToLowStockPage(p) {
+    currentLowStockPage = p;
+    loadLowStock();
+    window.scrollTo({ top: document.getElementById('low-stock-section').offsetTop - 20, behavior: 'smooth' });
+}
+
+
+// ==================== MODAL (XSS himoya) ====================
+function openProductModal(id) {
+    var p = null;
+    for (var i = 0; i < allProducts.length; i++) {
+        if (String(allProducts[i].id) === String(id)) { p = allProducts[i]; break; }
+    }
+    if (!p) { alert("Mahsulot topilmadi"); return; }
+
+    currentModalProductId = id;
+
+    document.getElementById('pm-image').src = (p.images && p.images[0]) || 'https://via.placeholder.com/400x300?text=📦';
+    document.getElementById('pm-title').innerText = p.title || '';
+
+    var pmOqim = document.getElementById('pm-oqim');
+    if (p.oqim_id) {
+        pmOqim.innerText = '✅ ' + p.oqim_id;
+        pmOqim.className = 'product-modal-info-value has-oqim';
+    } else {
+        pmOqim.innerText = '❌ Yo\'q';
+        pmOqim.className = 'product-modal-info-value no-oqim';
+    }
+
+    document.getElementById('pm-price').innerText = (p.discount_price || 0).toLocaleString() + " so'm";
+    document.getElementById('pm-stock').innerText = (p.stock || 0) + ' dona';
+    document.getElementById('pm-sold').innerText = (p.sold || 0) + ' dona';
+    document.getElementById('pm-views').innerText = (p.views || 0) + ' marta';
+    document.getElementById('pm-desc').innerText = p.description || "Tavsif yo'q";
+
+    var colH = '';
+    if (p.colors && p.colors.length > 0) {
+        colH = '<div class="product-modal-info"><span class="product-modal-info-label">🎨 Ranglar:</span></div><div class="product-modal-colors">';
+        p.colors.forEach(function (cid) {
+            var c = COLORS.find(function (x) { return x.id === cid; });
+            if (c) colH += '<span style="background:' + escapeAttr(c.hex) + '" title="' + escapeAttr(c.name) + '"></span>';
+        });
+        colH += '</div>';
+    }
+    document.getElementById('pm-colors').innerHTML = colH;
+
+    var szH = '';
+    if (p.sizes && p.sizes.length > 0) {
+        szH = '<div class="product-modal-info"><span class="product-modal-info-label">📏 O\'lchamlar:</span></div><div class="product-modal-sizes">';
+        p.sizes.forEach(function (sz) { szH += '<span>' + escapeHtml(sz) + '</span>'; });
+        szH += '</div>';
+    }
+    document.getElementById('pm-sizes').innerHTML = szH;
+
+    document.getElementById('product-modal').classList.add('active');
+}
+function closeProductModal() {
+    document.getElementById('product-modal').classList.remove('active');
+    currentModalProductId = null;
+}
+function editFromModal() {
+    if (currentModalProductId) { var id = currentModalProductId; closeProductModal(); editProduct(id); }
+}
+function deleteFromModal() {
+    if (currentModalProductId) { var id = currentModalProductId; closeProductModal(); deleteProduct(id); }
+}
+
+
+// ==================== STATS ====================
+async function loadStats() {
+    try {
+        var r = await fetch(API_URL + '/api/stats/sales', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken })
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (d.success) {
+            if (d.stats_start) {
+                try {
+                    var sd = new Date(d.stats_start + 'Z');
+                    document.getElementById('stats-start-date').innerText = sd.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                } catch (e) {}
+            }
+            document.getElementById('s-today-sum').innerText = (d.today.total || 0).toLocaleString();
+            document.getElementById('s-today-count').innerText = (d.today.count || 0) + ' buyurtma';
+            document.getElementById('s-week-sum').innerText = (d.week.total || 0).toLocaleString();
+            document.getElementById('s-week-count').innerText = (d.week.count || 0) + ' buyurtma';
+            document.getElementById('s-month-sum').innerText = (d.month.total || 0).toLocaleString();
+            document.getElementById('s-month-count').innerText = (d.month.count || 0) + ' buyurtma';
+            document.getElementById('s-year-sum').innerText = (d.year.total || 0).toLocaleString();
+            document.getElementById('s-year-count').innerText = (d.year.count || 0) + ' buyurtma';
+            document.getElementById('s-all-sum').innerText = (d.all_time.total || 0).toLocaleString();
+            document.getElementById('s-all-count').innerText = (d.all_time.count || 0) + ' buyurtma';
+        }
+    } catch (e) {}
+
+    try {
+        var r2 = await fetch(API_URL + '/api/stats/users', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken })
+        });
+        var d2 = await r2.json();
+        if (d2.success) {
+            document.getElementById('u-today').innerText = d2.today || 0;
+            document.getElementById('u-week').innerText = d2.week || 0;
+            document.getElementById('u-month').innerText = d2.month || 0;
+            document.getElementById('u-year').innerText = d2.year || 0;
+            document.getElementById('u-total').innerText = d2.total || 0;
+        }
+    } catch (e) {}
+
+    try {
+        var r3 = await fetch(API_URL + '/api/stats/visits', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken })
+        });
+        var d3 = await r3.json();
+        if (d3.success) {
+            document.getElementById('v-today').innerText = d3.today || 0;
+            document.getElementById('v-today-unique').innerText = (d3.today_unique || 0) + ' unikal';
+            document.getElementById('v-week').innerText = d3.week || 0;
+            document.getElementById('v-month').innerText = d3.month || 0;
+            document.getElementById('v-year').innerText = d3.year || 0;
+            document.getElementById('v-webapp').innerText = d3.today_webapp || 0;
+            document.getElementById('v-browser').innerText = d3.today_browser || 0;
+        }
     } catch (e) {}
 }
 
 
-// ==================== ZAXIRA ====================
-window.addEventListener('popstate', function(event) {
-    if (activeModal === 'order') closeModal(true);
-    else if (activeModal === 'profile') closeProfile(true);
-});
+// ==================== QAYTA BOSHLASH ====================
+async function resetSalesStats() {
+    if (!confirm("Sotuv statistikasi bugundan qayta boshlanadi.\n\nBugun, Hafta, Oy, Yil va Jami — barcha raqamlar 0 dan boshlanadi.\n\nDavom etilsinmi?")) return;
+    try {
+        var r = await fetch(API_URL + '/api/stats/reset-sales', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken })
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (d.success) { alert("✅ Sotuv statistikasi bugundan qayta boshlandi!"); loadStats(); }
+        else { alert("Xatolik: " + (d.error || "")); }
+    } catch (e) { alert("Xatolik: " + e.message); }
+}
+
+async function clearOrdersHistory() {
+    if (!confirm("⚠️ ZAKASLAR RO'YXATI TOZALANADI!\n\nBarcha zakaslar ro'yxatdan o'chiriladi.\nSotuv statistikasi saqlanadi.\n\nDavom etilsinmi?")) return;
+    if (!confirm("Oxirgi tasdiq: Rostdan ham barcha zakaslar ro'yxatini tozalaysizmi?")) return;
+    try {
+        var r = await fetch(API_URL + '/api/orders/clear', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken })
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (d.success) { alert("✅ Zakaslar ro'yxati tozalandi!"); loadOrders(); }
+        else { alert("Xatolik: " + (d.error || "")); }
+    } catch (e) { alert("Xatolik: " + e.message); }
+}
+
+
+// ==================== ZAKASLAR ====================
+function switchOrdersPeriod(period) {
+    currentOrdersPeriod = period;
+    currentOrdersPage = 1;
+    document.querySelectorAll('.orders-tab[data-period]').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-period') === period);
+    });
+    document.getElementById('orders-date-picker').value = '';
+    ordersCustomDate = '';
+    loadOrders();
+}
+function switchOrdersSource(source) {
+    currentOrdersSource = source;
+    currentOrdersPage = 1;
+    document.querySelectorAll('.orders-tab[data-source]').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-source') === source);
+    });
+    loadOrders();
+}
+function onDatePick() {
+    var v = document.getElementById('orders-date-picker').value;
+    if (v) {
+        ordersCustomDate = v;
+        currentOrdersPeriod = 'custom';
+        currentOrdersPage = 1;
+        document.querySelectorAll('.orders-tab[data-period]').forEach(function (b) { b.classList.remove('active'); });
+        loadOrders();
+    }
+}
+function searchOrdersDebounced() {
+    var v = document.getElementById('orders-search-input').value;
+    document.getElementById('orders-search-clear').style.display = v.trim() ? 'flex' : 'none';
+    if (ordersSearchDebounce) clearTimeout(ordersSearchDebounce);
+    ordersSearchDebounce = setTimeout(function () {
+        ordersSearch = v.trim().toLowerCase();
+        currentOrdersPage = 1;
+        loadOrders();
+    }, 400);
+}
+function clearOrdersSearch() {
+    document.getElementById('orders-search-input').value = '';
+    document.getElementById('orders-search-clear').style.display = 'none';
+    ordersSearch = '';
+    currentOrdersPage = 1;
+    loadOrders();
+}
+async function loadOrders() {
+    var l = document.getElementById('orders-list');
+    l.innerHTML = '⏳ Yuklanmoqda...';
+    try {
+        var body = {
+            token: adminToken,
+            period: currentOrdersPeriod,
+            source: currentOrdersSource,
+            search: ordersSearch,
+            page: currentOrdersPage,
+            per_page: ORDERS_PER_PAGE
+        };
+        if (currentOrdersPeriod === 'custom' && ordersCustomDate) body.date = ordersCustomDate;
+
+        var r = await fetch(API_URL + '/api/orders/list', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (!d.success) { l.innerHTML = '<div class="empty-result">Xatolik</div>'; return; }
+
+        ordersTotalPages = d.total_pages || 1;
+        document.getElementById('orders-total-sum').innerText = (d.total_sum || 0).toLocaleString() + " so'm";
+        document.getElementById('orders-total-count').innerText = (d.total || 0) + ' ta';
+
+        var orders = d.orders || [];
+        if (orders.length === 0) {
+            l.innerHTML = '<div class="empty-result">🔍 Zakas topilmadi</div>';
+            renderPagination('orders-pagination', 1, 1, 'goToOrdersPage');
+            return;
+        }
+        var h = '';
+        orders.forEach(function (o) {
+            var source = o.source || 'browser';
+            var sourceLabel = source === 'telegram' ? '🤖 Bot' : '🌐 Brauzer';
+            var sourceClass = source === 'telegram' ? 'bot' : 'browser';
+            var dt = '';
+            try {
+                var dd = new Date(o.created_at);
+                dt = dd.toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            } catch (e) { dt = o.created_at || ''; }
+
+            h += '<div class="order-card ' + sourceClass + '">';
+            h += '<div class="order-card-head">';
+            h += '<div class="order-card-title">' + escapeHtml(o.product_title || '') + '</div>';
+            h += '<div class="order-card-source ' + sourceClass + '">' + sourceLabel + '</div>';
+            h += '</div>';
+            h += '<div class="order-card-row">👤 <b>' + escapeHtml(o.customer_name || '') + '</b></div>';
+            h += '<div class="order-card-row">📞 ' + escapeHtml(o.customer_phone || '') + '</div>';
+            if (o.size) h += '<div class="order-card-row">📏 ' + escapeHtml(o.size) + '</div>';
+            if (o.color) h += '<div class="order-card-row">🎨 ' + escapeHtml(o.color) + '</div>';
+            h += '<div class="order-card-row">🕐 ' + escapeHtml(dt) + '</div>';
+            h += '<div class="order-card-price">💰 ' + (o.price || 0).toLocaleString() + ' so\'m</div>';
+            h += '</div>';
+        });
+        l.innerHTML = h;
+        renderPagination('orders-pagination', currentOrdersPage, ordersTotalPages, 'goToOrdersPage');
+    } catch (e) {
+        l.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
+    }
+}
+function goToOrdersPage(p) {
+    currentOrdersPage = p;
+    loadOrders();
+    window.scrollTo({ top: document.getElementById('orders-list').offsetTop - 100, behavior: 'smooth' });
+}
+
+
+// ==================== SOTUV RO'YXATI ====================
+function openSalesList(period) {
+    salesListPeriod = period;
+    salesListPage = 1;
+    var titles = { today: 'Bugun', week: 'Bu hafta', month: 'Bu oy', year: 'Bu yil' };
+    document.getElementById('sm-title').innerText = '📊 ' + (titles[period] || period) + ' sotilgan mahsulotlar';
+    document.getElementById('sales-list-modal').classList.add('active');
+    loadSalesList();
+}
+function closeSalesModal() {
+    document.getElementById('sales-list-modal').classList.remove('active');
+}
+async function loadSalesList() {
+    var l = document.getElementById('sm-list');
+    l.innerHTML = '⏳ Yuklanmoqda...';
+    try {
+        var r = await fetch(API_URL + '/api/stats/sales-list', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken, period: salesListPeriod, page: salesListPage, per_page: SALES_PER_PAGE })
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (!d.success) { l.innerHTML = '<div class="empty-result">Xatolik</div>'; return; }
+        salesListTotalPages = d.total_pages || 1;
+        var products = d.products || [];
+        if (products.length === 0) {
+            l.innerHTML = '<div class="empty-result">📭 Bu davrda sotuv yo\'q</div>';
+            renderPagination('sm-pagination', 1, 1, 'goToSalesPage');
+            return;
+        }
+        var s = (salesListPage - 1) * SALES_PER_PAGE;
+        var h = '';
+        products.forEach(function (p, idx) {
+            var num = s + idx + 1;
+            h += '<div class="sales-list-item">';
+            h += '<div class="sales-list-num">' + num + '</div>';
+            h += '<div class="sales-list-body">';
+            h += '<div class="sales-list-title">' + escapeHtml(p.title || '') + '</div>';
+            h += '<div class="sales-list-detail">📦 <b>' + (p.count || 0) + '</b> ta sotilgan · o\'rtacha <b>' + (p.avg_price || 0).toLocaleString() + '</b> so\'mdan</div>';
+            h += '</div>';
+            h += '<div class="sales-list-total">' + (p.total_price || 0).toLocaleString() + '<br><small style="font-size:10px;color:#666">so\'m</small></div>';
+            h += '</div>';
+        });
+        l.innerHTML = h;
+        renderPagination('sm-pagination', salesListPage, salesListTotalPages, 'goToSalesPage');
+    } catch (e) {
+        l.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
+    }
+}
+function goToSalesPage(p) {
+    salesListPage = p;
+    loadSalesList();
+}
+
+
+// ==================== USERS ====================
+function searchUsersDebounced() {
+    var v = document.getElementById('user-search-input').value;
+    document.getElementById('user-search-clear').style.display = v.trim() ? 'flex' : 'none';
+    if (userSearchDebounce) clearTimeout(userSearchDebounce);
+    userSearchDebounce = setTimeout(function () { currentUsersPage = 1; loadUsers(); }, 400);
+}
+function clearUserSearch() {
+    document.getElementById('user-search-input').value = '';
+    document.getElementById('user-search-clear').style.display = 'none';
+    currentUsersPage = 1;
+    loadUsers();
+}
+async function loadUsers() {
+    var c = document.getElementById('users-list-container');
+    c.innerHTML = '⏳ Yuklanmoqda...';
+    c.style.display = usersListOpen ? 'block' : 'none';
+    var search = document.getElementById('user-search-input').value.trim();
+    try {
+        var r = await fetch(API_URL + '/api/users/list', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken, search: search, page: currentUsersPage, per_page: USERS_PER_PAGE })
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (!d.success) { c.innerHTML = '<div class="empty-result">Xatolik</div>'; return; }
+        var users = d.users || [];
+        visibleUsers = users;
+        usersTotalPages = d.total_pages || 1;
+        if (users.length === 0) {
+            c.innerHTML = '<div class="empty-result">' + (search ? '🔍 Topilmadi' : 'Obunachilar yo\'q') + '</div>';
+            renderPagination('users-pagination', 1, 1, 'goToUsersPage');
+            updateUsersCountInfo();
+            return;
+        }
+        var h = '';
+        users.forEach(function (u) {
+            var nm = escapeHtml(u.full_name || u.username || ('ID: ' + u.user_id));
+            var ph = u.phone ? escapeHtml(u.phone) : '';
+            var un = u.username ? escapeHtml(u.username) : '';
+            var checked = selectedUsers.indexOf(u.user_id) > -1 ? 'checked' : '';
+            h += '<div class="user-item"><input type="checkbox" class="user-check" value="' + escapeAttr(u.user_id) + '" ' + checked + '><div class="user-info"><b>' + nm + '</b><small>' + escapeHtml(u.user_id) + (ph ? ' • ' + ph : '') + (un ? ' • @' + un : '') + '</small></div></div>';
+        });
+        c.innerHTML = h;
+        c.querySelectorAll('.user-check').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                var id = parseInt(this.value);
+                if (this.checked) { if (selectedUsers.indexOf(id) === -1) selectedUsers.push(id); }
+                else { selectedUsers = selectedUsers.filter(function (x) { return x !== id; }); }
+                updateUsersCountInfo();
+            });
+        });
+        renderPagination('users-pagination', currentUsersPage, usersTotalPages, 'goToUsersPage');
+        updateUsersCountInfo();
+    } catch (e) { c.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>'; }
+}
+function goToUsersPage(p) { currentUsersPage = p; loadUsers(); }
+function updateUsersCountInfo() { document.getElementById('users-count-info').innerText = selectedUsers.length + ' ta obunachi tanlangan'; }
+function selectAllVisibleUsers() {
+    visibleUsers.forEach(function (u) {
+        if (selectedUsers.indexOf(u.user_id) === -1) selectedUsers.push(u.user_id);
+    });
+    document.querySelectorAll('.user-check').forEach(function (cb) { cb.checked = true; });
+    updateUsersCountInfo();
+    alert("Ko'ringan " + visibleUsers.length + " ta tanlandi. Jami: " + selectedUsers.length);
+}
+function deselectAllUsers() {
+    document.querySelectorAll('.user-check').forEach(function (cb) { cb.checked = false; });
+    selectedUsers = [];
+    updateUsersCountInfo();
+}
+async function sendMessage() {
+    var msg = document.getElementById('broadcast-message').value.trim();
+    var s = document.getElementById('send-status'), b = document.getElementById('send-message-btn');
+    if (!msg) { s.innerText = "❌ Xabar matnini kiriting!"; s.className = "status err"; return; }
+    if (selectedUsers.length === 0) { s.innerText = "❌ Kamida 1 ta tanlang!"; s.className = "status err"; return; }
+    if (!confirm(selectedUsers.length + " ta foydalanuvchiga xabar yuborilsinmi?")) return;
+    b.disabled = true; b.innerText = 'Yuborilmoqda...'; s.innerText = ''; s.className = '';
+    try {
+        var r = await fetch(API_URL + '/api/send_message', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: adminToken, user_ids: selectedUsers, message: msg })
+        });
+        if (r.status === 401) { handleAuthError(); return; }
+        var d = await r.json();
+        if (d.success) {
+            s.innerText = "✅ Yuborildi: " + d.sent + ", ❌ Xato: " + d.failed;
+            s.className = "status ok";
+            document.getElementById('broadcast-message').value = '';
+        } else {
+            s.innerText = "❌ " + (d.error || "Xatolik");
+            s.className = "status err";
+        }
+    } catch (e) {
+        s.innerText = "❌ " + e.message;
+        s.className = "status err";
+    } finally {
+        b.disabled = false;
+        b.innerText = '📤 Tanlanganlarga yuborish';
+    }
+}
 
 
 // ==================== START ====================
-initBanner();
-renderCategories();
-loadProducts();
-startAutoShuffle();
-trackVisit();
+window.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('eye-btn').addEventListener('click', function () {
+        var i = document.getElementById('password-input');
+        if (i.type === 'password') { i.type = 'text'; this.innerText = '🙈'; }
+        else { i.type = 'password'; this.innerText = '👁'; }
+    });
+
+    document.getElementById('login-btn').addEventListener('click', async function () {
+        var pwd = document.getElementById('password-input').value.trim();
+        var cap = document.getElementById('captcha-input').value.trim();
+        var s = document.getElementById('login-status'), b = this;
+        if (!pwd) { s.innerText = "❌ Parolni kiriting!"; s.className = "status err"; return; }
+        if (!cap) { s.innerText = "❌ Captcha javobini kiriting!"; s.className = "status err"; return; }
+        if (parseInt(cap) !== captchaAnswer) { s.innerText = "❌ Captcha xato!"; s.className = "status err"; generateCaptcha(); return; }
+        b.disabled = true; b.innerText = 'Tekshirilmoqda...'; s.innerText = ''; s.className = '';
+        try {
+            var r = await fetch(API_URL + '/api/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pwd })
+            });
+            var d = await r.json();
+            if (d.success && d.token) {
+                saveToken(d.token);
+                document.getElementById('password-input').value = '';
+                document.getElementById('password-input').type = 'password';
+                document.getElementById('eye-btn').innerText = '👁';
+                s.innerText = ''; s.className = '';
+                showPanel();
+            } else {
+                s.innerText = "❌ " + (d.error || "Xatolik");
+                s.className = "status err";
+                generateCaptcha();
+            }
+        } catch (e) {
+            s.innerText = "❌ " + e.message;
+            s.className = "status err";
+            generateCaptcha();
+        } finally {
+            b.disabled = false;
+            b.innerText = 'Kirish';
+        }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async function () {
+        try {
+            await fetch(API_URL + '/api/logout', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: adminToken })
+            });
+        } catch (e) {}
+        clearToken();
+        selectedFiles = [null, null, null, null];
+        selectedCategories = [];
+        selectedSizes = [];
+        selectedColors = [];
+        editingProductId = null;
+        document.getElementById('password-input').value = '';
+        showLogin();
+    });
+
+    document.getElementById('add-btn').addEventListener('click', saveProduct);
+    document.getElementById('cancel-btn').addEventListener('click', cancelEdit);
+    document.getElementById('refresh-btn').addEventListener('click', function () { loadProducts(); loadLowStock(); });
+
+    document.getElementById('p-images').addEventListener('change', function (e) {
+        var files = Array.from(e.target.files).slice(0, MAX_IMAGES);
+        var s = document.getElementById('add-status'), p = 0, t = files.length;
+        if (t === 0) return;
+        s.innerText = "⏳ " + t + " rasm siqilmoqda..."; s.className = "status ok";
+        files.forEach(function (f) {
+            if (f.size > 15 * 1024 * 1024) { p++; check(); return; }
+            compressImage(f, function (r) {
+                for (var j = 0; j < MAX_IMAGES; j++) {
+                    if (!selectedFiles[j]) { selectedFiles[j] = r; break; }
+                }
+                renderImageSlots();
+                p++; check();
+            });
+        });
+        function check() {
+            if (p === t) {
+                s.innerText = "✅ " + t + " rasm qo'shildi";
+                s.className = "status ok";
+                setTimeout(function () { if (s.innerText.indexOf('✅') === 0) { s.innerText = ''; s.className = ''; } }, 3000);
+            }
+        }
+        this.value = '';
+    });
+
+    renderImageSlots();
+    generateCaptcha();
+    if (loadToken()) showPanel();
+});
