@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "maximarket.app",
+      "sha256_cert_fingerprints": [
+        "C1:F9:7B:AE:36:A9:9B:06:D3:C5:F6:10:2D:C9:CF:46:F3:51:9C:13:EC:DC:E4:04:40:9F:D0:94:5B:57:FE:7C"
+      ]
+    }
+  }
+]
