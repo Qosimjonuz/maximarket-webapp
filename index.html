@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1565c0">
 
+    <!-- PWA (Android ilova) -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MaxiMarket">
+
     <title>MaxiMarket — O'zbekistondagi eng yaxshi internet do'kon</title>
 
     <!-- SEO -->
@@ -187,5 +194,13 @@
     </div>
 
     <script src="app.js"></script>
+    <script>
+      // PWA service worker — ilovani o'rnatiladigan va offline ishlaydigan qiladi
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
 </body>
 </html>
