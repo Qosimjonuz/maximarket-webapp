@@ -779,6 +779,15 @@ async function openModal(id) {
     document.getElementById('order-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
 
+    // Ilova/brauzer rejimi — saqlangan profil bilan ism/telefonni oldindan to'ldirish
+    if (!isTelegram) {
+        const p = loadLocalProfile();
+        const nameEl = document.getElementById('order-name');
+        const phoneEl = document.getElementById('order-phone');
+        if (nameEl && p.name && !nameEl.value) nameEl.value = p.name;
+        if (phoneEl && p.phone && !phoneEl.value) phoneEl.value = p.phone;
+    }
+
     try {
         await fetch(`${API_URL}/api/increment_view`, {
             method: 'POST',
@@ -928,6 +937,8 @@ async function submitOrder(event) {
             });
             const data = await res.json();
             if (data.success) {
+                // Keyingi buyurtmalar uchun ism/telefonni telefonda saqlab qo'yamiz
+                saveLocalProfile({ name: name, phone: phone });
                 statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
                 statusEl.className = "status ok";
                 setTimeout(() => {
@@ -949,16 +960,35 @@ async function submitOrder(event) {
 
 
 // ==================== PROFIL ====================
+// ==================== LOKAL PROFIL (ilova/brauzer rejimi) ====================
+function loadLocalProfile() {
+    try { return JSON.parse(localStorage.getItem('mm_profile') || '{}'); } catch (e) { return {}; }
+}
+function saveLocalProfile(p) {
+    try {
+        if (!p.date) p.date = new Date().toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        localStorage.setItem('mm_profile', JSON.stringify(p));
+    } catch (e) {}
+}
+
 async function openProfile() {
-    if (!isTelegram) {
-        alert("Profil faqat Telegram orqali ishlaydi.\n\nIltimos, do'konni @MaxiMarketUzbot orqali oching.");
-        return;
-    }
     activeModal = 'profile';
     enableTelegramBackButton(function() { closeProfile(true); });
     try { history.pushState({ modal: 'profile' }, '', '#profile'); } catch (e) {}
-
     document.getElementById('profile-modal').classList.add('active');
+
+    // Ilova/brauzer rejimi — Telegram yo'q, profil telefonda (localStorage) saqlanadi
+    if (!isTelegram) {
+        const p = loadLocalProfile();
+        const numEl = document.getElementById('profile-number');
+        if (numEl) numEl.innerText = p.name ? '#Mijoz' : '#Yangi';
+        document.getElementById('profile-fullname').value = p.name || '';
+        document.getElementById('profile-phone').value = p.phone || '';
+        const dEl = document.getElementById('profile-date');
+        if (dEl) dEl.value = p.date || '';
+        return;
+    }
+
     const user = tg.initDataUnsafe?.user;
     if (!user) return;
 
@@ -1025,10 +1055,22 @@ function uploadImageToServer(file) {
 }
 
 async function saveProfile() {
-    if (!currentUser) return;
     const fullname = document.getElementById('profile-fullname').value.trim();
     const phone = document.getElementById('profile-phone').value.trim();
     const statusEl = document.getElementById('profile-status');
+
+    // Ilova/brauzer rejimi — profilni telefonda saqlaymiz
+    if (!isTelegram) {
+        if (!fullname || fullname.length < 3) { statusEl.innerText = "❌ Ismni kiriting"; statusEl.className = "status err"; return; }
+        saveLocalProfile({ name: fullname, phone: phone });
+        const numEl = document.getElementById('profile-number');
+        if (numEl) numEl.innerText = '#Mijoz';
+        statusEl.innerText = "✅ Profil saqlandi!";
+        statusEl.className = "status ok";
+        return;
+    }
+
+    if (!currentUser) return;
     const fileInput = document.getElementById('profile-photo');
 
     statusEl.innerText = "⏳ Saqlanmoqda...";
