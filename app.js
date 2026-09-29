@@ -6,7 +6,6 @@ const API_URL = "https://maximarketbot-production.up.railway.app";
 
 const PLACEHOLDER_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-// ⭐ Telegram yoki Brauzer?
 const isTelegram = !!(tg.initDataUnsafe && tg.initDataUnsafe.user);
 
 const CATEGORIES = [
@@ -49,12 +48,12 @@ const COLORS = [
 const banners = [
     { image: "https://i.ibb.co/SCt3rvf/file-00000000bccc821081db3f3c75491931.png" },
     { image: "https://i.ibb.co/KpmBYqtQ/file-000000002af88210b08be720dc738edd.png" },
-    { emoji: "🔥", title: "CHEGIRMALAR", subtitle: "70% gacha arzonlashuv", bg: "linear-gradient(135deg, #e53935, #ff6f00)" },
-    { emoji: "🚚", title: "Bepul yetkazish", subtitle: "O'zbekiston bo'ylab", bg: "linear-gradient(135deg, #2e7d32, #66bb6a)" },
-    { emoji: "💎", title: "Premium sifat", subtitle: "Eng yaxshi brendlar", bg: "linear-gradient(135deg, #6a1b9a, #ab47bc)" },
-    { emoji: "⚡", title: "Tezkor xizmat", subtitle: "24/7 ishlaymiz", bg: "linear-gradient(135deg, #f57c00, #ffb74d)" },
-    { emoji: "🎯", title: "Kafolatlangan", subtitle: "Sifat kafolati", bg: "linear-gradient(135deg, #0d47a1, #1976d2)" },
-    { emoji: "🏆", title: "Eng yaxshi narxlar", subtitle: "Bozordagi eng arzon", bg: "linear-gradient(135deg, #c62828, #e53935)" }
+    { image: "https://i.ibb.co/QVPj1Pn/file-0000000009a0820da87ac5c4a57dbabb.png" },
+    { image: "https://i.ibb.co/5NgCbCt/file-00000000a72081f79b62cc44f1e32790.png" },
+    { image: "https://i.ibb.co/TD1HzzkN/file-00000000f36481fabf1dac154c72871d.png" },
+    { image: "https://i.ibb.co/HTZSXLGS/file-00000000d9a882469c4566009ff02551.png" },
+    { image: "https://i.ibb.co/Dg1VsRWw/file-0000000040c481f4bef55e37debd0805.png" },
+    { image: "https://i.ibb.co/v4RV71wR/file-0000000030208246b19018466ca29709.png" }
 ];
 
 let currentBannerIndex = 0;
@@ -69,37 +68,39 @@ let countdownInterval = null;
 let activeCategory = "all";
 let shuffleTimer = null;
 
-// Yana ko'rish
 const FIRST_HORIZONTAL = 10;
 const INITIAL_GRID_ROWS = 10;
-const LOAD_MORE_ROWS = 10;
+const LOAD_MORE_ROWS = 5;
 const GRID_COLS = 2;
+const BIG_CARD_EVERY = 8;
+
 let gridRowsShown = INITIAL_GRID_ROWS;
+
+let featuredProducts = [];
+const FEATURED_COUNT = 10;
 
 let selectedSize = null;
 let selectedColor = null;
-
 let currentUser = null;
 let profilePhotoUrl = "";
-
 let activeModal = null;
-
 let imageObserver = null;
 
-// ⭐ Swipe
 let swipeStartX = 0;
 let swipeStartY = 0;
 let swipeActive = false;
+
+let autoScrollInterval = null;
+let autoScrollPaused = false;
+let autoLoadObserver = null;
 
 
 // ==================== SCREENSHOT HIMOYASI ====================
 document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
 document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
-
 document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && ['s','S','p','P','u','U'].indexOf(e.key) !== -1) {
-        e.preventDefault();
-        return false;
+        e.preventDefault(); return false;
     }
     if (e.key === 'PrintScreen') {
         e.preventDefault();
@@ -107,15 +108,9 @@ document.addEventListener('keydown', function(e) {
         return false;
     }
 });
-
 document.addEventListener('visibilitychange', function() {
-    if (document.hidden) {
-        document.body.classList.add('privacy-blur');
-    } else {
-        setTimeout(function() {
-            document.body.classList.remove('privacy-blur');
-        }, 250);
-    }
+    if (document.hidden) document.body.classList.add('privacy-blur');
+    else setTimeout(() => document.body.classList.remove('privacy-blur'), 250);
 });
 
 
@@ -132,71 +127,83 @@ function initModalSwipe() {
     }, { passive: true });
 
     wrap.addEventListener('touchmove', function(e) {
-        if (!swipeActive) return;
-        if (e.touches.length !== 1) return;
-
+        if (!swipeActive || e.touches.length !== 1) return;
         const dx = e.touches[0].clientX - swipeStartX;
         const dy = e.touches[0].clientY - swipeStartY;
-
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
             const img = document.getElementById('modal-image');
-            if (img) {
-                img.style.transform = `translateX(${dx * 0.4}px)`;
-                img.style.transition = 'none';
-            }
+            if (img) { img.style.transform = `translateX(${dx * 0.4}px)`; img.style.transition = 'none'; }
         }
     }, { passive: true });
 
     wrap.addEventListener('touchend', function(e) {
         if (!swipeActive) return;
         swipeActive = false;
-
         const img = document.getElementById('modal-image');
-        if (img) {
-            img.style.transform = '';
-            img.style.transition = 'opacity 0.3s, transform 0.3s';
-        }
-
+        if (img) { img.style.transform = ''; img.style.transition = 'opacity 0.3s, transform 0.3s'; }
         if (!e.changedTouches || e.changedTouches.length === 0) return;
-
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
         const dx = swipeStartX - endX;
         const dy = swipeStartY - endY;
-
         if (Math.abs(dx) > 50 && Math.abs(dy) < 80) {
-            if (dx > 0) {
-                slideImage(1);
-            } else {
-                slideImage(-1);
-            }
+            if (dx > 0) slideImage(1); else slideImage(-1);
         }
     }, { passive: true });
 }
 
 
-// ==================== YANA KO'RISH ====================
-function getDisplayedProducts() {
-    const total = filteredProducts.length;
-    if (total === 0) return { horizontal: [], grid: [], hasMore: false, remaining: 0 };
-
-    const horizontal = filteredProducts.slice(0, FIRST_HORIZONTAL);
-    const gridAvailable = total - FIRST_HORIZONTAL;
-    const gridShown = Math.min(gridRowsShown * GRID_COLS, gridAvailable);
-    const grid = filteredProducts.slice(FIRST_HORIZONTAL, FIRST_HORIZONTAL + gridShown);
-    const hasMore = FIRST_HORIZONTAL + gridShown < total;
-    const remaining = total - FIRST_HORIZONTAL - gridShown;
-
-    return { horizontal, grid, hasMore, remaining };
+// ==================== YASHIL HOSHIYA ====================
+function pickFeaturedProducts() {
+    if (products.length === 0) { featuredProducts = []; return; }
+    const shuffled = [...products].sort(() => Math.random() - 0.5);
+    featuredProducts = shuffled.slice(0, Math.min(FEATURED_COUNT, shuffled.length));
 }
 
-function loadMoreProducts() {
-    gridRowsShown += LOAD_MORE_ROWS;
-    renderProducts();
+
+// ==================== AUTO-SCROLL ====================
+function startAutoScroll() {
+    const container = document.querySelector('.featured-section .products-horizontal');
+    if (!container || container.children.length < 3) return;
+
+    if (autoScrollInterval) clearInterval(autoScrollInterval);
+
+    container.addEventListener('touchstart', () => { autoScrollPaused = true; }, { passive: true });
+    container.addEventListener('touchend', () => { setTimeout(() => { autoScrollPaused = false; }, 3000); }, { passive: true });
+    container.addEventListener('scroll', () => { autoScrollPaused = true; setTimeout(() => { autoScrollPaused = false; }, 3000); }, { passive: true });
+
+    autoScrollInterval = setInterval(() => {
+        if (autoScrollPaused || !container) return;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (maxScroll <= 0) return;
+        const currentScroll = container.scrollLeft;
+        const step = container.clientWidth * 0.6;
+        if (currentScroll >= maxScroll - 10) {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            container.scrollTo({ left: currentScroll + step, behavior: 'smooth' });
+        }
+    }, 3500);
 }
 
-function resetLoadMore() {
-    gridRowsShown = INITIAL_GRID_ROWS;
+
+// ==================== AUTO-LOAD ====================
+function setupAutoLoadMore() {
+    if (autoLoadObserver) autoLoadObserver.disconnect();
+    if (!('IntersectionObserver' in window)) return;
+
+    const checkAndObserve = () => {
+        const loadMoreBtn = document.querySelector('.load-more-btn');
+        if (loadMoreBtn) {
+            autoLoadObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) loadMoreProducts();
+                });
+            }, { rootMargin: '200px 0px', threshold: 0.01 });
+            autoLoadObserver.observe(loadMoreBtn);
+        }
+    };
+    setTimeout(checkAndObserve, 500);
 }
 
 
@@ -234,33 +241,21 @@ function initImageObserver() {
                 imageObserver.unobserve(img);
             }
         });
-    }, {
-        rootMargin: '300px 0px',
-        threshold: 0.01
-    });
+    }, { rootMargin: '300px 0px', threshold: 0.01 });
 
-    document.querySelectorAll('img[data-src]').forEach(img => {
-        imageObserver.observe(img);
-    });
+    document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
 }
 
 
 // ==================== BACK BUTTON ====================
 function enableTelegramBackButton(handler) {
     if (tg.BackButton && typeof tg.BackButton.show === 'function') {
-        try {
-            tg.BackButton.show();
-            tg.BackButton.onClick(handler);
-        } catch (e) { console.log("BackButton error:", e); }
+        try { tg.BackButton.show(); tg.BackButton.onClick(handler); } catch (e) {}
     }
 }
-
 function disableTelegramBackButton() {
     if (tg.BackButton && typeof tg.BackButton.hide === 'function') {
-        try {
-            tg.BackButton.offClick();
-            tg.BackButton.hide();
-        } catch (e) {}
+        try { tg.BackButton.offClick(); tg.BackButton.hide(); } catch (e) {}
     }
 }
 
@@ -274,24 +269,20 @@ function initBanner() {
     ).join('');
     startBannerAutoSlide();
 }
-
 function startBannerAutoSlide() {
     if (bannerInterval) clearInterval(bannerInterval);
     bannerInterval = setInterval(() => slideBanner(1), BANNER_DELAY);
 }
-
 function slideBanner(dir) {
     currentBannerIndex = (currentBannerIndex + dir + banners.length) % banners.length;
     updateBanner();
     startBannerAutoSlide();
 }
-
 function goToBanner(index) {
     currentBannerIndex = index;
     updateBanner();
     startBannerAutoSlide();
 }
-
 function updateBanner() {
     const banner = banners[currentBannerIndex];
     const slide = document.getElementById('banner-slide');
@@ -339,7 +330,6 @@ function renderCategories() {
     });
     scroll.innerHTML = html;
 }
-
 function setCategory(catId) {
     activeCategory = catId;
     resetLoadMore();
@@ -365,7 +355,6 @@ function filterProducts() {
     shuffleProducts();
     renderProducts();
 }
-
 function clearSearch() {
     document.getElementById('search-input').value = '';
     filterProducts();
@@ -374,7 +363,6 @@ function clearSearch() {
 
 // ==================== SHUFFLE ====================
 const SHUFFLE_INTERVAL = 25 * 60 * 1000;
-
 function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -382,7 +370,6 @@ function shuffleArray(arr) {
     }
     return arr;
 }
-
 function shuffleProducts() {
     const lastShuffle = localStorage.getItem('lastShuffle');
     const now = Date.now();
@@ -391,7 +378,6 @@ function shuffleProducts() {
         localStorage.setItem('lastShuffle', now.toString());
     }
 }
-
 function startAutoShuffle() {
     if (shuffleTimer) clearInterval(shuffleTimer);
     shuffleTimer = setInterval(() => {
@@ -402,6 +388,7 @@ function startAutoShuffle() {
             filteredProducts = [...products];
             shuffleArray(filteredProducts);
             localStorage.setItem('lastShuffle', now.toString());
+            pickFeaturedProducts();
             resetLoadMore();
             renderProducts();
         }
@@ -422,6 +409,7 @@ async function loadProducts() {
             container.innerHTML = '<p class="loading">📦 Hozircha mahsulotlar yo\'q</p>';
             return;
         }
+        pickFeaturedProducts();
         shuffleProducts();
         resetLoadMore();
         renderProducts();
@@ -488,6 +476,38 @@ function buildProductCard(p) {
     </div>`;
 }
 
+function buildBigProductCard(p) {
+    const discountPercent = p.price > 0 && p.discount_price > 0
+        ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
+    const productId = String(p.id);
+    const realImg = getImageUrl(p.images && p.images[0]);
+    const description = (p.description || '').substring(0, 150);
+
+    return `
+    <div class="big-product-card" data-id="${productId}">
+        <div class="big-product-image">
+            <div class="img-spinner"></div>
+            <img
+                src="${PLACEHOLDER_PIXEL}"
+                data-src="${realImg || ''}"
+                alt="${(p.title || '').substring(0, 30)}"
+                decoding="async"
+                class="product-img"
+            >
+            ${discountPercent > 0 ? `<div class="discount-badge-h">-${discountPercent}%</div>` : ''}
+        </div>
+        <div class="big-product-body">
+            <div class="big-product-title">${p.title || ''}</div>
+            ${description ? `<div class="big-product-desc">${description}${(p.description || '').length > 150 ? '...' : ''}</div>` : ''}
+            <div class="big-product-price-block">
+                ${p.price > p.discount_price ? `<span class="big-old-price">${p.price.toLocaleString()} so'm</span>` : ''}
+                <span class="big-new-price">${(p.discount_price || 0).toLocaleString()} so'm</span>
+            </div>
+            <button class="big-buy-btn" data-buy="${productId}">🛒 Sotib olish</button>
+        </div>
+    </div>`;
+}
+
 
 // ==================== RENDER ====================
 function renderProducts() {
@@ -497,54 +517,156 @@ function renderProducts() {
         return;
     }
 
-    const { horizontal, grid, hasMore, remaining } = getDisplayedProducts();
-
     let html = '';
 
-    if (horizontal.length > 0) {
-        html += '<div class="products-horizontal">';
-        horizontal.forEach(p => { html += buildProductCard(p); });
-        html += '</div>';
-    }
-
-    if (grid.length > 0) {
-        html += '<div class="products-grid">';
-        grid.forEach(p => { html += buildProductCard(p); });
-        html += '</div>';
-    }
-
-    if (hasMore) {
+    if (featuredProducts.length > 0) {
         html += `
-            <div class="load-more-container">
-                <button class="load-more-btn" onclick="loadMoreProducts()">
-                    <span class="load-more-icon">⬇️</span>
-                    <span>Yana ko'rish (${remaining} ta qoldi)</span>
-                </button>
-            </div>
+            <div class="featured-section">
+                <div class="featured-header">
+                    <span class="featured-icon">⭐</span>
+                    <span class="featured-title">Siz uchun sotuvga keltirdik</span>
+                </div>
+                <div class="products-horizontal" id="featured-scroll">
         `;
-    } else {
+        featuredProducts.slice(0, FIRST_HORIZONTAL).forEach(p => { html += buildProductCard(p); });
         html += `
-            <div class="load-more-container">
-                <p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>
+                </div>
             </div>
         `;
     }
+
+    html += '<div class="products-grid" id="main-grid"></div>';
+    html += '<div class="load-more-container" id="load-more-container"></div>';
 
     container.innerHTML = html;
 
-    container.querySelectorAll('.product-card-h').forEach(card => {
-        card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
-    });
-
-    container.querySelectorAll('.buy-btn-h').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openModal(btn.getAttribute('data-buy'));
-        });
-    });
-
+    fillMainGrid();
+    updateLoadMoreButton();
+    attachAllListeners();
     initImageObserver();
+    startAutoScroll();
+    setupAutoLoadMore();
 }
+
+
+function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
+    let html = '';
+    let productIndex = startIndex;
+    let regularCount = startRegularCount;
+
+    while (productIndex < endIndex) {
+        if (regularCount >= BIG_CARD_EVERY) {
+            const bigProduct = filteredProducts[productIndex];
+            if (bigProduct) {
+                html += buildBigProductCard(bigProduct);
+                productIndex++;
+                regularCount = 0;
+                continue;
+            }
+        }
+        const product = filteredProducts[productIndex];
+        if (!product) break;
+
+        html += buildProductCard(product);
+        productIndex++;
+        regularCount++;
+    }
+    return { html, endIndex: productIndex, regularCount };
+}
+
+
+function fillMainGrid() {
+    const grid = document.getElementById('main-grid');
+    if (!grid) return;
+    const total = filteredProducts.length;
+    const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
+    const result = addProductsToGrid(grid, 0, gridShown, 0);
+    grid.innerHTML = result.html;
+}
+
+
+function loadMoreProducts() {
+    const total = filteredProducts.length;
+    const currentShown = Math.min(gridRowsShown * GRID_COLS, total);
+    gridRowsShown += LOAD_MORE_ROWS;
+    const newShown = Math.min(gridRowsShown * GRID_COLS, total);
+
+    const grid = document.getElementById('main-grid');
+    if (!grid) return;
+
+    let regularCount = 0;
+    let idx = 0;
+    while (idx < currentShown) {
+        if (regularCount >= BIG_CARD_EVERY) {
+            idx++; regularCount = 0; continue;
+        }
+        idx++; regularCount++;
+    }
+
+    const result = addProductsToGrid(grid, currentShown, newShown, regularCount);
+    grid.insertAdjacentHTML('beforeend', result.html);
+
+    attachAllListeners();
+    initImageObserver();
+    updateLoadMoreButton();
+    setupAutoLoadMore();
+}
+
+
+function attachAllListeners() {
+    document.querySelectorAll('.product-card-h').forEach(card => {
+        if (!card.dataset.listenerAttached) {
+            card.dataset.listenerAttached = '1';
+            card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
+        }
+    });
+    document.querySelectorAll('.buy-btn-h').forEach(btn => {
+        if (!btn.dataset.listenerAttached) {
+            btn.dataset.listenerAttached = '1';
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal(btn.getAttribute('data-buy'));
+            });
+        }
+    });
+    document.querySelectorAll('.big-product-card').forEach(card => {
+        if (!card.dataset.listenerAttached) {
+            card.dataset.listenerAttached = '1';
+            card.addEventListener('click', () => openModal(card.getAttribute('data-id')));
+        }
+    });
+    document.querySelectorAll('.big-buy-btn').forEach(btn => {
+        if (!btn.dataset.listenerAttached) {
+            btn.dataset.listenerAttached = '1';
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal(btn.getAttribute('data-buy'));
+            });
+        }
+    });
+}
+
+
+function updateLoadMoreButton() {
+    const total = filteredProducts.length;
+    const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
+    const remaining = total - gridShown;
+    const container = document.getElementById('load-more-container');
+    if (!container) return;
+
+    if (remaining > 0) {
+        container.innerHTML = `
+            <button class="load-more-btn" onclick="loadMoreProducts()">
+                <span class="load-more-icon">⬇️</span>
+                <span>Yana ko'rish (${remaining} ta qoldi)</span>
+            </button>
+        `;
+    } else {
+        container.innerHTML = `<p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>`;
+    }
+}
+
+function resetLoadMore() { gridRowsShown = INITIAL_GRID_ROWS; }
 
 
 // ==================== TELEFON FORMATLASH ====================
@@ -560,16 +682,11 @@ function formatPhone(value) {
     if (digits.length > 7) result += '-' + digits.slice(7, 9);
     return result;
 }
-
 document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = document.getElementById('order-phone');
     if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            this.value = formatPhone(this.value);
-        });
-        phoneInput.addEventListener('focus', function() {
-            if (!this.value) this.value = '+998';
-        });
+        phoneInput.addEventListener('input', function() { this.value = formatPhone(this.value); });
+        phoneInput.addEventListener('focus', function() { if (!this.value) this.value = '+998'; });
     }
     initModalSwipe();
 });
@@ -586,7 +703,6 @@ async function openModal(id) {
     if (!currentProduct) return;
 
     activeModal = 'order';
-
     enableTelegramBackButton(function() { closeModal(true); });
     try { history.pushState({ modal: 'order' }, '', '#order'); } catch (e) {}
 
@@ -609,7 +725,6 @@ async function openModal(id) {
         discountBadgeEl.style.display = 'none';
     }
     document.getElementById('modal-price').innerText = (currentProduct.discount_price || 0).toLocaleString();
-
     document.getElementById('modal-stock').innerText = currentProduct.stock || 0;
     document.getElementById('modal-sold').innerText = currentProduct.sold || 0;
 
@@ -670,7 +785,7 @@ async function openModal(id) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ product_id: String(currentProduct.id) })
         });
-    } catch (e) { console.log("View increment xatolik:", e); }
+    } catch (e) {}
 }
 
 function closeModal(skipHistory = false) {
@@ -680,14 +795,10 @@ function closeModal(skipHistory = false) {
     document.getElementById('order-form').reset();
     document.getElementById('order-status').innerText = '';
     document.getElementById('order-status').className = 'status';
-
     disableTelegramBackButton();
-
     if (!skipHistory && activeModal === 'order') {
         activeModal = null;
-        try {
-            if (history.state && history.state.modal === 'order') history.back();
-        } catch (e) {}
+        try { if (history.state && history.state.modal === 'order') history.back(); } catch (e) {}
     } else {
         activeModal = null;
     }
@@ -708,18 +819,13 @@ function preloadModalImages() {
 function updateImage() {
     const img = document.getElementById('modal-image');
     const spinner = document.querySelector('.modal-img-spinner');
-
     if (!img) return;
-
     if (spinner) spinner.style.display = 'block';
-
     img.classList.remove('loaded');
     img.style.transform = '';
-
     const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
         ? getImageUrl(currentProduct.images[currentImageIndex])
         : "";
-
     if (!imgUrl) {
         img.src = PLACEHOLDER_PIXEL;
         img.classList.add('loaded');
@@ -737,7 +843,6 @@ function updateImage() {
         };
         img.src = imgUrl;
     }
-
     const dots = (currentProduct.images || []).map((_, i) =>
         `<span class="${i === currentImageIndex ? 'active' : ''}"></span>`).join('');
     document.getElementById('slider-dots').innerHTML = dots;
@@ -751,40 +856,31 @@ function slideImage(dir) {
 
 function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
-
     const RESET_KEY = 'countdown_reset_' + currentProduct.id;
     const DAY = 24 * 60 * 60 * 1000;
     const THREE_DAYS = 72 * 60 * 60 * 1000;
     const now = Date.now();
-
     let resetTime = parseInt(localStorage.getItem(RESET_KEY) || '0');
-
     if (!resetTime || (now - resetTime) >= DAY) {
         resetTime = now;
         localStorage.setItem(RESET_KEY, resetTime.toString());
     }
-
     const endTime = resetTime + THREE_DAYS;
-
     function tick() {
         const diff = Math.max(0, endTime - Date.now());
         const days = Math.floor(diff / (24 * 60 * 60 * 1000));
         const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
         const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
         const seconds = Math.floor((diff % (60 * 1000)) / 1000);
-
         document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
         document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
         document.getElementById('cd-minutes').innerText = String(minutes).padStart(2, '0');
         document.getElementById('cd-seconds').innerText = String(seconds).padStart(2, '0');
     }
-
     tick();
     countdownInterval = setInterval(tick, 1000);
 }
 
-
-// ==================== ⭐ BUYURTMA (yangilangan) ====================
 async function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
@@ -792,30 +888,11 @@ async function submitOrder(event) {
     const statusEl = document.getElementById('order-status');
     const submitBtn = document.querySelector('.order-submit-btn');
 
-    if (!name || name.length < 4) {
-        statusEl.innerText = "❌ Ism kamida 4 harfdan iborat bo'lishi kerak!";
-        statusEl.className = "status err";
-        return;
-    }
-
+    if (!name || name.length < 4) { statusEl.innerText = "❌ Ism kamida 4 harf!"; statusEl.className = "status err"; return; }
     const phoneDigits = phone.replace(/\D/g, '');
-    if (phoneDigits.length < 12) {
-        statusEl.innerText = "❌ Telefon raqamni to'liq kiriting!";
-        statusEl.className = "status err";
-        return;
-    }
-
-    if (currentProduct.sizes && currentProduct.sizes.length > 0 && !selectedSize) {
-        statusEl.innerText = "❌ Iltimos, o'lchamni tanlang!";
-        statusEl.className = "status err";
-        return;
-    }
-
-    if (currentProduct.colors && currentProduct.colors.length > 0 && !selectedColor) {
-        statusEl.innerText = "❌ Iltimos, rangni tanlang!";
-        statusEl.className = "status err";
-        return;
-    }
+    if (phoneDigits.length < 12) { statusEl.innerText = "❌ Telefon to'liq emas!"; statusEl.className = "status err"; return; }
+    if (currentProduct.sizes && currentProduct.sizes.length > 0 && !selectedSize) { statusEl.innerText = "❌ O'lchamni tanlang!"; statusEl.className = "status err"; return; }
+    if (currentProduct.colors && currentProduct.colors.length > 0 && !selectedColor) { statusEl.innerText = "❌ Rangni tanlang!"; statusEl.className = "status err"; return; }
 
     let colorName = "";
     if (selectedColor) {
@@ -834,7 +911,6 @@ async function submitOrder(event) {
     };
 
     if (isTelegram) {
-        // Telegram WebApp rejimi
         tg.sendData(JSON.stringify({ action: 'order', ...orderData }));
         statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
         statusEl.className = "status ok";
@@ -843,22 +919,14 @@ async function submitOrder(event) {
             closeModal();
         }, 500);
     } else {
-        // ⭐ Brauzer rejimi
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'Yuborilmoqda...';
-        }
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Yuborilmoqda...'; }
         try {
             const res = await fetch(`${API_URL}/api/public_order`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Telegram-Init-Data': tg.initData || ''
-                },
+                headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData || '' },
                 body: JSON.stringify(orderData)
             });
             const data = await res.json();
-
             if (data.success) {
                 statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
                 statusEl.className = "status ok";
@@ -867,17 +935,14 @@ async function submitOrder(event) {
                     closeModal();
                 }, 500);
             } else {
-                statusEl.innerText = "❌ " + (data.error || "Xatolik yuz berdi");
+                statusEl.innerText = "❌ " + (data.error || "Xatolik");
                 statusEl.className = "status err";
             }
         } catch (e) {
             statusEl.innerText = "❌ Tarmoq xatosi";
             statusEl.className = "status err";
         } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Tasdiqlash';
-            }
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Tasdiqlash'; }
         }
     }
 }
@@ -889,9 +954,7 @@ async function openProfile() {
         alert("Profil faqat Telegram orqali ishlaydi.\n\nIltimos, do'konni @MaxiMarketUzbot orqali oching.");
         return;
     }
-
     activeModal = 'profile';
-
     enableTelegramBackButton(function() { closeProfile(true); });
     try { history.pushState({ modal: 'profile' }, '', '#profile'); } catch (e) {}
 
@@ -900,6 +963,7 @@ async function openProfile() {
     if (!user) return;
 
     try {
+        // ⭐ X-Telegram-Init-Data header qo'shildi
         const res = await fetch(`${API_URL}/api/register_user`, {
             method: 'POST',
             headers: {
@@ -907,7 +971,6 @@ async function openProfile() {
                 'X-Telegram-Init-Data': tg.initData || ''
             },
             body: JSON.stringify({
-                user_id: user.id,
                 username: user.username || "",
                 tg_name: user.first_name + (user.last_name ? ' ' + user.last_name : '')
             })
@@ -925,19 +988,15 @@ async function openProfile() {
                 document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy">`;
             }
         }
-    } catch (err) { console.log("Profil xatolik:", err); }
+    } catch (err) {}
 }
 
 function closeProfile(skipHistory = false) {
     document.getElementById('profile-modal').classList.remove('active');
-
     disableTelegramBackButton();
-
     if (!skipHistory && activeModal === 'profile') {
         activeModal = null;
-        try {
-            if (history.state && history.state.modal === 'profile') history.back();
-        } catch (e) {}
+        try { if (history.state && history.state.modal === 'profile') history.back(); } catch (e) {}
     } else {
         activeModal = null;
     }
@@ -982,6 +1041,7 @@ async function saveProfile() {
             if (!photoUrl) photoUrl = profilePhotoUrl;
         }
 
+        // ⭐ X-Telegram-Init-Data header qo'shildi + user_id olib tashlandi
         const res = await fetch(`${API_URL}/api/update_user`, {
             method: 'POST',
             headers: {
@@ -989,7 +1049,6 @@ async function saveProfile() {
                 'X-Telegram-Init-Data': tg.initData || ''
             },
             body: JSON.stringify({
-                user_id: tg.initDataUnsafe.user.id,
                 full_name: fullname,
                 phone: phone,
                 photo: photoUrl
@@ -1011,13 +1070,22 @@ async function saveProfile() {
 }
 
 
+// ==================== TASHRIF ====================
+async function trackVisit() {
+    try {
+        await fetch(`${API_URL}/api/visit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ page: 'main' })
+        });
+    } catch (e) {}
+}
+
+
 // ==================== ZAXIRA ====================
 window.addEventListener('popstate', function(event) {
-    if (activeModal === 'order') {
-        closeModal(true);
-    } else if (activeModal === 'profile') {
-        closeProfile(true);
-    }
+    if (activeModal === 'order') closeModal(true);
+    else if (activeModal === 'profile') closeProfile(true);
 });
 
 
@@ -1026,3 +1094,4 @@ initBanner();
 renderCategories();
 loadProducts();
 startAutoShuffle();
+trackVisit();
