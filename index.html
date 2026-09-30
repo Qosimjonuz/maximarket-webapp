@@ -87,22 +87,54 @@
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-content profile-content">
             <button class="modal-close" onclick="closeProfile()">✕</button>
-            <div class="profile-header-icon">
-                <div class="profile-avatar" id="profile-avatar">👤</div>
+
+            <!-- Brauzer rejimi: ilovani yuklash taklifi -->
+            <div id="profile-app-gate" style="display:none; text-align:center; padding:24px 8px;">
+                <div style="font-size:56px;">📱</div>
+                <h3 style="margin:14px 0 8px; color:#1565c0;">Profil faqat ilovada</h3>
+                <p style="color:#666; margin-bottom:22px; line-height:1.5;">
+                    Shaxsiy kabinet ochish, ma'lumotlaringizni saqlash va
+                    buyurtmalaringizni kuzatish uchun MaxiMarket ilovasini yuklab oling.
+                </p>
+                <a id="profile-play-link" href="#" target="_blank" rel="noopener"
+                   class="save-btn" style="display:inline-block; text-decoration:none;">
+                    ▶️ Ilovani yuklab olish
+                </a>
             </div>
-            <div class="profile-number" id="profile-number">#---</div>
-            <div class="profile-form">
-                <label>Ism Familiya</label>
-                <input type="text" id="profile-fullname" placeholder="Ism Familiyangizni kiriting">
-                <label>Telefon raqam</label>
-                <input type="tel" id="profile-phone" placeholder="+998 90 000 00 00">
-                <label>Profil rasmi (ixtiyoriy)</label>
-                <input type="file" id="profile-photo" accept="image/*" onchange="previewProfilePhoto(event)">
-                <label>Ro'yxatdan o'tgan sana</label>
-                <input type="text" id="profile-date" readonly>
-                <button class="save-btn" onclick="saveProfile()">💾 Saqlash</button>
-                <div id="profile-status" class="status"></div>
+
+            <!-- Profil (ilova / Telegram) -->
+            <div id="profile-body">
+                <div class="profile-header-icon">
+                    <div class="profile-avatar" id="profile-avatar">👤</div>
+                </div>
+                <label for="profile-photo" class="profile-photo-btn">📷 Rasmni o'zgartirish</label>
+                <input type="file" id="profile-photo" accept="image/*" onchange="previewProfilePhoto(event)" style="display:none;">
+
+                <div class="profile-number" id="profile-number">#---</div>
+                <div class="profile-id-caption">Sizning ID raqamingiz</div>
+
+                <div class="profile-form">
+                    <label>Telefon raqam</label>
+                    <input type="tel" id="profile-phone" placeholder="+998 90 000 00 00">
+                    <label>Ism</label>
+                    <input type="text" id="profile-firstname" placeholder="Ismingiz">
+                    <label>Familiya</label>
+                    <input type="text" id="profile-lastname" placeholder="Familiyangiz">
+                    <input type="hidden" id="profile-date">
+                    <button class="save-btn" onclick="saveProfile()">💾 Saqlash</button>
+                    <button type="button" class="save-btn profile-orders-btn" onclick="openMyOrders()">🧾 Buyurtmalarim</button>
+                    <div id="profile-status" class="status"></div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- BUYURTMALARIM OYNASI -->
+    <div id="my-orders-modal" class="modal-overlay">
+        <div class="modal-content profile-content">
+            <button class="modal-close" onclick="closeMyOrders()">✕</button>
+            <h2 style="text-align:center; margin:6px 0 16px; color:#1565c0;">🧾 Buyurtmalarim</h2>
+            <div id="my-orders-list"></div>
         </div>
     </div>
 
