@@ -937,8 +937,9 @@ async function submitOrder(event) {
             });
             const data = await res.json();
             if (data.success) {
-                // Keyingi buyurtmalar uchun ism/telefonni telefonda saqlab qo'yamiz
+                // Keyingi buyurtmalar uchun ism/telefonni va buyurtmani telefonda saqlaymiz
                 saveLocalProfile({ name: name, phone: phone });
+                saveLocalOrder(orderData);
                 statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
                 statusEl.className = "status ok";
                 setTimeout(() => {
@@ -960,46 +961,81 @@ async function submitOrder(event) {
 
 
 // ==================== PROFIL ====================
-// ==================== LOKAL PROFIL (ilova/brauzer rejimi) ====================
+// ==================== APP/BRAUZER ANIQLASH ====================
+const isApp = (function () {
+    try {
+        return window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true
+            || (document.referrer || '').indexOf('android-app://') === 0;
+    } catch (e) { return false; }
+})();
+// Play Market havolasi — ilova nashr qilingach shu qoladi (package: maximarket.app)
+const PLAY_MARKET_URL = "https://play.google.com/store/apps/details?id=maximarket.app";
+
+// ==================== LOKAL PROFIL (ilova) ====================
 function loadLocalProfile() {
     try { return JSON.parse(localStorage.getItem('mm_profile') || '{}'); } catch (e) { return {}; }
 }
 function saveLocalProfile(p) {
     try {
-        if (!p.date) p.date = new Date().toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        localStorage.setItem('mm_profile', JSON.stringify(p));
-    } catch (e) {}
+        const merged = Object.assign({}, loadLocalProfile(), p);
+        if (!merged.id) merged.id = String(Math.floor(1000000 + Math.random() * 9000000));
+        if (!merged.date) merged.date = new Date().toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        localStorage.setItem('mm_profile', JSON.stringify(merged));
+        return merged;
+    } catch (e) { return p; }
+}
+function splitName(full) {
+    full = (full || '').trim();
+    if (!full) return { first: '', last: '' };
+    const parts = full.split(/\s+/);
+    return { first: parts[0] || '', last: parts.slice(1).join(' ') };
 }
 
 async function openProfile() {
     activeModal = 'profile';
-    enableTelegramBackButton(function() { closeProfile(true); });
+    enableTelegramBackButton(function () { closeProfile(true); });
     try { history.pushState({ modal: 'profile' }, '', '#profile'); } catch (e) {}
     document.getElementById('profile-modal').classList.add('active');
 
-    // Ilova/brauzer rejimi — Telegram yo'q, profil telefonda (localStorage) saqlanadi
+    const gate = document.getElementById('profile-app-gate');
+    const body = document.getElementById('profile-body');
+
+    // Brauzer (ilova ham, Telegram ham emas) — ilovani yuklashni taklif qilamiz
+    if (!isTelegram && !isApp) {
+        const link = document.getElementById('profile-play-link');
+        if (link) link.href = PLAY_MARKET_URL;
+        if (gate) gate.style.display = 'block';
+        if (body) body.style.display = 'none';
+        return;
+    }
+    if (gate) gate.style.display = 'none';
+    if (body) body.style.display = 'block';
+
+    // Ilova rejimi — profil telefonda saqlanadi
     if (!isTelegram) {
-        const p = loadLocalProfile();
-        const numEl = document.getElementById('profile-number');
-        if (numEl) numEl.innerText = p.name ? '#Mijoz' : '#Yangi';
-        document.getElementById('profile-fullname').value = p.name || '';
+        let p = loadLocalProfile();
+        if (!p.id) p = saveLocalProfile(p);
+        const nm = splitName(p.name);
+        document.getElementById('profile-number').innerText = p.id || '';
+        document.getElementById('profile-firstname').value = p.firstname || nm.first || '';
+        document.getElementById('profile-lastname').value = p.lastname || nm.last || '';
         document.getElementById('profile-phone').value = p.phone || '';
-        const dEl = document.getElementById('profile-date');
-        if (dEl) dEl.value = p.date || '';
+        document.getElementById('profile-date').value = p.date || '';
+        if (p.photo) {
+            profilePhotoUrl = p.photo;
+            document.getElementById('profile-avatar').innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
         return;
     }
 
+    // Telegram rejimi
     const user = tg.initDataUnsafe?.user;
     if (!user) return;
-
     try {
-        // ⭐ X-Telegram-Init-Data header qo'shildi
         const res = await fetch(`${API_URL}/api/register_user`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Telegram-Init-Data': tg.initData || ''
-            },
+            headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData || '' },
             body: JSON.stringify({
                 username: user.username || "",
                 tg_name: user.first_name + (user.last_name ? ' ' + user.last_name : '')
@@ -1008,17 +1044,62 @@ async function openProfile() {
         const data = await res.json();
         if (data.success) {
             currentUser = data;
+            const nm = splitName(data.full_name || (user.first_name + (user.last_name ? ' ' + user.last_name : '')));
             document.getElementById('profile-number').innerText = '#' + data.user_number;
-            document.getElementById('profile-fullname').value = data.full_name || (user.first_name + (user.last_name ? ' ' + user.last_name : ''));
+            document.getElementById('profile-firstname').value = nm.first;
+            document.getElementById('profile-lastname').value = nm.last;
             document.getElementById('profile-phone').value = data.phone || '';
             document.getElementById('profile-date').value = data.registered_at ?
-                new Date(data.registered_at).toLocaleString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '';
+                new Date(data.registered_at).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
             if (data.photo) {
                 profilePhotoUrl = data.photo;
                 document.getElementById('profile-avatar').innerHTML = `<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy">`;
             }
         }
     } catch (err) {}
+}
+
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+// ==================== BUYURTMALARIM (lokal) ====================
+function saveLocalOrder(order) {
+    try {
+        const list = JSON.parse(localStorage.getItem('mm_orders') || '[]');
+        list.unshift({
+            title: order.product_title || '',
+            price: order.price || 0,
+            size: order.size || '',
+            color: order.color || '',
+            date: new Date().toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        });
+        localStorage.setItem('mm_orders', JSON.stringify(list.slice(0, 100)));
+    } catch (e) {}
+}
+function openMyOrders() {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('mm_orders') || '[]'); } catch (e) {}
+    const box = document.getElementById('my-orders-list');
+    if (!list.length) {
+        box.innerHTML = '<div class="myorder-empty">🛒 Hozircha buyurtmalaringiz yo\'q</div>';
+    } else {
+        box.innerHTML = list.map(function (o) {
+            const extra = [o.size ? 'O\'lcham: ' + escapeHtml(o.size) : '', o.color ? 'Rang: ' + escapeHtml(o.color) : ''].filter(Boolean).join(' • ');
+            return '<div class="myorder-item">'
+                + '<div class="mo-title">' + escapeHtml(o.title) + '</div>'
+                + (extra ? '<div class="mo-meta">' + extra + '</div>' : '')
+                + '<div class="mo-meta">🕒 ' + escapeHtml(o.date || '') + '</div>'
+                + '<div class="mo-price">' + Number(o.price || 0).toLocaleString('uz-UZ') + " so'm</div>"
+                + '</div>';
+        }).join('');
+    }
+    document.getElementById('my-orders-modal').classList.add('active');
+}
+function closeMyOrders() {
+    document.getElementById('my-orders-modal').classList.remove('active');
 }
 
 function closeProfile(skipHistory = false) {
@@ -1032,13 +1113,29 @@ function closeProfile(skipHistory = false) {
     }
 }
 
+let pendingPhotoDataUrl = null;
 function previewProfilePhoto(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        document.getElementById('profile-avatar').innerHTML =
-            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        const img = new Image();
+        img.onload = function () {
+            // 256px ga kichraytiramiz (telefon xotirasini tejash uchun)
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const m = Math.min(img.width, img.height);
+            ctx.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, size, size);
+            let dataUrl;
+            try { dataUrl = canvas.toDataURL('image/jpeg', 0.8); } catch (er) { dataUrl = e.target.result; }
+            pendingPhotoDataUrl = dataUrl;
+            profilePhotoUrl = dataUrl;
+            document.getElementById('profile-avatar').innerHTML =
+                `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        };
+        img.src = e.target.result;
     };
     reader.readAsDataURL(file);
 }
@@ -1055,16 +1152,21 @@ function uploadImageToServer(file) {
 }
 
 async function saveProfile() {
-    const fullname = document.getElementById('profile-fullname').value.trim();
+    const firstname = document.getElementById('profile-firstname').value.trim();
+    const lastname = document.getElementById('profile-lastname').value.trim();
     const phone = document.getElementById('profile-phone').value.trim();
     const statusEl = document.getElementById('profile-status');
+    const fullname = (firstname + ' ' + lastname).trim();
 
-    // Ilova/brauzer rejimi — profilni telefonda saqlaymiz
+    // Ilova rejimi — profilni telefonda saqlaymiz
     if (!isTelegram) {
-        if (!fullname || fullname.length < 3) { statusEl.innerText = "❌ Ismni kiriting"; statusEl.className = "status err"; return; }
-        saveLocalProfile({ name: fullname, phone: phone });
-        const numEl = document.getElementById('profile-number');
-        if (numEl) numEl.innerText = '#Mijoz';
+        if (!firstname || firstname.length < 2) { statusEl.innerText = "❌ Ismni kiriting"; statusEl.className = "status err"; return; }
+        if (phone.replace(/\D/g, '').length < 9) { statusEl.innerText = "❌ Telefon to'liq emas"; statusEl.className = "status err"; return; }
+        const saved = saveLocalProfile({
+            name: fullname, firstname: firstname, lastname: lastname, phone: phone,
+            photo: pendingPhotoDataUrl || profilePhotoUrl || (loadLocalProfile().photo || '')
+        });
+        document.getElementById('profile-number').innerText = saved.id || '';
         statusEl.innerText = "✅ Profil saqlandi!";
         statusEl.className = "status ok";
         return;
