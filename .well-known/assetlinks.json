@@ -8,5 +8,16 @@
         "C1:F9:7B:AE:36:A9:9B:06:D3:C5:F6:10:2D:C9:CF:46:F3:51:9C:13:EC:DC:E4:04:40:9F:D0:94:5B:57:FE:7C"
       ]
     }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uz.maxi_market.twa",
+      "sha256_cert_fingerprints": [
+        "99:6F:3F:C6:5F:0D:51:B2:C7:48:F8:5E:8B:41:0B:8C:04:80:F9:20:62:AD:AC:2A:01:45:CC:C6:BB:7D:16:4E",
+        "C7:EC:59:6C:6D:6D:EF:6D:3B:86:BC:7E:A2:02:73:03:8E:D6:05:A7:C2:BA:E0:88:25:EB:B6:24:41:0D:C0:20"
+      ]
+    }
   }
 ]
