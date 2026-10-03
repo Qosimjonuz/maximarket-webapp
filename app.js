@@ -921,7 +921,7 @@ async function submitOrder(event) {
         try {
             const res = await fetch(`${API_URL}/api/public_order`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData || '' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             });
             const data = await res.json();
