@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>MaxiMarket — Admin Panel</title>
 <style>
 *{box-sizing:border-box}
@@ -38,9 +41,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .password-box{position:relative}
 .password-box input{padding-right:42px}
 .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:17px;cursor:pointer;padding:4px;margin:0;width:auto;color:#666}
-.captcha-box{display:flex;gap:6px;margin-top:6px}
-.captcha-question{flex:1;background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:12px;border-radius:10px;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;letter-spacing:3px;user-select:none;font-family:'Courier New',monospace}
-.captcha-refresh{width:46px;background:#fff;border:1.5px solid #e0e0e0;border-radius:10px;font-size:20px;cursor:pointer;padding:0;margin:0;color:#1565c0;display:flex;align-items:center;justify-content:center}
+.robot-note{margin-top:10px;font-size:13px;color:#555;text-align:center}
 .image-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
 .image-slot{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px dashed #ccc;background:#f9f9f9;cursor:pointer}
 .image-slot.main-slot{border-color:#ff9800;border-style:solid}
@@ -118,14 +119,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .stat-card-label{font-size:11px;opacity:.9;margin-bottom:4px;font-weight:600}
 .stat-card-value{font-size:22px;font-weight:900;margin-bottom:2px}
 .stat-card-count{font-size:11px;opacity:.85}
-.user-item{background:#f8f9fa;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-.user-item input[type=checkbox]{width:20px;height:20px;flex-shrink:0;accent-color:#1565c0}
-.user-info{flex:1;min-width:0}
-.user-info b{display:block;font-size:13px;margin-bottom:2px}
-.user-info small{color:#666;font-size:11px;display:block}
-.user-actions{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.user-actions button{flex:1;min-width:120px;margin:0;padding:8px;font-size:12px}
-.message-box textarea{min-height:80px;font-size:14px}
 
 /* ⭐ ORDERS */
 .orders-tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
@@ -239,12 +232,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     <input type="password" id="password-input" placeholder="Parolni kiriting">
     <button type="button" class="eye-btn" id="eye-btn">👁</button>
   </div>
-  <label>🤖 Robot emasligingizni tasdiqlang</label>
-  <div class="captcha-box">
-    <div class="captcha-question" id="captcha-question">7 + 3 = ?</div>
-    <button type="button" class="captcha-refresh" onclick="generateCaptcha()">🔄</button>
-  </div>
-  <input type="number" id="captcha-input" placeholder="Javobni kiriting" inputmode="numeric" style="margin-top:6px">
+  <div class="robot-note">🤖 Robot emasligingiz kirishda avtomatik tekshiriladi</div>
   <button id="login-btn">Kirish</button>
   <div id="login-status" class="status"></div>
 </div>
@@ -447,44 +435,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="pagination" id="orders-pagination"></div>
     </div>
 
-    <div class="section">
-      <h2>👥 Obunachilar statistikasi</h2>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-card-label">📅 Bugun qo'shildi</div><div class="stat-card-value" id="u-today">0</div></div>
-        <div class="stat-card green"><div class="stat-card-label">📆 Bu hafta</div><div class="stat-card-value" id="u-week">0</div></div>
-        <div class="stat-card orange"><div class="stat-card-label">🗓 Bu oy</div><div class="stat-card-value" id="u-month">0</div></div>
-        <div class="stat-card purple"><div class="stat-card-label">📅 Bu yil</div><div class="stat-card-value" id="u-year">0</div></div>
-      </div>
-      <div class="stat-card" style="background:linear-gradient(135deg,#283593,#3f51b5)"><div class="stat-card-label">🏆 Jami obunachilar</div><div class="stat-card-value" id="u-total">0</div></div>
-    </div>
-
-    <div class="section">
-      <h2>📢 Obunachilarga xabar</h2>
-      <div class="products-search" style="margin-bottom:8px">
-        <span class="products-search-icon">🔍</span>
-        <input type="text" id="user-search-input" placeholder="Ism, username, telefon yoki ID..." oninput="searchUsersDebounced()">
-        <button class="products-search-clear" id="user-search-clear" onclick="clearUserSearch()" style="display:none">✕</button>
-      </div>
-      <div class="user-actions">
-        <button class="small" onclick="loadUsers()">🔄 Yuklash</button>
-        <button class="small success" onclick="selectAllVisibleUsers()">✅ Ko'ringanlarni</button>
-        <button class="small danger" onclick="deselectAllUsers()">❌ Tozalash</button>
-      </div>
-      <div class="user-actions">
-        <button class="small" onclick="toggleUsersList()" id="toggle-users-btn">🔼 Ro'yxatni yopish</button>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:#1565c0;text-align:center;margin:6px 0" id="users-count-info">0 ta obunachi tanlangan</div>
-      <div id="users-list-container" style="max-height:500px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
-        <div class="empty-result">"Yuklash" tugmasini bosing</div>
-      </div>
-      <div class="pagination" id="users-pagination"></div>
-      <div class="message-box">
-        <label>Xabar matni</label>
-        <textarea id="broadcast-message" placeholder="Xabar matnini kiriting..."></textarea>
-        <button id="send-message-btn" class="success" onclick="sendMessage()">📤 Tanlanganlarga yuborish</button>
-        <div id="send-status" class="status"></div>
-      </div>
-    </div>
   </div>
 
   <button class="danger" id="logout-btn" style="margin-top:14px">🚪 Chiqish</button>
