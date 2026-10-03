@@ -150,8 +150,6 @@
 
     function resetSession() {
         try { if (typeof closeModal === 'function') closeModal(true); } catch (e) {}
-        try { if (typeof closeMyOrders === 'function') closeMyOrders(); } catch (e) {}
-        try { if (typeof closeProfile === 'function') closeProfile(true); } catch (e) {}
         try {
             const search = document.getElementById('search-input');
             if (search) search.value = '';
@@ -186,8 +184,7 @@
         if (btn) press(btn.getAttribute('data-key'));
     });
     forgotBtn.addEventListener('click', function () {
-        const ok = confirm('PIN-kodni tiklash uchun ilovadagi profil va buyurtmalar tarixi o\'chiriladi. Davom etasizmi?');
-        if (!ok) return;
+        if (!confirm('Yangi PIN-kod o\'rnatmoqchimisiz?')) return;
         ['mm_profile', 'mm_orders', PIN_KEY, FAIL_KEY, LOCKOUT_KEY].forEach(lsDel);
         resetSession();
         startMode('setup');

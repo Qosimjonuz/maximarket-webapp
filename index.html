@@ -68,7 +68,7 @@
     <!-- ILOVA QULFI: ochilish ekrani + PIN-kod (faqat ilova rejimida) -->
     <div id="app-lock" class="app-lock" aria-live="polite">
         <div class="lock-brand">
-            <img src="icons/icon-maskable-512.png" alt="MaxiMarket" class="lock-logo" width="132" height="132">
+            <img src="icons/icon-512.png" alt="MaxiMarket" class="lock-logo" width="132" height="132">
             <div class="lock-title">MaxiMarket</div>
             <div class="lock-subtitle">internet magazin</div>
         </div>
@@ -98,9 +98,6 @@
                 <span class="brand-maxi">Maxi</span><span class="brand-market">Market</span>
             </span>
         </div>
-        <button class="profile-btn" onclick="openProfile()" aria-label="Profil">
-            <span>👤</span>
-        </button>
     </header>
 
     <div class="banner-carousel" id="banner-carousel">
@@ -119,61 +116,6 @@
     <div class="categories-scroll" id="categories-scroll"></div>
 
     <main id="products-container"></main>
-
-    <!-- PROFIL OYNASI -->
-    <div id="profile-modal" class="modal-overlay">
-        <div class="modal-content profile-content">
-            <button class="modal-close" onclick="closeProfile()">✕</button>
-
-            <!-- Brauzer rejimi: ilovani yuklash taklifi -->
-            <div id="profile-app-gate" style="display:none; text-align:center; padding:24px 8px;">
-                <div style="font-size:56px;">📱</div>
-                <h3 style="margin:14px 0 8px; color:#1565c0;">Profil faqat ilovada</h3>
-                <p style="color:#666; margin-bottom:22px; line-height:1.5;">
-                    Shaxsiy kabinet ochish, ma'lumotlaringizni saqlash va
-                    buyurtmalaringizni kuzatish uchun MaxiMarket ilovasini yuklab oling.
-                </p>
-                <a id="profile-play-link" href="#" target="_blank" rel="noopener"
-                   class="save-btn" style="display:inline-block; text-decoration:none;">
-                    ▶️ Ilovani yuklab olish
-                </a>
-            </div>
-
-            <!-- Profil (ilova / Telegram) -->
-            <div id="profile-body">
-                <div class="profile-header-icon">
-                    <div class="profile-avatar" id="profile-avatar">👤</div>
-                </div>
-                <label for="profile-photo" class="profile-photo-btn">📷 Rasmni o'zgartirish</label>
-                <input type="file" id="profile-photo" accept="image/*" onchange="previewProfilePhoto(event)" style="display:none;">
-
-                <div class="profile-number" id="profile-number">#---</div>
-                <div class="profile-id-caption">Sizning ID raqamingiz</div>
-
-                <div class="profile-form">
-                    <label>Telefon raqam</label>
-                    <input type="tel" id="profile-phone" placeholder="+998 90 000 00 00">
-                    <label>Ism</label>
-                    <input type="text" id="profile-firstname" placeholder="Ismingiz">
-                    <label>Familiya</label>
-                    <input type="text" id="profile-lastname" placeholder="Familiyangiz">
-                    <input type="hidden" id="profile-date">
-                    <button class="save-btn" onclick="saveProfile()">💾 Saqlash</button>
-                    <button type="button" class="save-btn profile-orders-btn" onclick="openMyOrders()">🧾 Buyurtmalarim</button>
-                    <div id="profile-status" class="status"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BUYURTMALARIM OYNASI -->
-    <div id="my-orders-modal" class="modal-overlay">
-        <div class="modal-content profile-content">
-            <button class="modal-close" onclick="closeMyOrders()">✕</button>
-            <h2 style="text-align:center; margin:6px 0 16px; color:#1565c0;">🧾 Buyurtmalarim</h2>
-            <div id="my-orders-list"></div>
-        </div>
-    </div>
 
     <!-- BUYURTMA OYNASI -->
     <div id="order-modal" class="modal-overlay">

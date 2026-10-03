@@ -78,21 +78,6 @@ body::before {
     color: #1565c0;
     text-shadow: -1px -1px 0 #fff, -1px 0 0 #fff, -1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, 1px -1px 0 #fff, 1px 0 0 #fff, 1px 1px 0 #fff, 2px 2px 4px rgba(0,0,0,0.3);
 }
-.profile-btn {
-    background: #1565c0;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(21,101,192,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: #fff;
-}
 
 /* ============ BANNER ============ */
 .banner-carousel {
@@ -1025,36 +1010,6 @@ body::before {
     margin-top: 20px; margin-bottom: 20px;
 }
 
-.profile-content { padding-top: 30px; }
-.profile-header-icon { text-align: center; margin-bottom: 8px; }
-.profile-avatar {
-    width: 90px; height: 90px;
-    background: linear-gradient(135deg, #1565c0, #42a5f5);
-    color: #fff; border-radius: 50%;
-    font-size: 45px; display: flex;
-    align-items: center; justify-content: center;
-    margin: 0 auto;
-    box-shadow: 0 4px 14px rgba(21,101,192,0.35);
-    overflow: hidden;
-}
-.profile-number {
-    text-align: center; font-size: 16px;
-    font-weight: 800; color: #1565c0;
-    margin: 8px 0 16px; letter-spacing: 1px;
-}
-.profile-form { text-align: left; }
-.profile-form label {
-    display: block; font-size: 12px;
-    font-weight: 700; margin: 12px 0 5px; color: #333;
-}
-.profile-form input {
-    width: 100%; padding: 12px 14px;
-    border: 1.5px solid #ddd; border-radius: 10px;
-    font-size: 15px; background: #fafafa;
-    font-family: inherit;
-}
-.profile-form input[readonly] { background: #f0f0f0; color: #666; cursor: not-allowed; }
-.profile-form input[type="file"] { padding: 8px; background: #fff; cursor: pointer; }
 .save-btn {
     width: 100%; background: #2e7d32; color: #fff;
     border: none; padding: 14px; border-radius: 10px;
@@ -1332,47 +1287,6 @@ body::before {
 }
 
 /* ==================== PROFIL (100k.uz uslubi) ==================== */
-.profile-photo-btn{
-    display:inline-block;
-    margin:10px auto 4px;
-    padding:8px 16px;
-    background:#1565c0;
-    color:#fff;
-    border-radius:20px;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-}
-.profile-id-caption{
-    text-align:center;
-    color:#888;
-    font-size:13px;
-    margin-bottom:16px;
-}
-.profile-number{
-    text-align:center;
-    color:#f39c12;
-    font-size:26px;
-    font-weight:700;
-    margin-top:8px;
-}
-.profile-orders-btn{
-    background:#fff !important;
-    color:#1565c0 !important;
-    border:1.5px solid #1565c0 !important;
-    margin-top:10px;
-}
-.myorder-item{
-    border:1px solid #eee;
-    border-radius:12px;
-    padding:12px 14px;
-    margin-bottom:10px;
-    background:#fafafa;
-}
-.myorder-item .mo-title{font-weight:600; margin-bottom:4px;}
-.myorder-item .mo-meta{font-size:13px; color:#666;}
-.myorder-item .mo-price{color:#e53935; font-weight:700; margin-top:4px;}
-.myorder-empty{text-align:center; color:#888; padding:30px 10px;}
 
 /* ==================== ILOVA QULFI (PIN) ==================== */
 .app-lock { display: none; }
