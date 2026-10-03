@@ -41,6 +41,18 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .password-box{position:relative}
 .password-box input{padding-right:42px}
 .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:17px;cursor:pointer;padding:4px;margin:0;width:auto;color:#666}
+.user-item{background:#f8f9fa;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.user-item input[type=checkbox]{width:20px;height:20px;flex-shrink:0;accent-color:#1565c0}
+.user-info{flex:1;min-width:0}
+.user-info b{display:block;font-size:13px;margin-bottom:2px}
+.user-info small{color:#666;font-size:11px;display:block}
+.user-actions{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.user-actions button{flex:1;min-width:120px;margin:0;padding:8px;font-size:12px}
+.message-box textarea{min-height:80px;font-size:14px}
+.send-all-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:8px 0}
+.send-all-label input{width:18px;height:18px;margin:0;accent-color:#1565c0}
+.broadcast-progress{height:8px;background:#e3f2fd;border-radius:6px;overflow:hidden;margin-top:8px}
+.broadcast-progress-bar{height:100%;width:0;background:#1565c0;transition:width .4s}
 .robot-note{margin-top:10px;font-size:13px;color:#555;text-align:center}
 .image-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
 .image-slot{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px dashed #ccc;background:#f9f9f9;cursor:pointer}
@@ -435,6 +447,47 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="pagination" id="orders-pagination"></div>
     </div>
 
+
+    <div class="section">
+      <h2>👥 Obunachilar statistikasi</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-card-label">📅 Bugun qo'shildi</div><div class="stat-card-value" id="u-today">0</div></div>
+        <div class="stat-card green"><div class="stat-card-label">📆 Bu hafta</div><div class="stat-card-value" id="u-week">0</div></div>
+        <div class="stat-card orange"><div class="stat-card-label">🗓 Bu oy</div><div class="stat-card-value" id="u-month">0</div></div>
+        <div class="stat-card purple"><div class="stat-card-label">📅 Bu yil</div><div class="stat-card-value" id="u-year">0</div></div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#283593,#3f51b5)"><div class="stat-card-label">🏆 Jami obunachilar</div><div class="stat-card-value" id="u-total">0</div></div>
+    </div>
+
+    <div class="section">
+      <h2>📢 Obunachilarga xabar</h2>
+      <div class="products-search" style="margin-bottom:8px">
+        <span class="products-search-icon">🔍</span>
+        <input type="text" id="user-search-input" placeholder="Ism, username yoki ID..." oninput="searchUsersDebounced()">
+        <button class="products-search-clear" id="user-search-clear" onclick="clearUserSearch()" style="display:none">✕</button>
+      </div>
+      <div class="user-actions">
+        <button class="small" onclick="loadUsers()">🔄 Yuklash</button>
+        <button class="small success" onclick="selectAllVisibleUsers()">✅ Ko'ringanlarni</button>
+        <button class="small danger" onclick="deselectAllUsers()">❌ Tozalash</button>
+      </div>
+      <div class="user-actions">
+        <button class="small" onclick="toggleUsersList()" id="toggle-users-btn">🔼 Ro'yxatni yopish</button>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#1565c0;text-align:center;margin:6px 0" id="users-count-info">0 ta obunachi tanlangan</div>
+      <div id="users-list-container" style="max-height:500px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
+        <div class="empty-result">"Yuklash" tugmasini bosing</div>
+      </div>
+      <div class="pagination" id="users-pagination"></div>
+      <div class="message-box">
+        <label>Xabar matni</label>
+        <textarea id="broadcast-message" placeholder="Xabar matnini kiriting..."></textarea>
+        <label class="send-all-label"><input type="checkbox" id="send-all-check" onchange="updateUsersCountInfo()"> Barcha obunachilarga yuborish</label>
+        <button id="send-message-btn" class="success" onclick="sendMessage()">📤 Yuborish</button>
+        <div id="send-status" class="status"></div>
+        <div class="broadcast-progress hidden" id="broadcast-progress"><div class="broadcast-progress-bar" id="broadcast-progress-bar"></div></div>
+      </div>
+    </div>
   </div>
 
   <button class="danger" id="logout-btn" style="margin-top:14px">🚪 Chiqish</button>

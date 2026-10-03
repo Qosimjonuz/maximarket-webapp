@@ -13,6 +13,7 @@ var MAX_SIZES = 4;
 var MAX_COLORS = 10;
 var MAX_IMAGES = 4;
 var PER_PAGE = 10;
+var USERS_PER_PAGE = 12;
 var ORDERS_PER_PAGE = 10;
 var LOW_STOCK_PER_PAGE = 10;
 var SALES_PER_PAGE = 10;
@@ -31,6 +32,14 @@ var totalPages = 1;
 var searchQuery = "";
 var activeFilterCategory = "all";
 var activeOqimFilter = "all"; // ⭐ all / has / no
+
+var selectedUsers = [];
+var currentUsersPage = 1;
+var usersTotalPages = 1;
+var userSearchDebounce = null;
+var visibleUsers = [];
+var usersListOpen = true;
+var broadcastPoll = null;
 
 var currentOrdersPeriod = "today";
 var currentOrdersSource = "all";
@@ -138,6 +147,15 @@ function toggleFilter() {
   document.getElementById('filter-header').classList.toggle('active');
   document.getElementById('filter-body').classList.toggle('open');
 }
+function toggleUsersList() {
+  usersListOpen = !usersListOpen;
+  var c = document.getElementById('users-list-container');
+  var btn = document.getElementById('toggle-users-btn');
+  if (usersListOpen) { c.style.display = 'block'; btn.innerText = '🔼 Ro\'yxatni yopish'; }
+  else { c.style.display = 'none'; btn.innerText = '🔽 Ro\'yxatni ochish'; }
+}
+
+
 // ==================== TOKEN ====================
 function saveToken(t) { adminToken = t; localStorage.setItem(TOKEN_KEY, t); }
 function loadToken() { var s = localStorage.getItem(TOKEN_KEY); if (s) { adminToken = s; return true; } return false; }
@@ -164,7 +182,7 @@ function switchPage(page) {
   document.querySelectorAll('#bottom-nav button').forEach(function (b) {
     b.classList.toggle('active', b.getAttribute('data-page') === page);
   });
-  if (page === 'stats') { loadStats(); loadOrders(); }
+  if (page === 'stats') { loadStats(); loadOrders(); loadUsers(); checkBroadcastStatus(); }
   if (page === 'list') { loadProducts(); loadLowStock(); }
 }
 
@@ -792,6 +810,21 @@ async function loadStats() {
   } catch (e) {}
 
   try {
+    var r2 = await fetch(API_URL + '/api/stats/users', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken })
+    });
+    var d2 = await r2.json();
+    if (d2.success) {
+      document.getElementById('u-today').innerText = d2.today || 0;
+      document.getElementById('u-week').innerText = d2.week || 0;
+      document.getElementById('u-month').innerText = d2.month || 0;
+      document.getElementById('u-year').innerText = d2.year || 0;
+      document.getElementById('u-total').innerText = d2.total || 0;
+    }
+  } catch (e) {}
+
+  try {
     var r3 = await fetch(API_URL + '/api/stats/visits', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: adminToken })
@@ -1012,6 +1045,144 @@ function goToSalesPage(p) {
 
 
 // ==================== USERS ====================
+function searchUsersDebounced() {
+  var v = document.getElementById('user-search-input').value;
+  document.getElementById('user-search-clear').style.display = v.trim() ? 'flex' : 'none';
+  if (userSearchDebounce) clearTimeout(userSearchDebounce);
+  userSearchDebounce = setTimeout(function () { currentUsersPage = 1; loadUsers(); }, 400);
+}
+function clearUserSearch() {
+  document.getElementById('user-search-input').value = '';
+  document.getElementById('user-search-clear').style.display = 'none';
+  currentUsersPage = 1;
+  loadUsers();
+}
+async function loadUsers() {
+  var c = document.getElementById('users-list-container');
+  c.innerHTML = '⏳ Yuklanmoqda...';
+  c.style.display = usersListOpen ? 'block' : 'none';
+  var search = document.getElementById('user-search-input').value.trim();
+  try {
+    var r = await fetch(API_URL + '/api/users/list', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, search: search, page: currentUsersPage, per_page: USERS_PER_PAGE })
+    });
+    if (r.status === 401) { handleAuthError(); return; }
+    var d = await r.json();
+    if (!d.success) { c.innerHTML = '<div class="empty-result">Xatolik</div>'; return; }
+    var users = d.users || [];
+    visibleUsers = users;
+    usersTotalPages = d.total_pages || 1;
+    if (users.length === 0) {
+      c.innerHTML = '<div class="empty-result">' + (search ? '🔍 Topilmadi' : 'Obunachilar yo\'q') + '</div>';
+      renderPagination('users-pagination', 1, 1, 'goToUsersPage');
+      updateUsersCountInfo();
+      return;
+    }
+    var h = '';
+    users.forEach(function (u) {
+      var nm = escapeHtml(u.full_name || u.username || ('ID: ' + u.user_id));
+      var un = u.username ? escapeHtml(u.username) : '';
+      var checked = selectedUsers.indexOf(u.user_id) > -1 ? 'checked' : '';
+      h += '<div class="user-item"><input type="checkbox" class="user-check" value="' + Number(u.user_id) + '" ' + checked + '><div class="user-info"><b>' + nm + '</b><small>' + Number(u.user_id) + (un ? ' • @' + un : '') + '</small></div></div>';
+    });
+    c.innerHTML = h;
+    c.querySelectorAll('.user-check').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var id = parseInt(this.value);
+        if (this.checked) { if (selectedUsers.indexOf(id) === -1) selectedUsers.push(id); }
+        else { selectedUsers = selectedUsers.filter(function (x) { return x !== id; }); }
+        updateUsersCountInfo();
+      });
+    });
+    renderPagination('users-pagination', currentUsersPage, usersTotalPages, 'goToUsersPage');
+    updateUsersCountInfo();
+  } catch (e) { c.innerHTML = '<div class="empty-result">Xatolik: ' + e.message + '</div>'; }
+}
+function goToUsersPage(p) { currentUsersPage = p; loadUsers(); }
+function updateUsersCountInfo() {
+  var all = document.getElementById('send-all-check').checked;
+  document.getElementById('users-count-info').innerText = all
+    ? 'Barcha obunachilarga yuboriladi'
+    : selectedUsers.length + ' ta obunachi tanlangan';
+}
+function selectAllVisibleUsers() {
+  visibleUsers.forEach(function (u) {
+    if (selectedUsers.indexOf(u.user_id) === -1) selectedUsers.push(u.user_id);
+  });
+  document.querySelectorAll('.user-check').forEach(function (cb) { cb.checked = true; });
+  updateUsersCountInfo();
+  alert("Ko'ringan " + visibleUsers.length + " ta tanlandi. Jami: " + selectedUsers.length);
+}
+function deselectAllUsers() {
+  document.querySelectorAll('.user-check').forEach(function (cb) { cb.checked = false; });
+  selectedUsers = [];
+  updateUsersCountInfo();
+}
+async function sendMessage() {
+  var msg = document.getElementById('broadcast-message').value.trim();
+  var all = document.getElementById('send-all-check').checked;
+  var s = document.getElementById('send-status'), b = document.getElementById('send-message-btn');
+  if (!msg) { s.innerText = "❌ Xabar matnini kiriting!"; s.className = "status err"; return; }
+  if (!all && selectedUsers.length === 0) { s.innerText = "❌ Obunachi tanlang yoki «Barcha obunachilarga» ni belgilang!"; s.className = "status err"; return; }
+  var who = all ? "BARCHA obunachilarga" : selectedUsers.length + " ta obunachiga";
+  if (!confirm(who + " xabar yuborilsinmi?")) return;
+  b.disabled = true; s.innerText = ''; s.className = '';
+  try {
+    var r = await fetch(API_URL + '/api/send_message', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(all ? { token: adminToken, send_all: true, message: msg }
+                               : { token: adminToken, user_ids: selectedUsers, message: msg })
+    });
+    if (r.status === 401) { handleAuthError(); return; }
+    var d = await r.json();
+    if (d.success) {
+      document.getElementById('broadcast-message').value = '';
+      checkBroadcastStatus();
+    } else {
+      s.innerText = "❌ " + (d.error || "Xatolik");
+      s.className = "status err";
+      b.disabled = false;
+    }
+  } catch (e) {
+    s.innerText = "❌ " + e.message;
+    s.className = "status err";
+    b.disabled = false;
+  }
+}
+async function checkBroadcastStatus() {
+  if (broadcastPoll) { clearTimeout(broadcastPoll); broadcastPoll = null; }
+  var s = document.getElementById('send-status'), b = document.getElementById('send-message-btn');
+  var box = document.getElementById('broadcast-progress'), bar = document.getElementById('broadcast-progress-bar');
+  try {
+    var r = await fetch(API_URL + '/api/send_message/status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken })
+    });
+    if (r.status === 401) { handleAuthError(); return; }
+    var d = await r.json();
+    if (!d.success || !d.total) return;
+    var done = d.sent + d.failed;
+    bar.style.width = Math.round(done * 100 / d.total) + '%';
+    if (d.running) {
+      box.classList.remove('hidden');
+      b.disabled = true;
+      s.innerText = "⏳ Yuborilmoqda: " + done + " / " + d.total;
+      s.className = "status ok";
+      if (!document.getElementById('page-stats').classList.contains('hidden')) {
+        broadcastPoll = setTimeout(checkBroadcastStatus, 2000);
+      }
+    } else {
+      box.classList.add('hidden');
+      b.disabled = false;
+      s.innerText = "✅ Oxirgi yuborish: " + d.sent + " ta yetkazildi, " + d.failed + " ta xato"
+        + (d.removed ? " (" + d.removed + " ta botni bloklagan, ro'yxatdan o'chirildi)" : "");
+      s.className = "status ok";
+    }
+  } catch (e) {}
+}
+
+
 // ==================== START ====================
 window.addEventListener('DOMContentLoaded', function () {
   // Login
