@@ -75,6 +75,7 @@ const GRID_COLS = 2;
 const BIG_CARD_EVERY = 8;
 
 let gridRowsShown = INITIAL_GRID_ROWS;
+const MAX_FEED_ITEMS = 400; // cheksiz lenta DOM'ni to'ldirib yubormasligi uchun chegara
 
 let featuredProducts = [];
 const FEATURED_COUNT = 10;
@@ -567,6 +568,20 @@ function renderProducts() {
 }
 
 
+// Mahsulot oz bo'lsa, filtrsiz bosh sahifa lentasi tugamaydi: mahsulotlar qayta-qayta takrorlanadi
+function isLoopingFeed() {
+    const input = document.getElementById('search-input');
+    const query = input ? input.value.trim() : '';
+    return activeCategory === 'all' && !query && filteredProducts.length > 0;
+}
+function feedLimit() {
+    return isLoopingFeed() ? MAX_FEED_ITEMS : filteredProducts.length;
+}
+function feedProduct(i) {
+    const n = filteredProducts.length;
+    return n ? filteredProducts[i % n] : undefined;
+}
+
 function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
     let html = '';
     let productIndex = startIndex;
@@ -574,7 +589,7 @@ function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
 
     while (productIndex < endIndex) {
         if (regularCount >= BIG_CARD_EVERY) {
-            const bigProduct = filteredProducts[productIndex];
+            const bigProduct = feedProduct(productIndex);
             if (bigProduct) {
                 html += buildBigProductCard(bigProduct);
                 productIndex++;
@@ -582,7 +597,7 @@ function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
                 continue;
             }
         }
-        const product = filteredProducts[productIndex];
+        const product = feedProduct(productIndex);
         if (!product) break;
 
         html += buildProductCard(product);
@@ -596,7 +611,7 @@ function addProductsToGrid(grid, startIndex, endIndex, startRegularCount) {
 function fillMainGrid() {
     const grid = document.getElementById('main-grid');
     if (!grid) return;
-    const total = filteredProducts.length;
+    const total = feedLimit();
     const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
     const result = addProductsToGrid(grid, 0, gridShown, 0);
     grid.innerHTML = result.html;
@@ -604,7 +619,7 @@ function fillMainGrid() {
 
 
 function loadMoreProducts() {
-    const total = filteredProducts.length;
+    const total = feedLimit();
     const currentShown = Math.min(gridRowsShown * GRID_COLS, total);
     gridRowsShown += LOAD_MORE_ROWS;
     const newShown = Math.min(gridRowsShown * GRID_COLS, total);
@@ -666,7 +681,7 @@ function attachAllListeners() {
 
 
 function updateLoadMoreButton() {
-    const total = filteredProducts.length;
+    const total = feedLimit();
     const gridShown = Math.min(gridRowsShown * GRID_COLS, total);
     const remaining = total - gridShown;
     const container = document.getElementById('load-more-container');
@@ -676,11 +691,11 @@ function updateLoadMoreButton() {
         container.innerHTML = `
             <button class="load-more-btn" onclick="loadMoreProducts()">
                 <span class="load-more-icon">⬇️</span>
-                <span>Yana ko'rish (${remaining} ta qoldi)</span>
+                <span>${isLoopingFeed() ? "Yana ko'rish" : `Yana ko'rish (${remaining} ta qoldi)`}</span>
             </button>
         `;
     } else {
-        container.innerHTML = `<p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>`;
+        container.innerHTML = isLoopingFeed() ? '' : `<p class="all-shown">✅ Barcha mahsulotlar ko'rsatildi</p>`;
     }
 }
 
@@ -722,8 +737,13 @@ async function openModal(id) {
 
     activeModal = 'order';
     enableTelegramBackButton(function() { closeModal(true); });
-    try { history.pushState({ modal: 'order' }, '', '#order'); } catch (e) {}
+    try {
+        // Modal ichidan boshqa mahsulot ochilsa, tarix yozuvi ko'paymasin
+        if (history.state && history.state.modal === 'order') history.replaceState({ modal: 'order' }, '', '#order');
+        else history.pushState({ modal: 'order' }, '', '#order');
+    } catch (e) {}
 
+    try { document.getElementById('order-form').reset(); } catch (e) {}
     currentImageIndex = 0;
     selectedSize = null;
     selectedColor = null;
@@ -794,8 +814,11 @@ async function openModal(id) {
 
     updateImage();
     startCountdown();
-    document.getElementById('order-modal').classList.add('active');
+    const modalEl = document.getElementById('order-modal');
+    modalEl.classList.add('active');
+    modalEl.scrollTop = 0;
     document.body.style.overflow = 'hidden';
+    renderModalFeed();
 
     try {
         await fetch(`${API_URL}/api/increment_view`, {
@@ -807,6 +830,7 @@ async function openModal(id) {
 }
 
 function closeModal(skipHistory = false) {
+    if (modalFeedObserver) { modalFeedObserver.disconnect(); modalFeedObserver = null; }
     document.getElementById('order-modal').classList.remove('active');
     document.body.style.overflow = '';
     if (countdownInterval) clearInterval(countdownInterval);
@@ -820,6 +844,47 @@ function closeModal(skipHistory = false) {
     } else {
         activeModal = null;
     }
+}
+
+// ==================== MODAL LENTASI (boshqa mahsulotlar, tugamaydi) ====================
+const MODAL_FEED_FIRST = 8;
+const MODAL_FEED_STEP = 8;
+let modalFeedList = [];
+let modalFeedShown = 0;
+let modalFeedObserver = null;
+
+function renderModalFeed() {
+    const box = document.getElementById('modal-feed');
+    const grid = document.getElementById('modal-feed-grid');
+    if (!box || !grid) return;
+    if (modalFeedObserver) { modalFeedObserver.disconnect(); modalFeedObserver = null; }
+    grid.innerHTML = '';
+    modalFeedList = products.filter(p => currentProduct && String(p.id) !== String(currentProduct.id));
+    shuffleArray(modalFeedList);
+    modalFeedShown = 0;
+    if (modalFeedList.length === 0) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    appendModalFeed(MODAL_FEED_FIRST);
+
+    const sentinel = document.getElementById('modal-feed-end');
+    if (sentinel && 'IntersectionObserver' in window) {
+        modalFeedObserver = new IntersectionObserver((entries) => {
+            if (entries.some(e => e.isIntersecting)) appendModalFeed(MODAL_FEED_STEP);
+        }, { root: document.getElementById('order-modal'), rootMargin: '400px 0px', threshold: 0 });
+        modalFeedObserver.observe(sentinel);
+    }
+}
+
+function appendModalFeed(count) {
+    const grid = document.getElementById('modal-feed-grid');
+    if (!grid || modalFeedList.length === 0) return;
+    const end = Math.min(modalFeedShown + count, MAX_FEED_ITEMS);
+    let html = '';
+    for (let i = modalFeedShown; i < end; i++) html += buildProductCard(modalFeedList[i % modalFeedList.length]);
+    modalFeedShown = end;
+    grid.insertAdjacentHTML('beforeend', html);
+    attachAllListeners();
+    initImageObserver();
 }
 
 function preloadModalImages() {
