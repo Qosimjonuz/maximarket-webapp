@@ -75,6 +75,7 @@ const GRID_COLS = 2;
 const BIG_CARD_EVERY = 8;
 
 let gridRowsShown = INITIAL_GRID_ROWS;
+let orderOpenedAt = 0;
 const MAX_FEED_ITEMS = 400; // cheksiz lenta DOM'ni to'ldirib yubormasligi uchun chegara
 
 let featuredProducts = [];
@@ -264,7 +265,7 @@ function initBanner() {
     updateBanner();
     const dotsEl = document.getElementById('banner-dots');
     dotsEl.innerHTML = banners.map((_, i) =>
-        `<span class="${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
+        `<span class="${i === 0 ? 'active' : ''}" data-act="banner-go" data-v="${i}"></span>`
     ).join('');
     startBannerAutoSlide();
 }
@@ -319,11 +320,11 @@ function updateBanner() {
 // ==================== KATEGORIYALAR ====================
 function renderCategories() {
     const scroll = document.getElementById('categories-scroll');
-    let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">
+    let html = `<button class="category-btn ${activeCategory === 'all' ? 'active' : ''}" data-act="category" data-v="all">
         <span class="cat-emoji">🌐</span><span class="cat-name">Barchasi</span>
     </button>`;
     CATEGORIES.forEach(cat => {
-        html += `<button class="category-btn ${activeCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')">
+        html += `<button class="category-btn ${activeCategory === cat.id ? 'active' : ''}" data-act="category" data-v="${cat.id}">
             <span class="cat-emoji">${cat.emoji}</span><span class="cat-name">${cat.name}</span>
         </button>`;
     });
@@ -689,7 +690,7 @@ function updateLoadMoreButton() {
 
     if (remaining > 0) {
         container.innerHTML = `
-            <button class="load-more-btn" onclick="loadMoreProducts()">
+            <button class="load-more-btn" data-act="load-more">
                 <span class="load-more-icon">⬇️</span>
                 <span>${isLoopingFeed() ? "Yana ko'rish" : `Yana ko'rish (${remaining} ta qoldi)`}</span>
             </button>
@@ -735,6 +736,7 @@ async function openModal(id) {
     currentProduct = products.find(p => String(p.id) === String(id));
     if (!currentProduct) return;
 
+    orderOpenedAt = Date.now();
     activeModal = 'order';
     enableTelegramBackButton(function() { closeModal(true); });
     try {
@@ -983,7 +985,11 @@ async function submitOrder(event) {
         if (c) colorName = c.name;
     }
 
+    // Botlardan himoya: yashirin maydon (odam ko'rmaydi) va formani to'ldirish vaqti
+    const hpEl = document.getElementById('order-hp');
     const orderData = {
+        hp: hpEl ? hpEl.value : '',
+        t: Date.now() - (orderOpenedAt || Date.now()),
         product_id: String(currentProduct.id),
         product_title: currentProduct.title,
         price: currentProduct.discount_price,
@@ -1047,6 +1053,37 @@ async function trackVisit() {
 window.addEventListener('popstate', function(event) {
     if (activeModal === 'order') closeModal(true);
 });
+
+
+// ==================== HODISALAR (inline onclick o'rniga: qat'iy CSP) ====================
+document.addEventListener('click', function(e) {
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    const v = el.getAttribute('data-v');
+    switch (el.getAttribute('data-act')) {
+        case 'banner-prev': slideBanner(-1); break;
+        case 'banner-next': slideBanner(1); break;
+        case 'banner-go': goToBanner(parseInt(v, 10)); break;
+        case 'category': setCategory(v); break;
+        case 'search-clear': clearSearch(); break;
+        case 'slide-prev': slideImage(-1); break;
+        case 'slide-next': slideImage(1); break;
+        case 'close-modal': closeModal(); break;
+        case 'load-more': loadMoreProducts(); break;
+    }
+});
+(function() {
+    const search = document.getElementById('search-input');
+    if (search) search.addEventListener('input', filterProducts);
+    const form = document.getElementById('order-form');
+    if (form) form.addEventListener('submit', submitOrder);
+    const logo = document.querySelector('.logo-img');
+    if (logo) {
+        const hide = () => { logo.style.display = 'none'; };
+        logo.addEventListener('error', hide);
+        if (logo.complete && logo.naturalWidth === 0) hide();
+    }
+})();
 
 
 // ==================== START ====================
