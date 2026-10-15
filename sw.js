@@ -2,7 +2,7 @@
    Muhim: HTML/JS/CSS uchun "network-first" — sayt yangilansa, ilova ham
    darhol yangi versiyani oladi (eski kesh muammosi bo'lmaydi).
    API (Railway) hech qachon keshlanmaydi — doim jonli ma'lumot. */
-const VERSION = 'v5';
+const VERSION = 'v6';
 const STATIC_CACHE = 'maximarket-static-' + VERSION;
 const APP_SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lock.js', '/manifest.json', '/icons/icon-512.png'];
 
@@ -37,7 +37,8 @@ self.addEventListener('fetch', (event) => {
 
   // O'z saytimizning HTML/JS/CSS/rasm — avval tarmoq, offline bo'lsa kesh
   event.respondWith(
-    fetch(req)
+    // no-cache: brauzer keshini ham serverdan tekshiradi (GitHub Pages 10 daqiqa eski faylni ushlab turmasin)
+    fetch(req, { cache: 'no-cache' })
       .then((res) => {
         if (res && res.status === 200 && res.type === 'basic') {
           const copy = res.clone();
