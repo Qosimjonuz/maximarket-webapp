@@ -10,7 +10,7 @@
         'moviy': ['Moviy', '#29b6f6'], 'yashil-och': ['Och yashil', '#66bb6a'], 'chegirma-1': ['Marjon', '#ff7043']
     };
     var $ = function (id) { return document.getElementById(id); };
-    var allProducts = [], product = null, idx = 0, size = '', color = '';
+    var openedAt = Date.now(), allProducts = [], product = null, idx = 0, size = '', color = '';
 
     function showMsg(html) { var m = $('msg'); m.innerHTML = html; m.classList.remove('hide'); }
     function imgUrl(u) { return !u ? '' : (/^https?:/.test(u) ? u : API_URL + '/api/image/' + encodeURIComponent(u)); }
@@ -159,6 +159,8 @@
         var btn = $('submit');
         btn.disabled = true; btn.textContent = 'Yuborilmoqda...';
         post('/api/public_order', {
+            hp: $('hp').value,
+            t: Date.now() - openedAt,
             product_id: String(product.id),
             product_title: product.title,
             price: product.discount_price || product.price || 0,

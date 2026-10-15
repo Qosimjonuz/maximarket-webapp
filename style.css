@@ -1357,3 +1357,6 @@ html.mm-locked, html.mm-locked body { overflow: hidden; }
 .modal-feed { margin-top: 24px; padding-top: 16px; border-top: 8px solid #f1f3f8; }
 .modal-feed-title { font-size: 17px; font-weight: 800; color: #1565c0; margin-bottom: 4px; }
 .modal-feed-end { height: 1px; }
+
+/* Botlar uchun yashirin maydon (odamga ko'rinmaydi) */
+.hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }

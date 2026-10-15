@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1565c0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'self'; form-action 'self'">
 
     <!-- PWA (Android ilova) -->
     <link rel="manifest" href="/manifest.json">
@@ -49,21 +49,11 @@
     <link rel="preconnect" href="https://maximarketbot-production.up.railway.app" crossorigin>
     <link rel="dns-prefetch" href="https://maximarketbot-production.up.railway.app">
     <link rel="preload" href="https://telegram.org/js/telegram-web-app.js" as="script">
-    <link rel="preload" href="style.css?v=20261016" as="style">
+    <link rel="preload" href="style.css?v=20261017" as="style">
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-      // Ilova rejimini erta aniqlash: qulf/ochilish ekrani sahifa ko'rinishidan oldin chiqishi uchun
-      (function () {
-        try {
-          var app = window.matchMedia('(display-mode: standalone)').matches
-            || window.navigator.standalone === true
-            || (document.referrer || '').indexOf('android-app://') === 0;
-          if (app) document.documentElement.classList.add('is-app', 'mm-locked');
-        } catch (e) {}
-      })();
-    </script>
-    <link rel="stylesheet" href="style.css?v=20261016">
+    <script src="early.js?v=20261017"></script>
+    <link rel="stylesheet" href="style.css?v=20261017">
 </head>
 <body>
     <!-- ILOVA QULFI: ochilish ekrani + PIN-kod (faqat ilova rejimida) -->
@@ -94,7 +84,7 @@
     </div>
     <header class="app-header">
         <div class="header-left">
-            <img src="https://i.ibb.co/9k8t621d/IMG-20260916-104211-663.jpg" alt="MaxiMarket" class="logo-img" width="38" height="38" onerror="this.style.display='none'">
+            <img src="https://i.ibb.co/9k8t621d/IMG-20260916-104211-663.jpg" alt="MaxiMarket" class="logo-img" width="38" height="38">
             <span class="brand-text">
                 <span class="brand-maxi">Maxi</span><span class="brand-market">Market</span>
             </span>
@@ -103,15 +93,15 @@
 
     <div class="banner-carousel" id="banner-carousel">
         <div class="banner-slide" id="banner-slide"></div>
-        <button class="banner-nav prev" onclick="slideBanner(-1)">‹</button>
-        <button class="banner-nav next" onclick="slideBanner(1)">›</button>
+        <button class="banner-nav prev" data-act="banner-prev">‹</button>
+        <button class="banner-nav next" data-act="banner-next">›</button>
         <div class="banner-dots" id="banner-dots"></div>
     </div>
 
     <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="Mahsulot qidirish..." oninput="filterProducts()">
-        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none;">✕</button>
+        <input type="text" id="search-input" placeholder="Mahsulot qidirish...">
+        <button class="search-clear" id="search-clear" data-act="search-clear" style="display:none;">✕</button>
     </div>
 
     <div class="categories-scroll" id="categories-scroll"></div>
@@ -122,7 +112,7 @@
     <div id="order-modal" class="modal-overlay">
         <div class="order-modal-content">
             <div class="order-modal-body">
-                <form id="order-form" onsubmit="submitOrder(event)">
+                <form id="order-form">
                     <div class="countdown-block">
                         <p class="countdown-label">⏰ Aksiya tugashiga:</p>
                         <div class="countdown">
@@ -132,6 +122,8 @@
                             <div><span id="cd-seconds">00</span><small>SONIYA</small></div>
                         </div>
                     </div>
+
+                    <input type="text" id="order-hp" class="hp-field" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
                     <label class="form-label">To'liq ismi sharif *</label>
                     <input type="text" id="order-name" placeholder="To'liq ismi sharif" required minlength="4">
@@ -159,9 +151,9 @@
                             <img id="modal-image" src="" alt="Mahsulot rasmi" decoding="async">
                         </div>
                         <div class="slider-controls">
-                            <button type="button" class="slider-btn prev" onclick="slideImage(-1)">‹</button>
+                            <button type="button" class="slider-btn prev" data-act="slide-prev">‹</button>
                             <div class="slider-dots" id="slider-dots"></div>
-                            <button type="button" class="slider-btn next" onclick="slideImage(1)">›</button>
+                            <button type="button" class="slider-btn next" data-act="slide-next">›</button>
                         </div>
                     </div>
 
@@ -197,7 +189,7 @@
             </div>
 
             <div class="order-bottom-menu">
-                <button type="button" onclick="closeModal()">
+                <button type="button" data-act="close-modal">
                     <span class="bottom-icon">🏠</span>
                     <span class="bottom-label">Bosh sahifa</span>
                 </button>
@@ -205,15 +197,8 @@
         </div>
     </div>
 
-    <script src="app.js?v=20261016"></script>
-    <script src="lock.js?v=20261016"></script>
-    <script>
-      // PWA service worker — ilovani o'rnatiladigan va offline ishlaydigan qiladi
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js').catch(function () {});
-        });
-      }
-    </script>
+    <script src="app.js?v=20261017"></script>
+    <script src="lock.js?v=20261017"></script>
+    <script src="sw-register.js?v=20261017"></script>
 </body>
 </html>
