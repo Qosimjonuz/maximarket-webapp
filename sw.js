@@ -2,7 +2,7 @@
    Muhim: HTML/JS/CSS uchun "network-first" — sayt yangilansa, ilova ham
    darhol yangi versiyani oladi (eski kesh muammosi bo'lmaydi).
    API (Railway) hech qachon keshlanmaydi — doim jonli ma'lumot. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const STATIC_CACHE = 'maximarket-static-' + VERSION;
 const APP_SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lock.js', '/manifest.json', '/icons/icon-512.png'];
 
@@ -32,7 +32,8 @@ self.addEventListener('fetch', (event) => {
 
   // Bosh sahifa har xil havola bilan (?p=, utm, fbclid) ochilishi mumkin: hammasi bitta kesh yozuvi
   const isHome = url.pathname === '/' || url.pathname === '/index.html';
-  const key = isHome ? '/index.html' : req;
+  const isProduct = url.pathname === '/product/' || url.pathname === '/product/index.html';
+  const key = isHome ? '/index.html' : isProduct ? '/product/' : req;
 
   // O'z saytimizning HTML/JS/CSS/rasm — avval tarmoq, offline bo'lsa kesh
   event.respondWith(
