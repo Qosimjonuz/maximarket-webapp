@@ -6,7 +6,8 @@ Backend/bot alohida repoda: `Qosimjonuz/MaxiMarketBot` (Railway, MongoDB Atlas).
 ## Kontekstni tez olish (token tejash)
 Loyiha haqida batafsil bilim Keragli xotirasida ("Internet magazin" ish maydoni). Fayllarni o'qishdan oldin shuni chaqir:
 
-`recall(query="<mavzu>", profile="audit", k=2, render="compact", include_turns=true, token_budget=1500)`
+`recall(query="<mavzu>", repository_id="Qosimjonuz/maximarket-webapp", profile="audit", k=2, render="compact", include_turns=true, token_budget=1500)`
+(`repository_id` shart: Keragli ish maydonida 2 ta repo bor. `remember` ga ham shuni ber.)
 
 Mavzu kalit so'zlari: BOSHLASH, ARXITEKTURA, API ENDPOINTLAR, MONGODB SXEMASI, SAYT TUZILMASI, ISH TARTIBI, FOYDALANUVCHI QOIDALARI, VOQEALAR JURNALI, SIRLAR QAYERDA, GOOGLE PLAY HOLATI, TEZKOR ID.
 Yangi muhim bilim paydo bo'lsa, `remember` bilan bitta aniq gap qilib saqla (parolsiz).
