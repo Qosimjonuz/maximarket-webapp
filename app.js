@@ -411,10 +411,30 @@ async function loadProducts() {
         shuffleProducts();
         resetLoadMore();
         renderProducts();
+        openProductFromUrl();
     } catch (error) {
         container.innerHTML = '<p class="loading">❌ Xatolik. Qayta urinib ko\'ring.</p>';
     }
 }
+
+// ==================== MAHSULOT HAVOLASI (reklama uchun) ====================
+// maxi-market.uz/?p=<mahsulot id> havolasi shu mahsulot oynasini darrov ochadi.
+// Id faqat 24 belgili hex bo'lsa va mahsulot ro'yxatda bo'lsa ishlaydi, aks holda oddiy bosh sahifa.
+let deepLinkHandled = false;
+function getDeepLinkProductId() {
+    try {
+        const id = new URLSearchParams(location.search).get('p');
+        return id && /^[0-9a-fA-F]{24}$/.test(id) ? id : null;
+    } catch (e) { return null; }
+}
+function openProductFromUrl() {
+    if (deepLinkHandled) return;
+    deepLinkHandled = true;
+    const id = getDeepLinkProductId();
+    if (!id || !products.some(p => String(p.id) === id)) return;
+    openModal(id);
+}
+// ==================== / MAHSULOT HAVOLASI ====================
 
 function buildSkeleton(count) {
     let html = '<div class="products-grid-skeleton">';

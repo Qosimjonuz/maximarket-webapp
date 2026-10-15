@@ -2,7 +2,7 @@
    Muhim: HTML/JS/CSS uchun "network-first" — sayt yangilansa, ilova ham
    darhol yangi versiyani oladi (eski kesh muammosi bo'lmaydi).
    API (Railway) hech qachon keshlanmaydi — doim jonli ma'lumot. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC_CACHE = 'maximarket-static-' + VERSION;
 const APP_SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lock.js', '/manifest.json', '/icons/icon-512.png'];
 
@@ -30,16 +30,20 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) return;
 
+  // Bosh sahifa har xil havola bilan (?p=, utm, fbclid) ochilishi mumkin: hammasi bitta kesh yozuvi
+  const isHome = url.pathname === '/' || url.pathname === '/index.html';
+  const key = isHome ? '/index.html' : req;
+
   // O'z saytimizning HTML/JS/CSS/rasm — avval tarmoq, offline bo'lsa kesh
   event.respondWith(
     fetch(req)
       .then((res) => {
         if (res && res.status === 200 && res.type === 'basic') {
           const copy = res.clone();
-          caches.open(STATIC_CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          caches.open(STATIC_CACHE).then((c) => c.put(key, copy)).catch(() => {});
         }
         return res;
       })
-      .catch(() => caches.match(req).then((c) => c || caches.match('/index.html')))
+      .catch(() => caches.match(key).then((c) => c || caches.match('/index.html')))
   );
 });
