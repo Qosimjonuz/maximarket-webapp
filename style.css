@@ -1351,3 +1351,8 @@ html.mm-locked, html.mm-locked body { overflow: hidden; }
     .lock-pad { gap: 10px 24px; }
     .lock-pad button { width: 64px; height: 64px; }
 }
+
+/* Buyurtma oynasi pastidagi cheksiz mahsulotlar lentasi */
+.modal-feed { margin-top: 24px; padding-top: 16px; border-top: 8px solid #f1f3f8; }
+.modal-feed-title { font-size: 17px; font-weight: 800; color: #1565c0; margin-bottom: 4px; }
+.modal-feed-end { height: 1px; }
