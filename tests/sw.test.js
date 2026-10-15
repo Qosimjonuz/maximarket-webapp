@@ -43,6 +43,12 @@ async function hit(env, url) {
     await hit(env, 'https://maxi-market.uz/');
     await hit(env, 'https://maxi-market.uz/index.html?x=1');
     assert.deepStrictEqual(env.puts, ['/index.html', '/index.html', '/index.html', '/index.html']);
+    // Mahsulot sahifasi har xil id bilan: bitta kalit
+    const n = env.puts.length;
+    await hit(env, 'https://maxi-market.uz/product/?id=6aad3ebbb7f7070cc1d36aa4&fbclid=Z');
+    await hit(env, 'https://maxi-market.uz/product/?id=6ab89823f3e05e6e07df8444');
+    assert.deepStrictEqual(env.puts.slice(n), ['/product/', '/product/']);
+    env.puts.length = 4;
     // Boshqa fayllar o'z manzili bilan keshlanadi
     await hit(env, 'https://maxi-market.uz/privacy.html');
     await hit(env, 'https://maxi-market.uz/app.js');

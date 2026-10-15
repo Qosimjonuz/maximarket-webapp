@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1565c0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'self'; form-action 'self'">
+<title>Mahsulot — MaxiMarket</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/jpeg" href="https://i.ibb.co/9k8t621d/IMG-20260916-104211-663.jpg">
+<link rel="preconnect" href="https://maximarketbot-production.up.railway.app" crossorigin>
+<link rel="preconnect" href="https://i.ibb.co" crossorigin>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f6fb;color:#1c1e21;padding-bottom:84px}
+.top{position:sticky;top:0;z-index:5;background:#1565c0;color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px}
+.top a{color:#fff;text-decoration:none;font-weight:700;font-size:18px}
+.wrap{max-width:560px;margin:0 auto}
+.gal{position:relative;background:#fff;aspect-ratio:1/1;overflow:hidden}
+.gal img{width:100%;height:100%;object-fit:contain;display:block}
+.gal button{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:22px;cursor:pointer}
+.gal .prev{left:8px}.gal .next{right:8px}
+.dots{display:flex;justify-content:center;gap:6px;padding:8px 0;background:#fff}
+.dots span{width:8px;height:8px;border-radius:50%;background:#cfd6e4}.dots span.on{background:#1565c0}
+.card{background:#fff;margin-top:8px;padding:16px}
+.price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.new{font-size:28px;font-weight:800;color:#e53935}
+.old{text-decoration:line-through;color:#8a8d91}
+.badge{background:#e53935;color:#fff;border-radius:6px;padding:2px 8px;font-weight:700;font-size:14px}
+h1{font-size:19px;margin:10px 0 6px;line-height:1.3}
+.meta{color:#555;font-size:14px;display:flex;gap:16px;flex-wrap:wrap}
+.desc p{margin:6px 0;line-height:1.5}
+.opt{margin-top:12px}.opt b{display:block;margin-bottom:6px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts button{border:2px solid #d5dbe8;background:#fff;border-radius:10px;padding:8px 14px;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.opts button.sel{border-color:#1565c0;background:#e8f1fd}
+.dot{width:16px;height:16px;border-radius:50%;border:1px solid #bbb}
+label{display:block;margin:12px 0 4px;font-weight:600}
+input{width:100%;padding:13px;font-size:16px;border:1px solid #cfd6e4;border-radius:10px}
+.st{margin-top:10px;font-weight:600;min-height:20px}.st.err{color:#c62828}.st.ok{color:#2e7d32}
+.btn{width:100%;margin-top:12px;border:0;border-radius:12px;background:#2e7d32;color:#fff;font-size:18px;font-weight:700;padding:15px;cursor:pointer}
+.btn:disabled{opacity:.6}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:10px 16px;box-shadow:0 -2px 10px rgba(0,0,0,.12)}
+.bar .btn{margin:0;max-width:560px;display:block;margin-inline:auto}
+.msg{padding:60px 20px;text-align:center;color:#555}.msg a{color:#1565c0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="top"><a href="/" aria-label="Bosh sahifa">←</a><span>MaxiMarket</span></div>
+<div class="wrap">
+  <div id="msg" class="msg">Yuklanmoqda…</div>
+  <div id="page" class="hide">
+    <div class="gal"><img id="img" alt="Mahsulot rasmi" decoding="async"><button class="prev" id="prev" type="button" aria-label="Oldingi">‹</button><button class="next" id="next" type="button" aria-label="Keyingi">›</button></div>
+    <div class="dots" id="dots"></div>
+    <div class="card">
+      <div class="price"><span class="new"><span id="price"></span> so'm</span><span class="old" id="old"></span><span class="badge hide" id="badge"></span></div>
+      <h1 id="title"></h1>
+      <div class="meta"><span>📦 Omborda: <b id="stock">0</b> dona</span><span>✅ Sotilgan: <b id="sold">0</b> dona</span></div>
+    </div>
+    <div class="card desc" id="desc"></div>
+    <form class="card" id="form" autocomplete="on">
+      <h2 style="font-size:18px">Buyurtma berish</h2>
+      <div class="opt hide" id="sizeBox"><b>📏 O'lchamni tanlang:</b><div class="opts" id="sizes"></div></div>
+      <div class="opt hide" id="colorBox"><b>🎨 Rangni tanlang:</b><div class="opts" id="colors"></div></div>
+      <label for="name">To'liq ismi sharif *</label>
+      <input id="name" type="text" required minlength="4" maxlength="100" autocomplete="name" placeholder="To'liq ismi sharif">
+      <label for="phone">Telefon raqamingiz *</label>
+      <input id="phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="+998(__)-___-__-__">
+      <div class="st" id="status" role="status"></div>
+      <button class="btn" id="submit" type="submit">Tasdiqlash</button>
+      <p style="margin-top:12px;color:#555;font-size:14px">📦 O'zbekiston bo'ylab yetkazib beramiz | Qo'lingizga olgach to'lov qilasiz</p>
+    </form>
+  </div>
+</div>
+<div class="bar hide" id="bar"><button class="btn" id="goOrder" type="button">🛒 Buyurtma berish</button></div>
+<script src="product.js"></script>
+</body>
+</html>
