@@ -138,7 +138,7 @@ async function solveLoginChallenge() {
 
 // ==================== COLLAPSIBLE / FILTER ====================
 function toggleCollapsible(name) {
-  var h = document.querySelector('[onclick="toggleCollapsible(\'' + name + '\')"]');
+  var h = document.querySelector('[data-click="toggleCollapsible"][data-arg="' + name + '"]');
   var b = document.getElementById(name + '-body');
   if (b) b.classList.toggle('open');
   if (h) h.classList.toggle('open');
@@ -569,14 +569,14 @@ function renderPagination(containerId, current, total, callbackName) {
   if (!c) return;
   if (total <= 1) { c.innerHTML = ''; return; }
   var h = '';
-  if (current > 1) h += '<button onclick="' + callbackName + '(' + (current - 1) + ')">‹</button>';
+  if (current > 1) h += '<button data-click="' + callbackName + '" data-arg="' + (current - 1) + '">‹</button>';
   var start = Math.max(1, current - 2);
   var end = Math.min(total, start + 4);
   if (end - start < 4) start = Math.max(1, end - 4);
   for (var i = start; i <= end; i++) {
-    h += '<button class="' + (i === current ? 'active' : '') + '" onclick="' + callbackName + '(' + i + ')">' + i + '</button>';
+    h += '<button class="' + (i === current ? 'active' : '') + '" data-click="' + callbackName + '" data-arg="' + i + '">' + i + '</button>';
   }
-  if (current < total) h += '<button onclick="' + callbackName + '(' + (current + 1) + ')">›</button>';
+  if (current < total) h += '<button data-click="' + callbackName + '" data-arg="' + (current + 1) + '">›</button>';
   c.innerHTML = h;
 }
 
@@ -615,7 +615,7 @@ function renderProductsPage() {
 
     var itemClass = p.oqim_id ? 'has-oqim' : 'no-oqim';
 
-    h += '<div class="product-item ' + itemClass + '" onclick="openProductModal(\'' + p.id + '\')">';
+    h += '<div class="product-item ' + itemClass + '" data-click="openProductModal" data-arg="' + escapeHtml(String(p.id)) + '">';
     h += '<div class="product-item-info">';
     h += '<b>' + (globalNum) + '. ' + escapeHtml(p.title || '') + '</b>';
     h += '<small>💰 ' + (p.discount_price || 0).toLocaleString() + " so'm | <span style='color:" + stockColor + ";font-weight:700'>📦 " + (p.stock || 0) + '</span> | 👁 ' + (p.views || 0) + ' | ✅ ' + (p.sold || 0) + '</small>';
@@ -623,7 +623,7 @@ function renderProductsPage() {
     h += ch;
     h += oqimBadge;
     h += '</div>';
-    h += '<div class="btn-row" onclick="event.stopPropagation()">';
+    h += '<div class="btn-row" data-stop="1">';
     h += '<button class="success small" data-edit="' + p.id + '">✏️</button>';
     h += '<button class="danger small" data-del="' + p.id + '">🗑</button>';
     h += '</div></div>';
@@ -699,7 +699,7 @@ async function loadLowStock() {
     var h = '';
     d.products.forEach(function (p, idx) {
       var num = s + idx + 1;
-      h += '<div class="low-stock-item" onclick="openProductModal(\'' + p.id + '\')">';
+      h += '<div class="low-stock-item" data-click="openProductModal" data-arg="' + escapeHtml(String(p.id)) + '">';
       h += '<div class="low-stock-item-info">';
       h += '<div class="low-stock-item-title">' + num + '. ' + escapeHtml(p.title || '') + '</div>';
       h += '<div class="low-stock-item-stock">📦 ' + p.stock + ' dona</div>';

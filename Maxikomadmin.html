@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>MaxiMarket — Admin Panel</title>
 <style>
 *{box-sizing:border-box}
@@ -281,10 +281,10 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <label>📂 Kategoriyalar (2 tagacha)</label>
       <div class="grid-2" id="categories-grid"></div>
 
-      <div class="collapsible-header" onclick="toggleCollapsible('sizes')"><span>📏 O'lchamlar</span><span class="arrow" id="sizes-arrow">▼</span></div>
+      <div class="collapsible-header" data-click="toggleCollapsible" data-arg="sizes"><span>📏 O'lchamlar</span><span class="arrow" id="sizes-arrow">▼</span></div>
       <div class="collapsible-body" id="sizes-body"><div class="grid-3" id="sizes-grid"></div></div>
 
-      <div class="collapsible-header" onclick="toggleCollapsible('colors')"><span>🎨 Ranglar (10 tagacha)</span><span class="arrow" id="colors-arrow">▼</span></div>
+      <div class="collapsible-header" data-click="toggleCollapsible" data-arg="colors"><span>🎨 Ranglar (10 tagacha)</span><span class="arrow" id="colors-arrow">▼</span></div>
       <div class="collapsible-body" id="colors-body"><div class="grid-4" id="colors-grid"></div></div>
 
       <label>📷 Rasmlar (4 tagacha)</label>
@@ -322,17 +322,17 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 
       <div class="products-search">
         <span class="products-search-icon">🔍</span>
-        <input type="text" id="products-search-input" placeholder="Mahsulot qidirish..." oninput="searchProducts()">
-        <button class="products-search-clear" id="products-search-clear" onclick="clearProductsSearch()" style="display:none">✕</button>
+        <input type="text" id="products-search-input" placeholder="Mahsulot qidirish..." data-input="searchProducts">
+        <button class="products-search-clear" id="products-search-clear" data-click="clearProductsSearch" style="display:none">✕</button>
       </div>
 
       <div class="orders-tabs">
-        <button class="orders-tab active" data-oqim="all" onclick="switchOqimFilter('all')">🌐 Barchasi</button>
-        <button class="orders-tab" data-oqim="has" onclick="switchOqimFilter('has')">✅ Oqim bor</button>
-        <button class="orders-tab" data-oqim="no" onclick="switchOqimFilter('no')">❌ Oqim yo'q</button>
+        <button class="orders-tab active" data-oqim="all" data-click="switchOqimFilter" data-arg="all">🌐 Barchasi</button>
+        <button class="orders-tab" data-oqim="has" data-click="switchOqimFilter" data-arg="has">✅ Oqim bor</button>
+        <button class="orders-tab" data-oqim="no" data-click="switchOqimFilter" data-arg="no">❌ Oqim yo'q</button>
       </div>
 
-      <div class="filter-header" id="filter-header" onclick="toggleFilter()">
+      <div class="filter-header" id="filter-header" data-click="toggleFilter">
         <span>📂 Kategoriya filtri</span>
         <span class="arrow" id="filter-arrow" style="font-size:11px;color:#1565c0">▼</span>
       </div>
@@ -360,22 +360,22 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <h2>📊 Sotuv statistikasi</h2>
       <div class="info-note" id="stats-info">ℹ️ Statistika <b id="stats-start-date">-</b> dan boshlab</div>
       <div class="stats-grid">
-        <div class="stat-card" onclick="openSalesList('today')">
+        <div class="stat-card" data-click="openSalesList" data-arg="today">
           <div class="stat-card-label">📅 Bugun</div>
           <div class="stat-card-value" id="s-today-sum">0</div>
           <div class="stat-card-count" id="s-today-count">0 buyurtma</div>
         </div>
-        <div class="stat-card green" onclick="openSalesList('week')">
+        <div class="stat-card green" data-click="openSalesList" data-arg="week">
           <div class="stat-card-label">📆 Bu hafta</div>
           <div class="stat-card-value" id="s-week-sum">0</div>
           <div class="stat-card-count" id="s-week-count">0 buyurtma</div>
         </div>
-        <div class="stat-card orange" onclick="openSalesList('month')">
+        <div class="stat-card orange" data-click="openSalesList" data-arg="month">
           <div class="stat-card-label">🗓 Bu oy</div>
           <div class="stat-card-value" id="s-month-sum">0</div>
           <div class="stat-card-count" id="s-month-count">0 buyurtma</div>
         </div>
-        <div class="stat-card purple" onclick="openSalesList('year')">
+        <div class="stat-card purple" data-click="openSalesList" data-arg="year">
           <div class="stat-card-label">📅 Bu yil</div>
           <div class="stat-card-value" id="s-year-sum">0</div>
           <div class="stat-card-count" id="s-year-count">0 buyurtma</div>
@@ -392,11 +392,11 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     <div class="section">
       <h2>🔄 Statistikani qayta boshlash</h2>
       <div class="warn-note">⚠️ <b>Sotuv statistikasi</b> — Bugun, Hafta, Oy, Yil va Jami barcha raqamlar 0 dan boshlanadi.</div>
-      <button class="danger" onclick="resetSalesStats()">🔄 Sotuv statistikasini qayta boshlash</button>
+      <button class="danger" data-click="resetSalesStats">🔄 Sotuv statistikasini qayta boshlash</button>
 
       <h2 style="margin-top:20px">🗑 Zakaslar ro'yxatini tozalash</h2>
       <div class="warn-note">⚠️ <b>Zakaslar ro'yxati</b> — barcha zakaslar ro'yxatdan o'chiriladi. Sotuv statistikasi saqlanadi.</div>
-      <button class="warning" onclick="clearOrdersHistory()">🗑 Zakaslar ro'yxatini tozalash</button>
+      <button class="warning" data-click="clearOrdersHistory">🗑 Zakaslar ro'yxatini tozalash</button>
     </div>
 
     <div class="section">
@@ -416,22 +416,22 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     <div class="section">
       <h2>🛒 Zakaslar ro'yxati</h2>
       <div class="orders-tabs">
-        <button class="orders-tab active" data-period="today" onclick="switchOrdersPeriod('today')">📅 Bugun</button>
-        <button class="orders-tab" data-period="week" onclick="switchOrdersPeriod('week')">📆 Hafta</button>
-        <button class="orders-tab" data-period="month" onclick="switchOrdersPeriod('month')">🗓 Oy</button>
-        <button class="orders-tab" data-period="year" onclick="switchOrdersPeriod('year')">📅 Yil</button>
+        <button class="orders-tab active" data-period="today" data-click="switchOrdersPeriod" data-arg="today">📅 Bugun</button>
+        <button class="orders-tab" data-period="week" data-click="switchOrdersPeriod" data-arg="week">📆 Hafta</button>
+        <button class="orders-tab" data-period="month" data-click="switchOrdersPeriod" data-arg="month">🗓 Oy</button>
+        <button class="orders-tab" data-period="year" data-click="switchOrdersPeriod" data-arg="year">📅 Yil</button>
       </div>
       <div class="orders-tabs">
-        <button class="orders-tab active" data-source="all" onclick="switchOrdersSource('all')">🌐 Barchasi</button>
-        <button class="orders-tab" data-source="telegram" onclick="switchOrdersSource('telegram')">🤖 Bot</button>
-        <button class="orders-tab" data-source="browser" onclick="switchOrdersSource('browser')">🌐 Brauzer</button>
+        <button class="orders-tab active" data-source="all" data-click="switchOrdersSource" data-arg="all">🌐 Barchasi</button>
+        <button class="orders-tab" data-source="telegram" data-click="switchOrdersSource" data-arg="telegram">🤖 Bot</button>
+        <button class="orders-tab" data-source="browser" data-click="switchOrdersSource" data-arg="browser">🌐 Brauzer</button>
       </div>
       <label>📅 Sana tanlash (kalendar)</label>
-      <input type="date" id="orders-date-picker" onchange="onDatePick()" style="margin-bottom:8px">
+      <input type="date" id="orders-date-picker" data-change="onDatePick" style="margin-bottom:8px">
       <div class="products-search">
         <span class="products-search-icon">🔍</span>
-        <input type="text" id="orders-search-input" placeholder="Ism, telefon, mahsulot..." oninput="searchOrdersDebounced()">
-        <button class="products-search-clear" id="orders-search-clear" onclick="clearOrdersSearch()" style="display:none">✕</button>
+        <input type="text" id="orders-search-input" placeholder="Ism, telefon, mahsulot..." data-input="searchOrdersDebounced">
+        <button class="products-search-clear" id="orders-search-clear" data-click="clearOrdersSearch" style="display:none">✕</button>
       </div>
       <div class="orders-summary">
         <div>
@@ -463,16 +463,16 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <h2>📢 Obunachilarga xabar</h2>
       <div class="products-search" style="margin-bottom:8px">
         <span class="products-search-icon">🔍</span>
-        <input type="text" id="user-search-input" placeholder="Ism, username yoki ID..." oninput="searchUsersDebounced()">
-        <button class="products-search-clear" id="user-search-clear" onclick="clearUserSearch()" style="display:none">✕</button>
+        <input type="text" id="user-search-input" placeholder="Ism, username yoki ID..." data-input="searchUsersDebounced">
+        <button class="products-search-clear" id="user-search-clear" data-click="clearUserSearch" style="display:none">✕</button>
       </div>
       <div class="user-actions">
-        <button class="small" onclick="loadUsers()">🔄 Yuklash</button>
-        <button class="small success" onclick="selectAllVisibleUsers()">✅ Ko'ringanlarni</button>
-        <button class="small danger" onclick="deselectAllUsers()">❌ Tozalash</button>
+        <button class="small" data-click="loadUsers">🔄 Yuklash</button>
+        <button class="small success" data-click="selectAllVisibleUsers">✅ Ko'ringanlarni</button>
+        <button class="small danger" data-click="deselectAllUsers">❌ Tozalash</button>
       </div>
       <div class="user-actions">
-        <button class="small" onclick="toggleUsersList()" id="toggle-users-btn">🔼 Ro'yxatni yopish</button>
+        <button class="small" data-click="toggleUsersList" id="toggle-users-btn">🔼 Ro'yxatni yopish</button>
       </div>
       <div style="font-size:12px;font-weight:700;color:#1565c0;text-align:center;margin:6px 0" id="users-count-info">0 ta obunachi tanlangan</div>
       <div id="users-list-container" style="max-height:500px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
@@ -482,8 +482,8 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div class="message-box">
         <label>Xabar matni</label>
         <textarea id="broadcast-message" placeholder="Xabar matnini kiriting..."></textarea>
-        <label class="send-all-label"><input type="checkbox" id="send-all-check" onchange="updateUsersCountInfo()"> Barcha obunachilarga yuborish</label>
-        <button id="send-message-btn" class="success" onclick="sendMessage()">📤 Yuborish</button>
+        <label class="send-all-label"><input type="checkbox" id="send-all-check" data-change="updateUsersCountInfo"> Barcha obunachilarga yuborish</label>
+        <button id="send-message-btn" class="success" data-click="sendMessage">📤 Yuborish</button>
         <div id="send-status" class="status"></div>
         <div class="broadcast-progress hidden" id="broadcast-progress"><div class="broadcast-progress-bar" id="broadcast-progress-bar"></div></div>
       </div>
@@ -495,15 +495,15 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav hidden" id="bottom-nav">
-  <button class="active" data-page="add" onclick="switchPage('add')"><span class="bottom-icon">➕</span><span>Qo'shish</span></button>
-  <button data-page="list" onclick="switchPage('list')"><span class="bottom-icon">📦</span><span>Mahsulotlar</span></button>
-  <button data-page="stats" onclick="switchPage('stats')"><span class="bottom-icon">📊</span><span>Statistika</span></button>
+  <button class="active" data-page="add" data-click="switchPage" data-arg="add"><span class="bottom-icon">➕</span><span>Qo'shish</span></button>
+  <button data-page="list" data-click="switchPage" data-arg="list"><span class="bottom-icon">📦</span><span>Mahsulotlar</span></button>
+  <button data-page="stats" data-click="switchPage" data-arg="stats"><span class="bottom-icon">📊</span><span>Statistika</span></button>
 </div>
 
 <!-- MAHSULOT MODAL -->
 <div id="product-modal" class="modal-overlay">
   <div class="product-modal-content">
-    <button class="modal-close-btn" onclick="closeProductModal()">✕</button>
+    <button class="modal-close-btn" data-click="closeProductModal">✕</button>
     <img id="pm-image" class="product-modal-image" src="" alt="">
     <div class="product-modal-body">
       <h3 id="pm-title" class="product-modal-title"></h3>
@@ -531,8 +531,8 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div id="pm-sizes"></div>
       <div class="product-modal-desc" id="pm-desc"></div>
       <div class="btn-row" style="margin-top:12px">
-        <button class="success small" style="flex:1" onclick="editFromModal()">✏️ Tahrirlash</button>
-        <button class="danger small" style="flex:1" onclick="deleteFromModal()">🗑 O'chirish</button>
+        <button class="success small" style="flex:1" data-click="editFromModal">✏️ Tahrirlash</button>
+        <button class="danger small" style="flex:1" data-click="deleteFromModal">🗑 O'chirish</button>
       </div>
     </div>
   </div>
@@ -541,7 +541,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 <!-- SOTUV RO'YXATI MODAL -->
 <div id="sales-list-modal" class="modal-overlay">
   <div class="product-modal-content">
-    <button class="modal-close-btn" onclick="closeSalesModal()">✕</button>
+    <button class="modal-close-btn" data-click="closeSalesModal">✕</button>
     <div class="product-modal-body">
       <h3 id="sm-title" class="product-modal-title">📊 Sotuv ro'yxati</h3>
       <div id="sm-list">⏳ Yuklanmoqda...</div>
@@ -550,6 +550,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-app.js"></script>
+<script src="admin-events.js?v=20261018"></script>
+<script src="admin-app.js?v=20261018"></script>
 </body>
 </html>
