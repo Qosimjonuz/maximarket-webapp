@@ -1325,7 +1325,7 @@ function renderHelpers(d) {
     d.ai && d.ai.configured ? '✅ Ishlayapti: savollarga javob beradi, muammoli holatda operatorga uzatadi'
       : '❌ AI kaliti yo\'q (Railway: ANTHROPIC_API_KEY)');
   if (cb.running) {
-    h += connCard('🎬', 'Kontentchi bot', true, '✅ Ishlayapti: @' + escapeHtml(cb.username || '') + ' botiga /start yuboring');
+    h += connCard('🎬', 'Kontentchi bot', true, '✅ Ishlayapti: @' + escapeHtml(cb.username || '') + ' — /start bosing, hamma vazifalar tugmalarda');
   } else {
     h += connCard('🎬', 'Kontentchi bot', false,
       cb.configured ? '⚠️ Token qo\'yilgan, lekin bot ishga tushmadi. Tokenni tekshiring va qayta Deploy qiling.'
@@ -1358,10 +1358,54 @@ async function loadConnections() {
     if (!d.success) throw new Error(d.error || 'Xatolik');
     renderSocial(d);
     renderHelpers(d);
+    renderTargets(d.targets || {});
+    renderRecent(d.recent || []);
   } catch (e) {
     document.getElementById('conn-social').innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
     document.getElementById('conn-helpers').innerHTML = '';
   }
+}
+
+var TARGET_NAMES = { instagram: '📸 Instagram (video)', tiktok: '🎵 TikTok (video)', youtube: '▶️ YouTube Shorts (video)', facebook: '📘 Facebook (video)', telegram: '📢 Telegram kanal (muqova rasm)' };
+
+function renderTargets(t) {
+  var h = '';
+  Object.keys(TARGET_NAMES).forEach(function (k) {
+    h += '<label class="target-row"><input type="checkbox" class="target-check" value="' + k + '"' + (t[k] !== false ? ' checked' : '') + '> ' + TARGET_NAMES[k] + '</label>';
+  });
+  document.getElementById('conn-targets').innerHTML = h;
+}
+
+function renderRecent(list) {
+  var box = document.getElementById('conn-recent');
+  if (!list.length) { box.innerHTML = '<div class="empty-result">Hali kontent yo\'q. Kontentchi botda 🎬 Yangi kontent bosing.</div>'; return; }
+  var names = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', facebook: 'Facebook', telegram: 'Telegram' };
+  box.innerHTML = list.map(function (d) {
+    var res = Object.keys(d.results || {}).map(function (k) {
+      var r = d.results[k], nm = names[k] || k;
+      if (!r.ok) return '❌ ' + nm;
+      return r.url && /^https:\/\//.test(r.url) ? '<a href="' + escapeHtml(r.url) + '" target="_blank" rel="noopener noreferrer">✅ ' + nm + '</a>' : '✅ ' + nm;
+    }).join(' ');
+    return '<div class="recent-item"><b>' + escapeHtml(d.title) + '</b><small>' + escapeHtml(d.date) + ' · ' + escapeHtml(d.status) + '</small>' + (res ? '<div>' + res + '</div>' : '') + '</div>';
+  }).join('');
+}
+
+async function saveTargets() {
+  var st = document.getElementById('targets-status');
+  var targets = {};
+  document.querySelectorAll('.target-check').forEach(function (cb) { targets[cb.value] = cb.checked; });
+  st.className = 'status ok'; st.innerText = '⏳ Saqlanmoqda...';
+  try {
+    var r = await fetch(API_URL + '/api/content/targets', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, targets: targets })
+    });
+    if (r.status === 401) { handleAuthError(); return; }
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Xatolik');
+    renderTargets(d.targets);
+    st.className = 'status ok'; st.innerText = '✅ Saqlandi';
+  } catch (e) { st.className = 'status err'; st.innerText = '❌ ' + e.message; }
 }
 
 async function connectPlatform(platform) {
