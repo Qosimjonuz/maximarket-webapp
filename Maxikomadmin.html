@@ -230,6 +230,17 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     .product-modal-content { max-width: 700px; }
     .product-modal-image { height: 400px; }
 }
+/* Ulanishlar */
+.conn-card{display:flex;align-items:center;gap:10px;border:1.5px solid #e0e0e0;border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff}
+.conn-card.ok{border-color:#a5d6a7;background:#f1f8e9}
+.conn-icon{font-size:22px;width:32px;text-align:center;flex-shrink:0}
+.conn-body{flex:1;min-width:0}
+.conn-title{font-weight:700;font-size:14px}
+.conn-state{font-size:12px;color:#666;margin-top:2px;word-break:break-word}
+.conn-card.ok .conn-state{color:#2e7d32}
+.conn-card button{width:auto;margin:0;padding:8px 14px;font-size:12px;flex-shrink:0}
+.conn-steps{font-size:12px;line-height:1.6;color:#444;margin:6px 0 0 18px;padding:0}
+.conn-help{font-size:12px;color:#555;line-height:1.5;margin:4px 0 8px}
 </style>
 </head>
 <body>
@@ -490,6 +501,24 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     </div>
   </div>
 
+  <!-- PAGE 4: ULANISHLAR -->
+  <div id="page-conn" class="page hidden">
+    <div class="section">
+      <h2>🔗 Ijtimoiy tarmoqlarni ulash</h2>
+      <p class="conn-help">Videolar va postlar shu tarmoqlarga avtomatik joylanishi, izoh va xabarlarga yordamchi javob berishi uchun har bir akkauntni bir marta ulang. "Ulash" tugmasi yangi oynada rasmiy kirish sahifasini ochadi: o'sha akkaunt bilan kiring va ruxsat bering, keyin shu yerga qaytib "🔄 Yangilash"ni bosing.</p>
+      <div id="conn-social">⏳ Yuklanmoqda...</div>
+      <div class="info-note">ℹ️ Instagram <b>Professional</b> (Biznes yoki Creator) akkaunt bo'lishi va Facebook sahifaga bog'langan bo'lishi kerak. YouTube uchun @MaxiMarketuz kanali turgan Google akkaunt bilan kiring. Havola bir martalik, uni hech kimga yubormang.</div>
+    </div>
+
+    <div class="section">
+      <h2>🤖 Yordamchilar</h2>
+      <p class="conn-help">Ikkita alohida bot ishlaydi: <b>asosiy bot</b> mijozlar bilan suhbatlashadi va buyurtma qabul qiladi, <b>Kontentchi bot</b> faqat siz uchun: ssenariy, video va post tayyorlaydi.</p>
+      <div id="conn-helpers">⏳ Yuklanmoqda...</div>
+    </div>
+
+    <button class="small" data-click="loadConnections">🔄 Yangilash</button>
+  </div>
+
   <button class="danger" id="logout-btn" style="margin-top:14px">🚪 Chiqish</button>
 </div>
 
@@ -498,6 +527,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   <button class="active" data-page="add" data-click="switchPage" data-arg="add"><span class="bottom-icon">➕</span><span>Qo'shish</span></button>
   <button data-page="list" data-click="switchPage" data-arg="list"><span class="bottom-icon">📦</span><span>Mahsulotlar</span></button>
   <button data-page="stats" data-click="switchPage" data-arg="stats"><span class="bottom-icon">📊</span><span>Statistika</span></button>
+  <button data-page="conn" data-click="switchPage" data-arg="conn"><span class="bottom-icon">🔗</span><span>Ulanishlar</span></button>
 </div>
 
 <!-- MAHSULOT MODAL -->
@@ -550,7 +580,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261018"></script>
-<script src="admin-app.js?v=20261018"></script>
+<script src="admin-events.js?v=20261019"></script>
+<script src="admin-app.js?v=20261019"></script>
 </body>
 </html>

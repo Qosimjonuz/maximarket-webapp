@@ -184,6 +184,7 @@ function switchPage(page) {
   });
   if (page === 'stats') { loadStats(); loadOrders(); loadUsers(); checkBroadcastStatus(); }
   if (page === 'list') { loadProducts(); loadLowStock(); }
+  if (page === 'conn') { loadConnections(); }
 }
 
 
@@ -1277,3 +1278,109 @@ window.addEventListener('DOMContentLoaded', function () {
   renderImageSlots();
   if (loadToken()) showPanel();
 });
+
+
+// ==================== ULANISHLAR ====================
+var PLATFORM_INFO = {
+  instagram: { icon: '📸', name: 'Instagram', hint: 'Reels, post, izoh va Direct xabarlar' },
+  tiktok: { icon: '🎵', name: 'TikTok', hint: 'Qisqa videolar' },
+  youtube: { icon: '▶️', name: 'YouTube', hint: 'Shorts va izohlar' },
+  facebook: { icon: '📘', name: 'Facebook', hint: 'Sahifa postlari va Messenger' }
+};
+
+function connCard(icon, title, ok, state, btnHtml) {
+  return '<div class="conn-card' + (ok ? ' ok' : '') + '"><div class="conn-icon">' + icon + '</div>' +
+    '<div class="conn-body"><div class="conn-title">' + escapeHtml(title) + '</div><div class="conn-state">' + state + '</div></div>' +
+    (btnHtml || '') + '</div>';
+}
+
+function renderSocial(d) {
+  var box = document.getElementById('conn-social');
+  var z = d.zernio || {};
+  if (!z.configured) {
+    box.innerHTML = connCard('⚙️', 'Zernio (ulash xizmati)', false,
+      'Sozlanmagan. Railway Variables\'ga ZERNIO_API_KEY qo\'shilishi kerak.');
+    return;
+  }
+  var h = '';
+  if (z.error) h += '<div class="info-note">⚠️ ' + escapeHtml(z.error) + '</div>';
+  (d.platforms || []).forEach(function (p) {
+    var info = PLATFORM_INFO[p];
+    if (!info) return;
+    var acc = (z.accounts || []).filter(function (a) { return a.platform === p; });
+    var ok = acc.length > 0 && acc.some(function (a) { return a.active; });
+    var state = acc.length
+      ? acc.map(function (a) { return (a.active ? '✅ ' : '⚠️ ') + escapeHtml(a.name || 'ulangan') + (a.active ? '' : ' (qayta ulang)'); }).join('<br>')
+      : '⚪ Ulanmagan · ' + escapeHtml(info.hint);
+    var btn = '<button class="small' + (ok ? '' : ' success') + '" data-click="connectPlatform" data-arg="' + p + '">' + (ok ? 'Qayta ulash' : 'Ulash') + '</button>';
+    h += connCard(info.icon, info.name, ok, state, btn);
+  });
+  box.innerHTML = h;
+}
+
+function renderHelpers(d) {
+  var cb = d.content_bot || {};
+  var h = '';
+  h += connCard('💬', 'Asosiy bot: mijozlar yordamchisi', !!(d.ai && d.ai.configured),
+    d.ai && d.ai.configured ? '✅ Ishlayapti: savollarga javob beradi, muammoli holatda operatorga uzatadi'
+      : '❌ AI kaliti yo\'q (Railway: ANTHROPIC_API_KEY)');
+  if (cb.running) {
+    h += connCard('🎬', 'Kontentchi bot', true, '✅ Ishlayapti: @' + escapeHtml(cb.username || '') + ' botiga /start yuboring');
+  } else {
+    h += connCard('🎬', 'Kontentchi bot', false,
+      cb.configured ? '⚠️ Token qo\'yilgan, lekin bot ishga tushmadi. Tokenni tekshiring va qayta Deploy qiling.'
+        : '⚪ Hali yaratilmagan. Hozircha video buyruqlari asosiy botda ishlaydi (/kontent).');
+    if (!cb.configured) {
+      h += '<ol class="conn-steps">' +
+        '<li>Telegram\'da <b>@BotFather</b> ga kiring va <b>/newbot</b> yuboring.</li>' +
+        '<li>Nom bering (masalan: MaxiMarket Kontent) va username (masalan: maximarket_kontent_bot).</li>' +
+        '<li>BotFather bergan tokenni nusxalang. Uni chatga yozmang.</li>' +
+        '<li>Railway → MaxiMarketBot → Variables → <b>CONTENT_BOT_TOKEN</b> nomi bilan qo\'shing va Deploy bosing.</li>' +
+        '<li>Yangi botni @maximarket_uz kanaliga administrator qiling (post joylash uchun).</li>' +
+        '</ol>';
+    }
+  }
+  h += connCard('🔊', 'Ovozli o\'qish (videoga ovoz)', !!(d.tts && d.tts.configured),
+    d.tts && d.tts.configured ? '✅ Ulangan' : '⚪ Ixtiyoriy. Ulanmasa video ovozsiz, yozuvlar bilan chiqadi.');
+  document.getElementById('conn-helpers').innerHTML = h;
+}
+
+async function loadConnections() {
+  document.getElementById('conn-social').innerHTML = '⏳ Yuklanmoqda...';
+  document.getElementById('conn-helpers').innerHTML = '⏳ Yuklanmoqda...';
+  try {
+    var r = await fetch(API_URL + '/api/integrations/status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken })
+    });
+    if (r.status === 401) { handleAuthError(); return; }
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Xatolik');
+    renderSocial(d);
+    renderHelpers(d);
+  } catch (e) {
+    document.getElementById('conn-social').innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
+    document.getElementById('conn-helpers').innerHTML = '';
+  }
+}
+
+async function connectPlatform(platform) {
+  if (!PLATFORM_INFO[platform]) return;
+  // Oynani bosish paytida darhol ochamiz, aks holda brauzer uni "popup" deb to'sadi
+  var w = window.open('', '_blank');
+  if (w) w.document.write('<p style="font-family:sans-serif;padding:20px">⏳ Ulash sahifasi ochilmoqda...</p>');
+  try {
+    var r = await fetch(API_URL + '/api/integrations/connect', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, platform: platform })
+    });
+    if (r.status === 401) { if (w) w.close(); handleAuthError(); return; }
+    var d = await r.json();
+    if (!d.success || !/^https:\/\//.test(d.url || '')) throw new Error(d.error || 'Havola kelmadi');
+    if (w) { w.opener = null; w.location.href = d.url; }
+    else { window.location.href = d.url; }
+  } catch (e) {
+    if (w) w.close();
+    alert('❌ ' + PLATFORM_INFO[platform].name + ' ulanmadi: ' + e.message);
+  }
+}
