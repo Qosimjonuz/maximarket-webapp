@@ -242,6 +242,10 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .conn-steps{font-size:12px;line-height:1.6;color:#444;margin:6px 0 0 18px;padding:0}
 .target-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #eee;font-size:14px;cursor:pointer}
 .target-row input{width:20px;height:20px;margin:0;flex-shrink:0}
+.team-item{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding:8px 2px;font-size:13px}
+.team-item div{flex:1;min-width:0}
+.team-item small{display:block;color:#777}
+.team-item button{width:auto;margin:0;padding:6px 10px;font-size:12px}
 .recent-item{border-bottom:1px solid #eee;padding:8px 2px;font-size:13px}
 .recent-item small{color:#777;display:block;margin-top:2px}
 .recent-item a{color:#1565c0;margin-right:8px}
@@ -535,6 +539,28 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     </div>
 
     <div class="section">
+      <h2>💬 Tarmoqlarda avtomatik javob</h2>
+      <p class="conn-help">Mijozlar yordamchisi ulangan tarmoqlardagi xabar va izohlarga har 2 daqiqada javob beradi. Murakkab holatda (shikoyat, buyurtma muammosi, telefon raqami) xabar operatorlarga Telegram orqali keladi. Javob berilmasin desangiz, belgini olib tashlang.</p>
+      <label class="target-row"><input type="checkbox" id="inbox-dm"> ✉️ Shaxsiy xabarlar (Instagram, Facebook Direct)</label>
+      <label class="target-row"><input type="checkbox" id="inbox-comments"> 💭 Izohlar (Instagram, Facebook, YouTube, TikTok)</label>
+      <button class="small success" data-click="saveInbox" id="save-inbox-btn">💾 Saqlash</button>
+      <div id="inbox-status" class="status"></div>
+    </div>
+
+    <div class="section">
+      <h2>👥 Jamoa</h2>
+      <p class="conn-help">Hodim Kontentchi botga (<b>@MaxiMarket_albot</b>) /start yuborsa, bot unga Telegram ID raqamini ko'rsatadi. Shu raqamni shu yerga kiriting va vazifasini belgilang. Asosiy botning admin paneli faqat sizda qoladi.</p>
+      <div id="team-list">⏳ Yuklanmoqda...</div>
+      <label>Telegram ID</label>
+      <input type="text" id="team-id" inputmode="numeric" placeholder="Masalan: 123456789" maxlength="15">
+      <label>Ismi</label>
+      <input type="text" id="team-name" placeholder="Masalan: Ali (video)" maxlength="60">
+      <div id="team-roles"></div>
+      <button class="small success" data-click="addTeamMember">➕ Qo'shish</button>
+      <div id="team-status" class="status"></div>
+    </div>
+
+    <div class="section">
       <h2>📋 Oxirgi kontentlar</h2>
       <div id="conn-recent">⏳ Yuklanmoqda...</div>
     </div>
@@ -615,7 +641,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261021"></script>
-<script src="admin-app.js?v=20261021"></script>
+<script src="admin-events.js?v=20261022"></script>
+<script src="admin-app.js?v=20261022"></script>
 </body>
 </html>

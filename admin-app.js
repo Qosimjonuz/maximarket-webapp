@@ -1360,6 +1360,8 @@ async function loadConnections() {
     renderSocial(d);
     renderHelpers(d);
     renderTargets(d.targets || {});
+    renderInbox(d.inbox || {});
+    renderTeam(d.team || [], d.roles || {});
     renderRecent(d.recent || []);
   } catch (e) {
     document.getElementById('conn-social').innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
@@ -1494,4 +1496,79 @@ async function saveKnowledge() {
     renderKnowledge(d);
     st.className = 'status ok'; st.innerText = '✅ Saqlandi. Botlar 1–5 daqiqada yangi ma\'lumotdan foydalanadi.';
   } catch (e) { st.className = 'status err'; st.innerText = '❌ ' + e.message; }
+}
+
+
+// ==================== AVTOMATIK JAVOB VA JAMOA ====================
+var teamRoles = {};
+
+function renderInbox(c) {
+  document.getElementById('inbox-dm').checked = c.dm !== false;
+  document.getElementById('inbox-comments').checked = c.comments !== false;
+}
+
+async function adminPost(path, body) {
+  body.token = adminToken;
+  var r = await fetch(API_URL + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (r.status === 401) { handleAuthError(); return null; }
+  var d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Xatolik');
+  return d;
+}
+
+function showStatus(id, ok, text) {
+  var st = document.getElementById(id);
+  st.className = 'status ' + (ok ? 'ok' : 'err');
+  st.innerText = text;
+}
+
+async function saveInbox() {
+  try {
+    var d = await adminPost('/api/inbox/settings', {
+      dm: document.getElementById('inbox-dm').checked,
+      comments: document.getElementById('inbox-comments').checked
+    });
+    if (!d) return;
+    renderInbox(d.inbox);
+    showStatus('inbox-status', true, '✅ Saqlandi');
+  } catch (e) { showStatus('inbox-status', false, '❌ ' + e.message); }
+}
+
+function renderTeam(list, roles) {
+  if (roles && Object.keys(roles).length) teamRoles = roles;
+  var box = document.getElementById('team-list');
+  box.innerHTML = list.length ? list.map(function (m) {
+    var r = (m.roles || []).map(function (k) { return k === 'kontent' ? '🎬 Kontent' : (k === 'operator' ? '🙋 Operator' : escapeHtml(k)); }).join(', ') || 'vazifa yo\'q';
+    return '<div class="team-item"><div><b>' + escapeHtml(m.name || 'Hodim') + '</b><small>ID ' + Number(m.id) + ' · ' + r + '</small></div>' +
+      '<button class="small danger" data-click="removeTeamMember" data-arg="' + Number(m.id) + '">O\'chirish</button></div>';
+  }).join('') : '<div class="empty-result">Hozircha faqat siz. Hodim qo\'shish uchun pastdagi shaklni to\'ldiring.</div>';
+  var rb = document.getElementById('team-roles');
+  if (!rb.childElementCount) {
+    rb.innerHTML = Object.keys(teamRoles).map(function (k) {
+      return '<label class="target-row"><input type="checkbox" class="team-role" value="' + escapeHtml(k) + '"' + (k === 'kontent' ? ' checked' : '') + '> ' + escapeHtml(teamRoles[k]) + '</label>';
+    }).join('');
+  }
+}
+
+async function addTeamMember() {
+  var id = document.getElementById('team-id').value.trim();
+  if (!/^\d{4,15}$/.test(id)) { showStatus('team-status', false, '❌ Telegram ID faqat raqamlardan iborat bo\'ladi'); return; }
+  var roles = [];
+  document.querySelectorAll('.team-role').forEach(function (cb) { if (cb.checked) roles.push(cb.value); });
+  try {
+    var d = await adminPost('/api/team', { action: 'add', id: id, name: document.getElementById('team-name').value.trim(), roles: roles });
+    if (!d) return;
+    renderTeam(d.team);
+    document.getElementById('team-id').value = '';
+    document.getElementById('team-name').value = '';
+    showStatus('team-status', true, '✅ Qo\'shildi. Hodim Kontentchi botga /start yuborsin.');
+  } catch (e) { showStatus('team-status', false, '❌ ' + e.message); }
+}
+
+async function removeTeamMember(id) {
+  if (!confirm('Bu hodimni jamoadan o\'chirasizmi?')) return;
+  try {
+    var d = await adminPost('/api/team', { action: 'remove', id: id });
+    if (d) { renderTeam(d.team); showStatus('team-status', true, '✅ O\'chirildi'); }
+  } catch (e) { showStatus('team-status', false, '❌ ' + e.message); }
 }
