@@ -240,6 +240,11 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .conn-card.ok .conn-state{color:#2e7d32}
 .conn-card button{width:auto;margin:0;padding:8px 14px;font-size:12px;flex-shrink:0}
 .conn-steps{font-size:12px;line-height:1.6;color:#444;margin:6px 0 0 18px;padding:0}
+.target-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #eee;font-size:14px;cursor:pointer}
+.target-row input{width:20px;height:20px;margin:0;flex-shrink:0}
+.recent-item{border-bottom:1px solid #eee;padding:8px 2px;font-size:13px}
+.recent-item small{color:#777;display:block;margin-top:2px}
+.recent-item a{color:#1565c0;margin-right:8px}
 .conn-help{font-size:12px;color:#555;line-height:1.5;margin:4px 0 8px}
 </style>
 </head>
@@ -516,6 +521,19 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <div id="conn-helpers">⏳ Yuklanmoqda...</div>
     </div>
 
+    <div class="section">
+      <h2>🎬 Kontentchi: qayerga joylansin</h2>
+      <p class="conn-help">Kontentchi botda <b>🚀 Hammasiga joylash</b> bosilganda video belgilangan tarmoqlarga, videoga mos <b>muqova rasm</b> esa Telegram kanalga joylanadi (kanalga video yuborilmaydi). Belgini olib tashlasangiz, o'sha joyga joylanmaydi.</p>
+      <div id="conn-targets">⏳ Yuklanmoqda...</div>
+      <button class="small success" data-click="saveTargets" id="save-targets-btn">💾 Saqlash</button>
+      <div id="targets-status" class="status"></div>
+    </div>
+
+    <div class="section">
+      <h2>📋 Oxirgi kontentlar</h2>
+      <div id="conn-recent">⏳ Yuklanmoqda...</div>
+    </div>
+
     <button class="small" data-click="loadConnections">🔄 Yangilash</button>
   </div>
 
@@ -580,7 +598,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261019"></script>
-<script src="admin-app.js?v=20261019"></script>
+<script src="admin-events.js?v=20261020"></script>
+<script src="admin-app.js?v=20261020"></script>
 </body>
 </html>
