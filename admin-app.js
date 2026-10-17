@@ -185,6 +185,7 @@ function switchPage(page) {
   if (page === 'stats') { loadStats(); loadOrders(); loadUsers(); checkBroadcastStatus(); }
   if (page === 'list') { loadProducts(); loadLowStock(); }
   if (page === 'conn') { loadConnections(); }
+  if (page === 'kb') { loadKnowledge(); }
 }
 
 
@@ -1427,4 +1428,70 @@ async function connectPlatform(platform) {
     if (w) w.close();
     alert('❌ ' + PLATFORM_INFO[platform].name + ' ulanmadi: ' + e.message);
   }
+}
+
+
+// ==================== BILIM BAZASI ====================
+var KB_HINTS = {
+  brand_voice: 'Masalan: "Siz" deb murojaat qilamiz, samimiy va qisqa. Emoji me\'yorida. Raqobatchilarni yomonlamaymiz.',
+  delivery: 'Masalan: O\'zbekiston bo\'ylab 1–3 kun. To\'lov mahsulotni olganda. Kafolat va qaytarish shartlari.',
+  faq: 'Savol va javob juftliklari: "Savol: ... — Javob: ..." har birini yangi qatordan.',
+  banned: 'Masalan: "100% kafolat", "davolaydi", "eng arzon" deb yozilmasin.',
+  hooks: 'Yaxshi ishlagan birinchi gaplar va sarlavhalar (Kontentchi shunga o\'xshatib yozadi).',
+  extra: 'Boshqa muhim ma\'lumot: ish vaqti, aksiyalar, manzil, aloqa.'
+};
+var kbMax = 4000;
+
+function renderKnowledge(d) {
+  kbMax = d.max_len || 4000;
+  var titles = d.titles || {}, sec = d.sections || {}, h = '';
+  Object.keys(titles).forEach(function (k) {
+    var v = sec[k] || '';
+    h += '<div class="kb-field"><label for="kb-' + k + '">' + escapeHtml(titles[k]) + '</label>' +
+      '<small>' + escapeHtml(KB_HINTS[k] || '') + '</small>' +
+      '<textarea id="kb-' + k + '" class="kb-input" data-key="' + k + '" maxlength="' + kbMax + '"></textarea>' +
+      '<div class="kb-count" id="kb-count-' + k + '"></div></div>';
+  });
+  var box = document.getElementById('kb-form');
+  box.innerHTML = h;
+  box.querySelectorAll('.kb-input').forEach(function (ta) {
+    ta.value = sec[ta.getAttribute('data-key')] || '';
+    var upd = function () { document.getElementById('kb-count-' + ta.getAttribute('data-key')).innerText = ta.value.length + ' / ' + kbMax; };
+    ta.addEventListener('input', upd);
+    upd();
+  });
+}
+
+async function knowledgeRequest(sections) {
+  var body = { token: adminToken };
+  if (sections) body.sections = sections;
+  var r = await fetch(API_URL + '/api/knowledge', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  if (r.status === 401) { handleAuthError(); return null; }
+  var d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Xatolik');
+  return d;
+}
+
+async function loadKnowledge() {
+  var box = document.getElementById('kb-form');
+  box.innerHTML = '⏳ Yuklanmoqda...';
+  try {
+    var d = await knowledgeRequest(null);
+    if (d) renderKnowledge(d);
+  } catch (e) { box.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>'; }
+}
+
+async function saveKnowledge() {
+  var st = document.getElementById('kb-status');
+  var sections = {};
+  document.querySelectorAll('.kb-input').forEach(function (ta) { sections[ta.getAttribute('data-key')] = ta.value; });
+  st.className = 'status ok'; st.innerText = '⏳ Saqlanmoqda...';
+  try {
+    var d = await knowledgeRequest(sections);
+    if (!d) return;
+    renderKnowledge(d);
+    st.className = 'status ok'; st.innerText = '✅ Saqlandi. Botlar 1–5 daqiqada yangi ma\'lumotdan foydalanadi.';
+  } catch (e) { st.className = 'status err'; st.innerText = '❌ ' + e.message; }
 }
