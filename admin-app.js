@@ -1326,7 +1326,7 @@ function renderHelpers(d) {
     d.ai && d.ai.configured ? '✅ Ishlayapti: savollarga javob beradi, muammoli holatda operatorga uzatadi'
       : '❌ AI kaliti yo\'q (Railway: ANTHROPIC_API_KEY)');
   if (cb.running) {
-    h += connCard('🎬', 'Kontentchi bot', true, '✅ Ishlayapti: @' + escapeHtml(cb.username || '') + ' — /start bosing, hamma vazifalar tugmalarda');
+    h += connCard('🎬', 'Kontentchi bot', true, '✅ Ishlayapti: @' + escapeHtml(cb.username || '') + ' — videoni yuboring, tavsif yozing, 🚀 Joylash');
   } else {
     h += connCard('🎬', 'Kontentchi bot', false,
       cb.configured ? '⚠️ Token qo\'yilgan, lekin bot ishga tushmadi. Tokenni tekshiring va qayta Deploy qiling.'
@@ -1341,8 +1341,6 @@ function renderHelpers(d) {
         '</ol>';
     }
   }
-  h += connCard('🔊', 'Ovozli o\'qish (videoga ovoz)', !!(d.tts && d.tts.configured),
-    d.tts && d.tts.configured ? '✅ Ulangan' : '⚪ Ixtiyoriy. Ulanmasa video ovozsiz, yozuvlar bilan chiqadi.');
   document.getElementById('conn-helpers').innerHTML = h;
 }
 
@@ -1369,7 +1367,7 @@ async function loadConnections() {
   }
 }
 
-var TARGET_NAMES = { instagram: '📸 Instagram (video)', tiktok: '🎵 TikTok (video)', youtube: '▶️ YouTube Shorts (video)', facebook: '📘 Facebook (video)', telegram: '📢 Telegram kanal (muqova rasm)' };
+var TARGET_NAMES = { instagram: '📸 Instagram', tiktok: '🎵 TikTok', youtube: '▶️ YouTube Shorts' };
 
 function renderTargets(t) {
   var h = '';
