@@ -351,30 +351,35 @@
 
   // ---------- musiqa ----------
   function setMusic(meta, url, name) {
-    S.music = { id: meta.id, url: url, name: name, duration: meta.duration, offset: 0, volume: 0.8 };
-    $('music-box').classList.remove('hidden'); $('music-name').textContent = '🎵 ' + name;
+    S.music = { id: meta.id, url: url, name: name, duration: meta.duration, offset: 0, volume: 1 };
+    $('music-box').classList.remove('hidden'); $('music-name').textContent = '🎙 ' + name;
     $('music-offset').max = Math.max(0, meta.duration - 1).toFixed(1); $('music-offset').value = 0; $('music-offset-v').textContent = '0:00';
-    $('music-vol').value = 80; $('music-vol-v').textContent = '80%';
+    $('music-vol').value = 100; $('music-vol-v').textContent = '100%';
+    // Qo'yilgan ovoz asosiy bo'ladi: videoning o'z ovozi o'chiriladi (surgich bilan qaytarish mumkin)
+    S.videoVolume = 0; $('video-vol').value = 0; $('video-vol-v').textContent = '0%';
     showFrame(true);
   }
 
   function bindMusic() {
     $('add-music').addEventListener('change', function () {
       var f = this.files[0]; this.value = ''; if (!f) return;
-      toast('🎵 Musiqa yuklanmoqda...');
-      upload(f, function () {}).then(function (meta) { setMusic(meta, URL.createObjectURL(f), f.name); toast('✅ Musiqa qo\'shildi'); }).catch(function (e) { toast(e.message); });
+      toast('🎙 Ovoz yuklanmoqda...');
+      upload(f, function () {}).then(function (meta) { setMusic(meta, URL.createObjectURL(f), f.name); toast('✅ Ovoz qo\'shildi, videoning o\'z ovozi o\'chirildi'); }).catch(function (e) { toast(e.message); });
     });
     $('add-music-video').addEventListener('change', function () {
       var f = this.files[0]; this.value = ''; if (!f) return;
       toast('🎞 Video yuklanmoqda, ovozi ajratiladi...');
       upload(f, function () {}).then(function (meta) {
         return api('/api/studio/extract-audio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meta.id }) });
-      }).then(function (d) { setMusic(d.file, URL.createObjectURL(f), 'Videodan: ' + f.name); toast('✅ Videoning ovozi qo\'shildi'); }).catch(function (e) { toast(e.message); });
+      }).then(function (d) { setMusic(d.file, URL.createObjectURL(f), 'Videodan: ' + f.name); toast('✅ Boshqa videoning ovozi qo\'shildi'); }).catch(function (e) { toast(e.message); });
     });
     $('music-offset').addEventListener('input', function () { if (!S.music) return; S.music.offset = parseFloat(this.value); $('music-offset-v').textContent = fmt(S.music.offset); syncMusic(true); });
     $('music-vol').addEventListener('input', function () { if (!S.music) return; S.music.volume = this.value / 100; $('music-vol-v').textContent = this.value + '%'; syncMusic(false); });
     $('video-vol').addEventListener('input', function () { S.videoVolume = this.value / 100; $('video-vol-v').textContent = this.value + '%'; showFrame(false); });
-    $('music-del').addEventListener('click', function () { S.music = null; pa.pause(); $('music-box').classList.add('hidden'); });
+    $('music-del').addEventListener('click', function () {
+      S.music = null; pa.pause(); $('music-box').classList.add('hidden');
+      S.videoVolume = 1; $('video-vol').value = 100; $('video-vol-v').textContent = '100%'; showFrame(false);
+    });
   }
 
   // ---------- tayyorlash ----------

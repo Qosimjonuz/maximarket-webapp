@@ -88,3 +88,4 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .chips button.active{background:var(--acc2);border-color:var(--acc2);color:#fff}
 .stickers{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;margin:8px 0}
 .stickers button{font-size:26px;background:none;border:0;padding:4px}
+.mt8{margin-top:8px}
