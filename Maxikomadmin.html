@@ -249,11 +249,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .recent-item{border-bottom:1px solid #eee;padding:8px 2px;font-size:13px}
 .recent-item small{color:#777;display:block;margin-top:2px}
 .recent-item a{color:#1565c0;margin-right:8px}
-.kb-field{margin-bottom:12px}
-.kb-field label{display:block;font-weight:700;font-size:13px;margin-bottom:4px}
-.kb-field small{display:block;color:#777;font-size:11px;margin-bottom:4px;line-height:1.4}
-.kb-field textarea{min-height:110px;width:100%;box-sizing:border-box}
-.kb-count{text-align:right;font-size:10px;color:#999}
 .conn-help{font-size:12px;color:#555;line-height:1.5;margin:4px 0 8px}
 </style>
 </head>
@@ -568,17 +563,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
     <button class="small" data-click="loadConnections">🔄 Yangilash</button>
   </div>
 
-  <!-- PAGE 5: BILIM BAZASI -->
-  <div id="page-kb" class="page hidden">
-    <div class="section">
-      <h2>📚 Bilim bazasi</h2>
-      <p class="conn-help">Bu yerga yozganingizni ikkala bot ham o'qiydi: <b>mijozlar yordamchisi</b> savollarga javob berishda, <b>Kontentchi</b> ssenariy va post yozishda. Qisqa va aniq yozing, har bir fikr alohida qatorda. O'zgarish 1–5 daqiqada kuchga kiradi.</p>
-      <div id="kb-form">⏳ Yuklanmoqda...</div>
-      <button class="success" data-click="saveKnowledge" id="kb-save-btn">💾 Saqlash</button>
-      <div id="kb-status" class="status"></div>
-    </div>
-  </div>
-
   <button class="danger" id="logout-btn" style="margin-top:14px">🚪 Chiqish</button>
 </div>
 
@@ -588,7 +572,6 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   <button data-page="list" data-click="switchPage" data-arg="list"><span class="bottom-icon">📦</span><span>Mahsulotlar</span></button>
   <button data-page="stats" data-click="switchPage" data-arg="stats"><span class="bottom-icon">📊</span><span>Statistika</span></button>
   <button data-page="conn" data-click="switchPage" data-arg="conn"><span class="bottom-icon">🔗</span><span>Ulanishlar</span></button>
-  <button data-page="kb" data-click="switchPage" data-arg="kb"><span class="bottom-icon">📚</span><span>Bilim</span></button>
 </div>
 
 <!-- MAHSULOT MODAL -->
@@ -641,7 +624,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261023"></script>
-<script src="admin-app.js?v=20261023"></script>
+<script src="admin-events.js?v=20261024"></script>
+<script src="admin-app.js?v=20261024"></script>
 </body>
 </html>
