@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0f1115">
 <title>MaxiStudio</title>
-<link rel="stylesheet" href="studio.css?v=2">
+<link rel="stylesheet" href="studio.css?v=3">
 </head>
 <body>
 <header class="top">
@@ -38,7 +38,7 @@
   <nav class="tabs">
     <button data-tab="clips" class="active">🎞 Kliplar</button>
     <button data-tab="texts">🔤 Yozuv</button>
-    <button data-tab="music">🎵 Musiqa</button>
+    <button data-tab="music">🎙 Ovoz</button>
     <button data-tab="post">🚀 Tayyor</button>
   </nav>
 
@@ -71,24 +71,23 @@
   </section>
 
   <section id="tab-music" class="tab hidden">
-    <div class="row">
-      <label class="btn primary file-btn">🎵 Musiqa fayli
-        <input id="add-music" type="file" accept="audio/*" hidden>
-      </label>
-      <label class="btn file-btn">🎞 Videodan ovoz olish
-        <input id="add-music-video" type="file" accept="video/*" hidden>
-      </label>
-    </div>
+    <p class="hint">Mahsulot uchun tayyorlangan ovozni qo'ying: galereyadagi ovoz yozuvi yoki shu mahsulotning boshqa videosidagi ovoz.</p>
+    <label class="btn primary file-btn">🎙 Galereyadan ovoz yozuvi
+      <input id="add-music" type="file" accept="audio/*,.m4a,.mp3,.aac,.ogg,.opus,.wav,.amr" hidden>
+    </label>
+    <label class="btn file-btn mt8">🎞 Boshqa videodan ovoz olish
+      <input id="add-music-video" type="file" accept="video/*" hidden>
+    </label>
     <div id="music-box" class="card hidden">
-      <div class="card-head"><b id="music-name">Musiqa</b><button id="music-del" class="icon" aria-label="O'chirish">🗑</button></div>
-      <label class="lbl">Qayerdan boshlansin: <span id="music-offset-v">0:00</span></label>
+      <div class="card-head"><b id="music-name">Ovoz</b><button id="music-del" class="icon" aria-label="O'chirish">🗑</button></div>
+      <label class="lbl">Ovozning qaysi joyidan boshlansin: <span id="music-offset-v">0:00</span></label>
       <input id="music-offset" type="range" min="0" max="0" step="0.5" value="0">
-      <label class="lbl">Musiqa balandligi: <span id="music-vol-v">80%</span></label>
-      <input id="music-vol" type="range" min="0" max="150" step="5" value="80">
+      <label class="lbl">Qo'yilgan ovoz balandligi: <span id="music-vol-v">100%</span></label>
+      <input id="music-vol" type="range" min="0" max="150" step="5" value="100">
     </div>
     <label class="lbl">Videoning o'z ovozi: <span id="video-vol-v">100%</span></label>
     <input id="video-vol" type="range" min="0" max="150" step="5" value="100">
-    <p class="hint">⚠️ Mashhur qo'shiqlar bilan Instagram/YouTube videoni ovozsiz qilishi yoki bloklashi mumkin. Mualliflik huquqisiz musiqa xavfsiz.</p>
+    <p class="hint">Ovoz qo'yilganda videoning o'z ovozi avtomatik o'chiriladi. Kerak bo'lsa yuqoridagi surgich bilan qaytaring.</p>
   </section>
 
   <section id="tab-post" class="tab hidden">
@@ -139,6 +138,6 @@
 
 <div id="toast" class="toast hidden"></div>
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-<script src="studio.js?v=2"></script>
+<script src="studio.js?v=3"></script>
 </body>
 </html>
