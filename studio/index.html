@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; style-src 'self'; img-src 'self' blob: data: https://maximarketbot-production.up.railway.app; media-src 'self' blob: https://maximarketbot-production.up.railway.app; font-src 'self'; connect-src https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0f1115">
 <title>MaxiStudio</title>
-<link rel="stylesheet" href="studio.css?v=1">
+<link rel="stylesheet" href="studio.css?v=2">
 </head>
 <body>
 <header class="top">
   <div class="brand">🎬 Maxi<span>Studio</span></div>
-  <div id="total-time" class="muted">0:00</div>
+  <div class="top-right"><span id="total-time" class="muted">0:00</span><button id="new-project" class="icon small" aria-label="Yangi loyiha">🗒 Yangi</button></div>
 </header>
 
 <div id="gate" class="gate hidden">
@@ -59,6 +59,13 @@
       <input id="price-input" type="text" inputmode="numeric" maxlength="20" placeholder="Narx, masalan 129 000">
       <button id="add-price" class="btn">💰 Narx qo'shish</button>
     </div>
+    <div class="row">
+      <button id="open-stickers" class="btn">😀 Stiker</button>
+      <button id="auto-subs" class="btn">📝 Avto subtitr</button>
+    </div>
+    <label class="lbl">Tayyor shablonlar</label>
+    <div class="row chips" id="templates"></div>
+    <div id="stickers" class="stickers hidden"></div>
     <p class="hint">Yozuvni ko'rish oynasida barmoq bilan surib joyini o'zgartiring. Bosib tahrirlang.</p>
     <div id="texts"></div>
   </section>
@@ -85,6 +92,10 @@
   </section>
 
   <section id="tab-post" class="tab hidden">
+    <label class="lbl">Kliplar orasidagi o'tish</label>
+    <div class="chips" id="transitions"></div>
+    <label class="lbl">O'tish davomiyligi: <span id="tdur-v">0.5 s</span></label>
+    <input id="tdur" type="range" min="0.2" max="1.5" step="0.1" value="0.5">
     <label class="lbl">Kadrga moslash</label>
     <div class="seg">
       <button data-fit="cover" class="active">To'ldirish</button>
@@ -113,6 +124,7 @@
       <label><input id="t-shadow" type="checkbox"> Soya</label>
       <label><input id="t-outline" type="checkbox"> Hoshiya</label>
       <label><input id="t-bg" type="checkbox"> Fon</label>
+      <label><input id="t-anim" type="checkbox" checked> Animatsiya</label>
     </div>
     <div id="t-bg-colors" class="swatches"></div>
     <label class="lbl">Ko'rinish vaqti: <span id="t-time-v"></span></label>
@@ -127,6 +139,6 @@
 
 <div id="toast" class="toast hidden"></div>
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-<script src="studio.js?v=1"></script>
+<script src="studio.js?v=2"></script>
 </body>
 </html>
