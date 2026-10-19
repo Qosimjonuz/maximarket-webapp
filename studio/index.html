@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src https://maximarketbot-production.up.railway.app; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f1115">
+<title>MaxiStudio</title>
+<link rel="stylesheet" href="studio.css?v=1">
+</head>
+<body>
+<header class="top">
+  <div class="brand">🎬 Maxi<span>Studio</span></div>
+  <div id="total-time" class="muted">0:00</div>
+</header>
+
+<div id="gate" class="gate hidden">
+  <p>MaxiStudio'ni <b>@MaxiMarket_albot</b> ichidan oching:<br>botga /start yuboring va <b>🎬 MaxiStudio</b> tugmasini bosing.</p>
+</div>
+
+<main id="app" class="hidden">
+  <section class="stage-wrap">
+    <div id="stage" class="stage">
+      <video id="pv" playsinline webkit-playsinline preload="auto"></video>
+      <img id="pi" alt="">
+      <div id="layer" class="layer"></div>
+      <div id="empty" class="empty">Video yoki rasm qo'shing 👇</div>
+    </div>
+    <div class="controls">
+      <button id="play" class="round" aria-label="Ijro">▶</button>
+      <input id="scrub" type="range" min="0" max="0" step="0.05" value="0" aria-label="Vaqt">
+      <span id="clock" class="muted">0:00</span>
+    </div>
+    <audio id="pa" preload="auto"></audio>
+  </section>
+
+  <nav class="tabs">
+    <button data-tab="clips" class="active">🎞 Kliplar</button>
+    <button data-tab="texts">🔤 Yozuv</button>
+    <button data-tab="music">🎵 Musiqa</button>
+    <button data-tab="post">🚀 Tayyor</button>
+  </nav>
+
+  <section id="tab-clips" class="tab">
+    <label class="btn primary file-btn">➕ Video yoki rasm qo'shish
+      <input id="add-media" type="file" accept="video/*,image/jpeg,image/png,image/webp" multiple hidden>
+    </label>
+    <p class="hint">Har bir klipning boshini va oxirini surgich bilan qirqing, ↑↓ bilan tartibini o'zgartiring.</p>
+    <div id="clips"></div>
+  </section>
+
+  <section id="tab-texts" class="tab hidden">
+    <div class="row">
+      <button id="add-text" class="btn primary">➕ Yozuv qo'shish</button>
+      <button id="add-brand" class="btn">🏷 MaxiMarket belgisi</button>
+    </div>
+    <div class="row">
+      <input id="price-input" type="text" inputmode="numeric" maxlength="20" placeholder="Narx, masalan 129 000">
+      <button id="add-price" class="btn">💰 Narx qo'shish</button>
+    </div>
+    <p class="hint">Yozuvni ko'rish oynasida barmoq bilan surib joyini o'zgartiring. Bosib tahrirlang.</p>
+    <div id="texts"></div>
+  </section>
+
+  <section id="tab-music" class="tab hidden">
+    <div class="row">
+      <label class="btn primary file-btn">🎵 Musiqa fayli
+        <input id="add-music" type="file" accept="audio/*" hidden>
+      </label>
+      <label class="btn file-btn">🎞 Videodan ovoz olish
+        <input id="add-music-video" type="file" accept="video/*" hidden>
+      </label>
+    </div>
+    <div id="music-box" class="card hidden">
+      <div class="card-head"><b id="music-name">Musiqa</b><button id="music-del" class="icon" aria-label="O'chirish">🗑</button></div>
+      <label class="lbl">Qayerdan boshlansin: <span id="music-offset-v">0:00</span></label>
+      <input id="music-offset" type="range" min="0" max="0" step="0.5" value="0">
+      <label class="lbl">Musiqa balandligi: <span id="music-vol-v">80%</span></label>
+      <input id="music-vol" type="range" min="0" max="150" step="5" value="80">
+    </div>
+    <label class="lbl">Videoning o'z ovozi: <span id="video-vol-v">100%</span></label>
+    <input id="video-vol" type="range" min="0" max="150" step="5" value="100">
+    <p class="hint">⚠️ Mashhur qo'shiqlar bilan Instagram/YouTube videoni ovozsiz qilishi yoki bloklashi mumkin. Mualliflik huquqisiz musiqa xavfsiz.</p>
+  </section>
+
+  <section id="tab-post" class="tab hidden">
+    <label class="lbl">Kadrga moslash</label>
+    <div class="seg">
+      <button data-fit="cover" class="active">To'ldirish</button>
+      <button data-fit="contain">To'liq ko'rsatish</button>
+    </div>
+    <label class="lbl" for="caption">Tavsif (Instagram, YouTube uchun)</label>
+    <textarea id="caption" maxlength="2200" rows="5" placeholder="Masalan: Qo'sh qalam 49 000 so'm 🔥 Buyurtma: maxi-market.uz #maximarket"></textarea>
+    <button id="render" class="btn primary big">🎬 Videoni tayyorlash</button>
+    <div id="render-status" class="status hidden"></div>
+  </section>
+</main>
+
+<div id="sheet" class="sheet hidden" role="dialog" aria-label="Yozuvni tahrirlash">
+  <div class="sheet-body">
+    <div class="card-head"><b>🔤 Yozuv</b><button id="sheet-close" class="icon" aria-label="Yopish">✕</button></div>
+    <textarea id="t-text" rows="2" maxlength="300" placeholder="Matn yozing..."></textarea>
+    <div id="t-emojis" class="emojis"></div>
+    <label class="lbl">Shrift</label>
+    <div id="t-fonts" class="fonts"></div>
+    <label class="lbl">Rang</label>
+    <div id="t-colors" class="swatches"></div>
+    <label class="lbl">O'lcham</label>
+    <input id="t-size" type="range" min="2" max="20" step="0.5" value="6">
+    <div class="toggles">
+      <label><input id="t-bold" type="checkbox" checked> Qalin</label>
+      <label><input id="t-shadow" type="checkbox"> Soya</label>
+      <label><input id="t-outline" type="checkbox"> Hoshiya</label>
+      <label><input id="t-bg" type="checkbox"> Fon</label>
+    </div>
+    <div id="t-bg-colors" class="swatches"></div>
+    <label class="lbl">Ko'rinish vaqti: <span id="t-time-v"></span></label>
+    <input id="t-start" type="range" min="0" max="0" step="0.1" value="0">
+    <input id="t-end" type="range" min="0" max="0" step="0.1" value="0">
+    <div class="row">
+      <button id="t-delete" class="btn danger">🗑 O'chirish</button>
+      <button id="t-save" class="btn primary">✅ Tayyor</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+<script src="studio.js?v=1"></script>
+</body>
+</html>
