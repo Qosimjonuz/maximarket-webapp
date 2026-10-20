@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0f1115">
 <title>MaxiStudio</title>
-<link rel="stylesheet" href="studio.css?v=3">
+<link rel="stylesheet" href="studio.css?v=4">
 </head>
 <body>
 <header class="top">
@@ -24,6 +24,7 @@
     <div id="stage" class="stage">
       <video id="pv" playsinline webkit-playsinline preload="auto"></video>
       <img id="pi" alt="">
+      <img id="pfr" class="frame-ov hidden" alt="">
       <div id="layer" class="layer"></div>
       <div id="empty" class="empty">Video yoki rasm qo'shing 👇</div>
     </div>
@@ -46,6 +47,8 @@
     <label class="btn primary file-btn">➕ Video yoki rasm qo'shish
       <input id="add-media" type="file" accept="video/*,image/jpeg,image/png,image/webp" multiple hidden>
     </label>
+    <label class="lbl">🖼 MaxiMarket hoshiyasi</label>
+    <div id="frames" class="frames"></div>
     <p class="hint">Har bir klipning boshini va oxirini surgich bilan qirqing, ↑↓ bilan tartibini o'zgartiring.</p>
     <div id="clips"></div>
   </section>
@@ -104,6 +107,10 @@
     <textarea id="caption" maxlength="2200" rows="5" placeholder="Masalan: Qo'sh qalam 49 000 so'm 🔥 Buyurtma: maxi-market.uz #maximarket"></textarea>
     <button id="render" class="btn primary big">🎬 Videoni tayyorlash</button>
     <div id="render-status" class="status hidden"></div>
+    <div id="social" class="hidden">
+      <label class="lbl">📲 Sahifalarimiz (botdan chiqmasdan ochiladi)</label>
+      <div class="row" id="social-links"></div>
+    </div>
   </section>
 </main>
 
@@ -121,7 +128,7 @@
     <div class="toggles">
       <label><input id="t-bold" type="checkbox" checked> Qalin</label>
       <label><input id="t-shadow" type="checkbox"> Soya</label>
-      <label><input id="t-outline" type="checkbox"> Hoshiya</label>
+      <label><input id="t-outline" type="checkbox"> Kontur</label>
       <label><input id="t-bg" type="checkbox"> Fon</label>
       <label><input id="t-anim" type="checkbox" checked> Animatsiya</label>
     </div>
@@ -138,6 +145,6 @@
 
 <div id="toast" class="toast hidden"></div>
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-<script src="studio.js?v=3"></script>
+<script src="studio.js?v=4"></script>
 </body>
 </html>

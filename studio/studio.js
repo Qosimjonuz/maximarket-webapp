@@ -24,7 +24,8 @@
     ['😱 Hook', { text: 'Qaranglar, nima oldim! 😱', font: 'rubik', size: 0.065, outline: true, y: 0.3 }]];
   var EMOJIS = ['🔥', '😍', '✅', '💥', '⭐', '🎁', '❤️', '👍', '😱', '🤩', '💯', '🛒', '🚚', '💰', '⚡', '👇', '👉', '🎉', '😊', '🆕'];
 
-  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5 };
+  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'none' };
+  var FRAMES = ['f1', 'f2', 'f3'];
   var USER = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'x';
   var DRAFT_KEY = 'maxistudio:' + USER;
   var $ = function (id) { return document.getElementById(id); };
@@ -392,7 +393,7 @@
           bold: x.bold, shadow: x.shadow, outline: x.outline, anim: x.anim === false ? 'none' : 'fade', x: x.x, y: x.y, start: x.start, end: x.end };
       }),
       music: S.music ? { id: S.music.id, offset: S.music.offset, volume: S.music.volume } : null,
-      video_volume: S.videoVolume, fit: S.fit
+      video_volume: S.videoVolume, fit: S.fit, frame: S.frame
     };
   }
 
@@ -436,7 +437,7 @@
       var d = { v: 1, t: Date.now(), clips: S.clips.filter(function (c) { return c.id; }).map(function (c) {
         return { id: c.id, kind: c.kind, start: c.start, end: c.end, imgDur: c.imgDur, filter: c.filter, duration: c.duration }; }),
         texts: S.texts, music: S.music ? { id: S.music.id, name: S.music.name, duration: S.music.duration, offset: S.music.offset, volume: S.music.volume } : null,
-        videoVolume: S.videoVolume, fit: S.fit, transition: S.transition, tdur: S.tdur, caption: $('caption').value };
+        videoVolume: S.videoVolume, fit: S.fit, transition: S.transition, tdur: S.tdur, frame: S.frame, caption: $('caption').value };
       var js = JSON.stringify(d);
       if (js !== lastSaved) { localStorage.setItem(DRAFT_KEY, js); lastSaved = js; }
     } catch (e) {}
@@ -457,12 +458,49 @@
         if (d.music && urls[d.music.id]) { setMusic({ id: d.music.id, duration: d.music.duration }, urls[d.music.id], d.music.name); S.music.offset = d.music.offset; S.music.volume = d.music.volume; $('music-offset').value = d.music.offset; $('music-vol').value = Math.round(d.music.volume * 100); }
         S.videoVolume = d.videoVolume || 1; S.fit = d.fit || 'cover'; S.transition = d.transition || 'none'; S.tdur = d.tdur || 0.5;
         $('caption').value = d.caption || '';
+        setFrame(FRAMES.indexOf(d.frame) >= 0 ? d.frame : 'none');
         stage.classList.toggle('contain', S.fit === 'contain');
         document.querySelectorAll('.seg button').forEach(function (x) { x.classList.toggle('active', x.getAttribute('data-fit') === S.fit); });
         renderTransitions(); renderClips(); renderTextList(); refresh();
         toast(lost ? ('Loyiha tiklandi, ' + lost + ' ta fayl muddati o\'tgan') : '✅ Loyiha tiklandi');
       }).catch(function (e) { toast(e.message); });
     });
+  }
+
+  // ---------- hoshiya ----------
+  function setFrame(id) {
+    S.frame = id;
+    var img = $('pfr');
+    if (id === 'none') { img.classList.add('hidden'); img.removeAttribute('src'); }
+    else { img.src = 'frames/' + id + '.png'; img.classList.remove('hidden'); }
+    document.querySelectorAll('#frames button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-frame') === id); });
+  }
+  function renderFrames() {
+    var box = $('frames'); box.textContent = '';
+    ['none'].concat(FRAMES).forEach(function (id) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-frame', id);
+      b.setAttribute('aria-label', id === 'none' ? 'Hoshiyasiz' : 'Hoshiya ' + id.slice(1));
+      if (id === 'none') b.textContent = 'Yo\'q';
+      else { var im = document.createElement('img'); im.src = 'frames/' + id + '.png'; im.alt = ''; im.loading = 'lazy'; b.appendChild(im); }
+      b.addEventListener('click', function () { setFrame(id); haptic(); saveDraft(); });
+      box.appendChild(b);
+    });
+    setFrame(S.frame);
+  }
+
+  // ---------- sahifalar (Telegram ichidagi brauzerda) ----------
+  function loadLinks() {
+    var names = { instagram: '📸 Instagram', tiktok: '🎵 TikTok', youtube: '▶️ YouTube' };
+    api('/api/studio/config').then(function (d) {
+      var box = $('social-links'); box.textContent = '';
+      Object.keys(names).forEach(function (k) {
+        var url = d.links && d.links[k]; if (!url || url.indexOf('https://') !== 0) return;
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = names[k];
+        b.addEventListener('click', function () { if (tg && tg.openLink) tg.openLink(url); else window.open(url, '_blank', 'noopener'); });
+        box.appendChild(b);
+      });
+      if (box.children.length) $('social').classList.remove('hidden');
+    }).catch(function () {});
   }
 
   function renderTransitions() {
@@ -525,7 +563,7 @@
     if (!INIT) { $('gate').classList.remove('hidden'); return; }
     $('app').classList.remove('hidden');
     pv = $('pv'); pi = $('pi'); pa = $('pa'); layer = $('layer'); stage = $('stage');
-    buildSheet(); bindMusic(); buildExtras(); renderTransitions(); renderTextList();
+    buildSheet(); bindMusic(); buildExtras(); renderTransitions(); renderTextList(); renderFrames(); loadLinks();
     $('add-media').addEventListener('change', function () { addFiles(this.files); this.value = ''; });
     $('play').addEventListener('click', function () {
       if (!S.clips.length) return;
