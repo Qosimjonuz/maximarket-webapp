@@ -95,3 +95,5 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .frames button img{width:100%;height:100%;display:block}
 .frames button.active{border-color:var(--acc)}
 #social-links .btn{flex:1 1 0;padding:10px 6px;font-size:13px}
+.round.alt{background:var(--card);border:1px solid var(--line);font-size:18px}
+.seg-card{padding:8px 10px;margin:6px 0}
