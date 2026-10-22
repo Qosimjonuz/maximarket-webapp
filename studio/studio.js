@@ -124,8 +124,14 @@
         b.addEventListener('click', function () { var j = i + a[1]; S.clips.splice(j, 0, S.clips.splice(i, 1)[0]); renderClips(); refresh(); });
         acts.appendChild(b);
       });
+      var cutB = el('button', 'icon', '✂️'); cutB.setAttribute('aria-label', 'Kesish');
+      cutB.addEventListener('click', function () {
+        var loc = locate(t);   // ko'rish oynasidagi joy shu klipda bo'lsa o'sha joydan, aks holda o'rtasidan
+        splitClip(i, loc && loc.i === i ? loc.local : clipDur(c) / 2);
+      });
+      acts.appendChild(cutB);
       var del = el('button', 'icon', '🗑');
-      del.addEventListener('click', function () { S.clips.splice(i, 1); renderClips(); refresh(); });
+      del.addEventListener('click', function () { S.clips.splice(i, 1); renderClips(); refresh(); saveDraft(); });
       acts.appendChild(del);
       title.appendChild(acts);
       body.appendChild(title);
@@ -148,6 +154,23 @@
       card.appendChild(row);
       box.appendChild(card);
     });
+  }
+
+  // Klipni ko'rish oynasidagi joydan ikkiga bo'lish (keraksiz bo'lakni keyin o'chirish mumkin)
+  function splitClip(i, local) {
+    var c = S.clips[i], d = clipDur(c);
+    if (local < 0.3 || d - local < 0.3) { toast('Kesish joyi klip chetiga juda yaqin. Surgich bilan klip o\'rtasini tanlang'); return; }
+    var b = Object.assign({}, c, { uid: uidSeq++ });
+    if (c.kind === 'image') { c.imgDur = Math.round(local * 10) / 10; b.imgDur = Math.round((d - local) * 10) / 10; }
+    else { var cut = c.start + local; c.end = cut; b.start = cut; }
+    S.clips.splice(i + 1, 0, b);
+    pause(); renderClips(); refresh(true); saveDraft(); haptic();
+    toast('✂️ Ikkiga bo\'lindi: ' + (i + 1) + ' va ' + (i + 2) + '-bo\'lak. Keraksizini 🗑 bilan o\'chiring');
+  }
+  function splitHere() {
+    var loc = locate(t);
+    if (!loc) { toast('Avval video yoki rasm qo\'shing'); return; }
+    splitClip(loc.i, loc.local);
   }
 
   function clipStartAt(i) { var s = 0; for (var k = 0; k < i; k++) s += clipDur(S.clips[k]); return s - tdur() * i; }
@@ -177,7 +200,8 @@
     } else {
       pi.style.display = 'none'; pv.style.display = 'block';
       var target = c.start + loc.local;
-      if (shownUid !== c.uid) { pv.src = c.url; shownUid = c.uid; pv.currentTime = target; }
+      if (pv.getAttribute('src') !== c.url) { pv.src = c.url; shownUid = c.uid; pv.currentTime = target; }   // bo'lingan kliplar bitta faylni ishlatadi
+      else if (shownUid !== c.uid) { shownUid = c.uid; try { pv.currentTime = target; } catch (e) {} }
       else if (seek || Math.abs(pv.currentTime - target) > 0.35) { try { pv.currentTime = target; } catch (e) {} }
       pv.volume = Math.min(1, S.videoVolume);
       pv.muted = S.videoVolume === 0;
@@ -190,9 +214,22 @@
     $('scrub').value = t; $('clock').textContent = fmt(t);
   }
 
+  // Ovoz bo'laklari ketma-ket: videodagi t vaqtga ovoz faylining qaysi soniyasi to'g'ri keladi
+  function voiceLen() { return S.music ? S.music.segs.reduce(function (a, g) { return a + (g.e - g.s); }, 0) : 0; }
+  function voiceSrcAt(gt) {
+    var acc = 0;
+    for (var k = 0; k < S.music.segs.length; k++) {
+      var g = S.music.segs[k], len = g.e - g.s;
+      if (gt < acc + len) return g.s + (gt - acc);
+      acc += len;
+    }
+    return null;
+  }
+
   function syncMusic(seek) {
     if (!S.music || !S.music.url) { pa.pause(); return; }
-    var target = S.music.offset + t;
+    var target = voiceSrcAt(t);
+    if (target === null) { if (!pa.paused) pa.pause(); return; }
     if (pa.getAttribute('src') !== S.music.url) pa.src = S.music.url;
     pa.volume = Math.min(1, S.music.volume);
     if (seek || Math.abs(pa.currentTime - target) > 0.4) { try { pa.currentTime = target; } catch (e) {} }
@@ -221,6 +258,7 @@
     $('total-time').textContent = fmt(T) + (T > 90 ? ' ⚠️ 90 s dan uzun' : '');
     if (!keepTime && t > T) t = 0;
     S.texts.forEach(function (x) { if (x.end > T) x.end = T; if (x.start > T) x.start = 0; });
+    musicLen();
     showFrame(true);
   }
 
@@ -352,13 +390,59 @@
 
   // ---------- musiqa ----------
   function setMusic(meta, url, name) {
-    S.music = { id: meta.id, url: url, name: name, duration: meta.duration, offset: 0, volume: 1 };
+    S.music = { id: meta.id, url: url, name: name, duration: meta.duration, segs: [{ s: 0, e: meta.duration }], volume: 1 };
     $('music-box').classList.remove('hidden'); $('music-name').textContent = '🎙 ' + name;
-    $('music-offset').max = Math.max(0, meta.duration - 1).toFixed(1); $('music-offset').value = 0; $('music-offset-v').textContent = '0:00';
+    renderSegs();
     $('music-vol').value = 100; $('music-vol-v').textContent = '100%';
     // Qo'yilgan ovoz asosiy bo'ladi: videoning o'z ovozi o'chiriladi (surgich bilan qaytarish mumkin)
     S.videoVolume = 0; $('video-vol').value = 0; $('video-vol-v').textContent = '0%';
     showFrame(true);
+  }
+
+  function musicLen() {
+    if (!S.music) return;
+    $('music-len').textContent = 'Ovoz uzunligi: ' + fmt(voiceLen()) + ' · video: ' + fmt(total()) + (voiceLen() < total() - 0.5 ? ' (oxirida ovozsiz qoladi)' : '');
+  }
+  function renderSegs() {
+    var box = $('music-segs'); box.textContent = '';
+    if (!S.music) return;
+    var D = S.music.duration || 0, segs = S.music.segs;
+    musicLen();
+    segs.forEach(function (g, k) {
+      var card = el('div', 'card seg-card');
+      var head = el('div', 'card-head');
+      var title = el('b', null, (k + 1) + '-bo\'lak · ' + fmt(g.s) + '–' + fmt(g.e));
+      head.appendChild(title);
+      if (segs.length > 1) {
+        var del = el('button', 'icon', '🗑'); del.setAttribute('aria-label', 'Bo\'lakni o\'chirish');
+        del.addEventListener('click', function () { segs.splice(k, 1); renderSegs(); syncMusic(true); saveDraft(); });
+        head.appendChild(del);
+      }
+      card.appendChild(head);
+      var upd = function () { title.textContent = (k + 1) + '-bo\'lak · ' + fmt(g.s) + '–' + fmt(g.e); musicLen(); };
+      card.appendChild(rangeRow('Boshi', 0, D, 0.1, g.s, function (v, sp) { g.s = Math.min(v, g.e - 0.2); sp.textContent = fmt(g.s); upd(); syncMusic(true); }));
+      card.appendChild(rangeRow('Oxiri', 0, D, 0.1, g.e, function (v, sp) { g.e = Math.max(v, g.s + 0.2); sp.textContent = fmt(g.e); upd(); syncMusic(true); }));
+      box.appendChild(card);
+    });
+  }
+
+  function splitVoice() {
+    if (!S.music) return;
+    var acc = 0, segs = S.music.segs;
+    for (var k = 0; k < segs.length; k++) {
+      var g = segs[k], len = g.e - g.s;
+      if (t < acc + len) {
+        var cut = g.s + (t - acc);
+        if (cut - g.s < 0.2 || g.e - cut < 0.2) { toast('Kesish joyi bo\'lak chetiga juda yaqin'); return; }
+        if (segs.length >= 20) { toast('Ko\'pi bilan 20 ta bo\'lak'); return; }
+        segs.splice(k + 1, 0, { s: cut, e: g.e }); g.e = cut;
+        pause(); renderSegs(); saveDraft(); haptic();
+        toast('✂️ Ovoz ' + (k + 1) + ' va ' + (k + 2) + '-bo\'lakka bo\'lindi. Keraksizini 🗑 bilan o\'chiring');
+        return;
+      }
+      acc += len;
+    }
+    toast('Bu joyda ovoz yo\'q. Ko\'rish oynasida ovoz eshitiladigan joyni tanlang');
   }
 
   function bindMusic() {
@@ -374,7 +458,8 @@
         return api('/api/studio/extract-audio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meta.id }) });
       }).then(function (d) { setMusic(d.file, URL.createObjectURL(f), 'Videodan: ' + f.name); toast('✅ Boshqa videoning ovozi qo\'shildi'); }).catch(function (e) { toast(e.message); });
     });
-    $('music-offset').addEventListener('input', function () { if (!S.music) return; S.music.offset = parseFloat(this.value); $('music-offset-v').textContent = fmt(S.music.offset); syncMusic(true); });
+    $('music-split').addEventListener('click', splitVoice);
+    $('music-reset').addEventListener('click', function () { if (!S.music) return; S.music.segs = [{ s: 0, e: S.music.duration }]; renderSegs(); syncMusic(true); saveDraft(); });
     $('music-vol').addEventListener('input', function () { if (!S.music) return; S.music.volume = this.value / 100; $('music-vol-v').textContent = this.value + '%'; syncMusic(false); });
     $('video-vol').addEventListener('input', function () { S.videoVolume = this.value / 100; $('video-vol-v').textContent = this.value + '%'; showFrame(false); });
     $('music-del').addEventListener('click', function () {
@@ -392,7 +477,7 @@
         return { text: x.text, font: x.font, size: x.size, color: x.color, bg: x.bg, bg_color: x.bg_color, bg_opacity: 0.85,
           bold: x.bold, shadow: x.shadow, outline: x.outline, anim: x.anim === false ? 'none' : 'fade', x: x.x, y: x.y, start: x.start, end: x.end };
       }),
-      music: S.music ? { id: S.music.id, offset: S.music.offset, volume: S.music.volume } : null,
+      music: S.music ? { id: S.music.id, volume: S.music.volume, segments: S.music.segs.map(function (g) { return { start: g.s, end: g.e }; }) } : null,
       video_volume: S.videoVolume, fit: S.fit, frame: S.frame
     };
   }
@@ -436,7 +521,7 @@
     try {
       var d = { v: 1, t: Date.now(), clips: S.clips.filter(function (c) { return c.id; }).map(function (c) {
         return { id: c.id, kind: c.kind, start: c.start, end: c.end, imgDur: c.imgDur, filter: c.filter, duration: c.duration }; }),
-        texts: S.texts, music: S.music ? { id: S.music.id, name: S.music.name, duration: S.music.duration, offset: S.music.offset, volume: S.music.volume } : null,
+        texts: S.texts, music: S.music ? { id: S.music.id, name: S.music.name, duration: S.music.duration, segs: S.music.segs, volume: S.music.volume } : null,
         videoVolume: S.videoVolume, fit: S.fit, transition: S.transition, tdur: S.tdur, frame: S.frame, caption: $('caption').value };
       var js = JSON.stringify(d);
       if (js !== lastSaved) { localStorage.setItem(DRAFT_KEY, js); lastSaved = js; }
@@ -455,7 +540,7 @@
         S.clips = d.clips.filter(function (c) { if (urls[c.id]) return true; lost++; return false; }).map(function (c) {
           return Object.assign({ uid: uidSeq++, url: urls[c.id], serverUrl: urls[c.id], progress: 1, error: null }, c); });
         S.texts = (d.texts || []).map(function (x) { return Object.assign({}, x, { uid: uidSeq++ }); });
-        if (d.music && urls[d.music.id]) { setMusic({ id: d.music.id, duration: d.music.duration }, urls[d.music.id], d.music.name); S.music.offset = d.music.offset; S.music.volume = d.music.volume; $('music-offset').value = d.music.offset; $('music-vol').value = Math.round(d.music.volume * 100); }
+        if (d.music && urls[d.music.id]) { setMusic({ id: d.music.id, duration: d.music.duration }, urls[d.music.id], d.music.name); S.music.segs = d.music.segs && d.music.segs.length ? d.music.segs : [{ s: d.music.offset || 0, e: d.music.duration }]; S.music.volume = d.music.volume; renderSegs(); $('music-vol').value = Math.round(d.music.volume * 100); }
         S.videoVolume = d.videoVolume || 1; S.fit = d.fit || 'cover'; S.transition = d.transition || 'none'; S.tdur = d.tdur || 0.5;
         $('caption').value = d.caption || '';
         setFrame(FRAMES.indexOf(d.frame) >= 0 ? d.frame : 'none');
@@ -565,6 +650,7 @@
     pv = $('pv'); pi = $('pi'); pa = $('pa'); layer = $('layer'); stage = $('stage');
     buildSheet(); bindMusic(); buildExtras(); renderTransitions(); renderTextList(); renderFrames(); loadLinks();
     $('add-media').addEventListener('change', function () { addFiles(this.files); this.value = ''; });
+    $('split').addEventListener('click', splitHere);
     $('play').addEventListener('click', function () {
       if (!S.clips.length) return;
       playing = !playing; this.textContent = playing ? '⏸' : '▶';

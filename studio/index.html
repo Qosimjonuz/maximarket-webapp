@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0f1115">
 <title>MaxiStudio</title>
-<link rel="stylesheet" href="studio.css?v=4">
+<link rel="stylesheet" href="studio.css?v=5">
 </head>
 <body>
 <header class="top">
@@ -30,6 +30,7 @@
     </div>
     <div class="controls">
       <button id="play" class="round" aria-label="Ijro">▶</button>
+      <button id="split" class="round alt" aria-label="Shu joydan kesish">✂️</button>
       <input id="scrub" type="range" min="0" max="0" step="0.05" value="0" aria-label="Vaqt">
       <span id="clock" class="muted">0:00</span>
     </div>
@@ -49,7 +50,8 @@
     </label>
     <label class="lbl">🖼 MaxiMarket hoshiyasi</label>
     <div id="frames" class="frames"></div>
-    <p class="hint">Har bir klipning boshini va oxirini surgich bilan qirqing, ↑↓ bilan tartibini o'zgartiring.</p>
+    <p class="hint">Har bir klipning boshini va oxirini surgich bilan qirqing, ↑↓ bilan tartibini o'zgartiring.<br>
+      <b>O'rtasidan kesish:</b> ko'rish oynasi ostidagi surgich bilan kerakli joyni tanlang va ✂️ ni bosing. Klip ikkiga bo'linadi, keraksiz bo'lakni 🗑 bilan o'chiring.</p>
     <div id="clips"></div>
   </section>
 
@@ -83,8 +85,13 @@
     </label>
     <div id="music-box" class="card hidden">
       <div class="card-head"><b id="music-name">Ovoz</b><button id="music-del" class="icon" aria-label="O'chirish">🗑</button></div>
-      <label class="lbl">Ovozning qaysi joyidan boshlansin: <span id="music-offset-v">0:00</span></label>
-      <input id="music-offset" type="range" min="0" max="0" step="0.5" value="0">
+      <p class="hint">Ovoz bo'laklari ketma-ket qo'yiladi. Har bo'lakning boshini va oxirini surgich bilan qirqing. O'rtadan kesish uchun ko'rish oynasida joyni tanlab, <b>✂️ Ovozni shu joydan kesish</b> tugmasini bosing, keyin keraksiz bo'lakni 🗑 bilan o'chiring.</p>
+      <div class="row">
+        <button id="music-split" class="btn">✂️ Ovozni shu joydan kesish</button>
+        <button id="music-reset" class="btn">↺ Asl holi</button>
+      </div>
+      <div id="music-len" class="hint"></div>
+      <div id="music-segs"></div>
       <label class="lbl">Qo'yilgan ovoz balandligi: <span id="music-vol-v">100%</span></label>
       <input id="music-vol" type="range" min="0" max="150" step="5" value="100">
     </div>
@@ -145,6 +152,6 @@
 
 <div id="toast" class="toast hidden"></div>
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-<script src="studio.js?v=4"></script>
+<script src="studio.js?v=5"></script>
 </body>
 </html>
