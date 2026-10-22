@@ -1,0 +1,26 @@
+name: Testlar
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Birlik testlari
+        run: |
+          node tests/deeplink.test.js
+          node tests/sw.test.js
+      - name: Playwright o'rnatish
+        run: |
+          npm i --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Brauzer testlari (sayt va MaxiStudio)
+        run: node tests/e2e/site.test.js
