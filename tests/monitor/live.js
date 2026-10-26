@@ -4,6 +4,7 @@ const assert = require('assert');
 const { launch } = require('../e2e/pw');
 
 const SITE = 'https://maxi-market.uz';
+const PLAY = 'https://play.google.com/store/apps/details?id=uz.maxi_market.twa&hl=uz';
 const API = 'https://maximarketbot-production.up.railway.app';
 
 async function get(url) {
@@ -37,11 +38,22 @@ const checks = [
   }],
 ];
 
+// Ma'lumot uchun (xato hisoblanmaydi): ilova Google Play'da hammaga ochiqmi
+async function playStatus() {
+  try {
+    const r = await get(PLAY);
+    if (r.status === 200) console.log('📱 Google Play: ✅ ilova hammaga ochiq — ' + PLAY);
+    else if (r.status === 404) console.log('📱 Google Play: ⏳ hali hammaga chiqmagan (sahifa 404, faqat test rejimida)');
+    else console.log('📱 Google Play: javob ' + r.status);
+  } catch (e) { console.log('📱 Google Play: tekshirib bo\'lmadi (' + e.message + ')'); }
+}
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of checks) {
     try { console.log('✅ ' + name + ': ' + (await fn())); }
     catch (e) { failed++; console.log('❌ ' + name + ': ' + (e.message || e).toString().slice(0, 300)); }
   }
+  await playStatus();
   process.exit(failed ? 1 : 0);
 })();
