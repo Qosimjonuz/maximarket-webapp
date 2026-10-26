@@ -1436,6 +1436,7 @@ var teamRoles = {};
 function renderInbox(c) {
   document.getElementById('inbox-dm').checked = c.dm !== false;
   document.getElementById('inbox-comments').checked = c.comments !== false;
+  document.getElementById('inbox-auto-order').checked = c.auto_order !== false;
 }
 
 async function adminPost(path, body) {
@@ -1457,7 +1458,8 @@ async function saveInbox() {
   try {
     var d = await adminPost('/api/inbox/settings', {
       dm: document.getElementById('inbox-dm').checked,
-      comments: document.getElementById('inbox-comments').checked
+      comments: document.getElementById('inbox-comments').checked,
+      auto_order: document.getElementById('inbox-auto-order').checked
     });
     if (!d) return;
     renderInbox(d.inbox);
