@@ -385,6 +385,7 @@ async function uploadImageWithRetry(file, maxAttempts) {
 async function saveProduct() {
   var oqim_id = document.getElementById('p-oqim').value.trim();
   var inbaza_offer_id = document.getElementById('p-inbaza').value.trim();
+  var inbaza_stream = document.getElementById('p-inbaza-stream').value.trim();
   var title = document.getElementById('p-title').value.trim();
   var desc = document.getElementById('p-description').value.trim();
   var price = parseInt(document.getElementById('p-price').value) || 0;
@@ -450,6 +451,7 @@ async function saveProduct() {
       colors: selectedColors,
       images: urls
     };
+    if (inbaza_stream) body.inbaza_stream = inbaza_stream;   // bo'sh bo'lsa saqlangan kalit o'zgarmaydi
 
     var r, d;
     if (editingProductId) {
@@ -479,10 +481,11 @@ async function saveProduct() {
 }
 
 function resetForm() {
-  ['p-oqim', 'p-inbaza', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
+  ['p-oqim', 'p-inbaza', 'p-inbaza-stream', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
+  document.getElementById('p-inbaza-stream').placeholder = 'inbaza → Sizning faol oqimlaringiz → Oqim kaliti';
   selectedFiles = [null, null, null, null];
   selectedCategories = [];
   selectedSizes = [];
@@ -508,6 +511,9 @@ function editProduct(id) {
   editingProductId = id;
   document.getElementById('p-oqim').value = p.oqim_id || '';
   document.getElementById('p-inbaza').value = p.inbaza_offer_id || '';
+  var ibs = document.getElementById('p-inbaza-stream');
+  ibs.value = '';
+  ibs.placeholder = p.inbaza_stream_set ? '✅ Kalit saqlangan (almashtirish uchun yangisini yozing)' : 'inbaza → Sizning faol oqimlaringiz → Oqim kaliti';
   document.getElementById('p-title').value = p.title || '';
   document.getElementById('p-description').value = p.description || '';
   document.getElementById('p-price').value = p.price || '';
