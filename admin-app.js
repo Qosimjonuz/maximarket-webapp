@@ -384,6 +384,7 @@ async function uploadImageWithRetry(file, maxAttempts) {
 // ==================== MAHSULOT SAQLASH ====================
 async function saveProduct() {
   var oqim_id = document.getElementById('p-oqim').value.trim();
+  var inbaza_offer_id = document.getElementById('p-inbaza').value.trim();
   var title = document.getElementById('p-title').value.trim();
   var desc = document.getElementById('p-description').value.trim();
   var price = parseInt(document.getElementById('p-price').value) || 0;
@@ -438,6 +439,7 @@ async function saveProduct() {
     var body = {
       token: adminToken,
       oqim_id: oqim_id,
+      inbaza_offer_id: inbaza_offer_id,
       title: title,
       description: desc,
       price: price,
@@ -477,7 +479,7 @@ async function saveProduct() {
 }
 
 function resetForm() {
-  ['p-oqim', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
+  ['p-oqim', 'p-inbaza', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -505,6 +507,7 @@ function editProduct(id) {
   if (!p) return;
   editingProductId = id;
   document.getElementById('p-oqim').value = p.oqim_id || '';
+  document.getElementById('p-inbaza').value = p.inbaza_offer_id || '';
   document.getElementById('p-title').value = p.title || '';
   document.getElementById('p-description').value = p.description || '';
   document.getElementById('p-price').value = p.price || '';
