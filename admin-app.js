@@ -396,7 +396,10 @@ async function saveProduct() {
   var b = document.getElementById('add-btn');
 
   // ⭐ Validation
-  if (!oqim_id) { s.innerText = "❗ Oqim ID majburiy!"; s.className = "status err"; return; }
+  if (!oqim_id && !inbaza_offer_id && !alijahon_stream_id) {
+    s.innerText = "❗ Kamida bitta hamkor oqimini kiriting (100k, Inbaza yoki Alijahon)"; s.className = "status err"; return;
+  }
+  if (inbaza_offer_id && !/^\d+$/.test(inbaza_offer_id)) { s.innerText = "❗ Inbaza ID faqat raqam bo'lsin"; s.className = "status err"; showPartner('inbaza'); return; }
   if (!title) { s.innerText = "❗ Mahsulot nomi kerak!"; s.className = "status err"; return; }
   if (!price || !discount) { s.innerText = "❗ Narx va chegirma kerak!"; s.className = "status err"; return; }
 
@@ -482,6 +485,25 @@ async function saveProduct() {
   }
 }
 
+// ==================== HAMKORLAR (100k / Inbaza / Alijahon) tugmalari ====================
+function showPartner(name) {
+  ['100k', 'inbaza', 'alijahon'].forEach(function (p) {
+    document.getElementById('pp-' + p).classList.toggle('hidden', p !== name);
+  });
+  document.querySelectorAll('.partner-tab').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-arg') === name);
+  });
+}
+
+function updatePartnerDots() {
+  var filled = {
+    '100k': !!document.getElementById('p-oqim').value.trim(),
+    inbaza: !!document.getElementById('p-inbaza').value.trim(),
+    alijahon: !!document.getElementById('p-alijahon').value.trim()
+  };
+  Object.keys(filled).forEach(function (p) { document.getElementById('pt-' + p).textContent = filled[p] ? '✅' : ''; });
+}
+
 function resetForm() {
   ['p-oqim', 'p-inbaza', 'p-inbaza-stream', 'p-alijahon', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
     var el = document.getElementById(id);
@@ -495,6 +517,7 @@ function resetForm() {
   editingProductId = null;
   renderImageSlots(); renderCategories(); renderSizes(); renderColors();
   document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
+  showPartner('100k'); updatePartnerDots();
   document.getElementById('cancel-btn').classList.add('hidden');
 }
 
@@ -514,6 +537,8 @@ function editProduct(id) {
   document.getElementById('p-oqim').value = p.oqim_id || '';
   document.getElementById('p-inbaza').value = p.inbaza_offer_id || '';
   document.getElementById('p-alijahon').value = p.alijahon_stream_id || '';
+  updatePartnerDots();
+  showPartner(p.oqim_id ? '100k' : (p.inbaza_offer_id ? 'inbaza' : (p.alijahon_stream_id ? 'alijahon' : '100k')));
   var ibs = document.getElementById('p-inbaza-stream');
   ibs.value = '';
   ibs.placeholder = p.inbaza_stream_set ? '✅ Kalit saqlangan (almashtirish uchun yangisini yozing)' : 'inbaza → Sizning faol oqimlaringiz → Oqim kaliti';

@@ -85,6 +85,11 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
 .status.ok{background:#e8f5e9;color:#2e7d32}
 .status.err{background:#ffebee;color:#c62828}
 .hidden{display:none}
+.partner-tabs{display:flex;gap:6px;margin:6px 0 4px}
+.partner-tab{flex:1;width:auto;margin:0;padding:9px 6px;border-radius:10px;border:2px solid #e0e0e0;background:#f8f9fa;color:#333;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.partner-tab.active{border-color:#1565c0;background:#e3f2fd;color:#1565c0}
+.partner-pane{border:1px solid #e3e8ef;border-radius:10px;padding:4px 10px 6px;margin-bottom:6px;background:#fafcff}
+.partner-hint{font-weight:400;color:#888;font-size:11px}
 .session-info{background:#e8f5e9;color:#2e7d32;padding:7px 10px;border-radius:8px;font-size:11px;text-align:center;margin-bottom:10px}
 .collapsible-header{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:#f8f9fa;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;color:#333;margin:10px 0 4px;user-select:none}
 .collapsible-header .arrow{font-size:11px;color:#1565c0;transition:transform .2s}
@@ -279,19 +284,30 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <h2 id="form-title">➕ Yangi mahsulot qo'shish</h2>
       <div class="info-note">ℹ️ Chegirma avtomatik <b>12 soat</b>ga o'rnatiladi.</div>
 
-      <label>🏷 Oqim ID (100k.uz) *</label>
-      <input type="text" id="p-oqim" placeholder="Masalan: 713182" inputmode="numeric">
-      <div class="info-note">💡 100k.uz admin panel → "Oqim" bo'limidan oling</div>
-
-      <label>📦 Inbaza mahsulot ID (ixtiyoriy)</label>
-      <input type="text" id="p-inbaza" placeholder="Masalan: 42" inputmode="numeric">
-      <label>🔑 Inbaza oqim kaliti</label>
-      <input type="text" id="p-inbaza-stream" placeholder="inbaza → Sizning faol oqimlaringiz → Oqim kaliti" autocomplete="off">
-      <div class="info-note">💡 Ikkalasi inbaza.uz → "Sizning faol oqimlaringiz" jadvalida: <b>offer_id</b> va <b>Oqim kaliti</b>. ID bo'sh qolsa buyurtma inbazaga yuborilmaydi.</div>
-
-      <label>🅰️ Alijahon oqim ID (ixtiyoriy)</label>
-      <input type="text" id="p-alijahon" placeholder="Masalan: 713182" autocomplete="off">
-      <div class="info-note">💡 Alijahon → Market → mahsulot → oqim yaratish. Bo'sh qolsa buyurtma Alijahonga yuborilmaydi.</div>
+      <label>🔗 Buyurtma qaysi hamkorga ketsin * <span class="partner-hint">(kamida bittasi)</span></label>
+      <div class="partner-tabs">
+        <button type="button" class="partner-tab active" data-click="showPartner" data-arg="100k">100k.uz <span class="pt-dot" id="pt-100k"></span></button>
+        <button type="button" class="partner-tab" data-click="showPartner" data-arg="inbaza">Inbaza <span class="pt-dot" id="pt-inbaza"></span></button>
+        <button type="button" class="partner-tab" data-click="showPartner" data-arg="alijahon">Alijahon <span class="pt-dot" id="pt-alijahon"></span></button>
+      </div>
+      <div class="partner-pane" id="pp-100k">
+        <label>🏷 100k.uz oqim ID</label>
+        <input type="text" id="p-oqim" placeholder="Masalan: 713182" inputmode="numeric" data-input="updatePartnerDots">
+        <div class="info-note">💡 100k.uz admin panel → "Oqim" bo'limidan oling</div>
+      </div>
+      <div class="partner-pane hidden" id="pp-inbaza">
+        <label>📦 Inbaza mahsulot ID (offer_id)</label>
+        <input type="text" id="p-inbaza" placeholder="Masalan: 42" inputmode="numeric" data-input="updatePartnerDots">
+        <label>🔑 Inbaza oqim kaliti</label>
+        <input type="text" id="p-inbaza-stream" placeholder="inbaza → Sizning faol oqimlaringiz → Oqim kaliti" autocomplete="off">
+        <div class="info-note">💡 Ikkalasi inbaza.uz → "Sizning faol oqimlaringiz" jadvalida: <b>offer_id</b> va <b>Oqim kaliti</b>.</div>
+      </div>
+      <div class="partner-pane hidden" id="pp-alijahon">
+        <label>🅰️ Alijahon oqim ID</label>
+        <input type="text" id="p-alijahon" placeholder="Masalan: 713182" autocomplete="off" data-input="updatePartnerDots">
+        <div class="info-note">💡 Alijahon → Market → mahsulot → oqim yaratish.</div>
+      </div>
+      <div class="info-note">✅ belgisi qo'yilgan hamkorlarning hammasiga buyurtma yuboriladi. Keraksizini bo'sh qoldiring.</div>
 
       <label>Mahsulot nomi *</label>
       <input type="text" id="p-title" placeholder="Mahsulot nomi">
@@ -636,7 +652,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261024"></script>
-<script src="admin-app.js?v=20261029"></script>
+<script src="admin-events.js?v=20261029"></script>
+<script src="admin-app.js?v=20261030"></script>
 </body>
 </html>

@@ -11,7 +11,8 @@
     switchOqimFilter: 1, switchOrdersPeriod: 1, switchOrdersSource: 1, switchPage: 1,
     toggleCollapsible: 1, toggleFilter: 1, toggleUsersList: 1, updateUsersCountInfo: 1,
     openProductModal: 1, goToProductPage: 1, goToLowStockPage: 1, goToOrdersPage: 1,
-    goToSalesPage: 1, goToUsersPage: 1, loadConnections: 1, connectPlatform: 1, saveTargets: 1, saveInbox: 1, addTeamMember: 1, removeTeamMember: 1
+    goToSalesPage: 1, goToUsersPage: 1, loadConnections: 1, connectPlatform: 1, saveTargets: 1, saveInbox: 1, addTeamMember: 1, removeTeamMember: 1,
+    showPartner: 1, updatePartnerDots: 1
   };
   var NUMERIC = /^-?\d+$/;
 
