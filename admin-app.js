@@ -386,6 +386,7 @@ async function saveProduct() {
   var oqim_id = document.getElementById('p-oqim').value.trim();
   var inbaza_offer_id = document.getElementById('p-inbaza').value.trim();
   var inbaza_stream = document.getElementById('p-inbaza-stream').value.trim();
+  var alijahon_stream_id = document.getElementById('p-alijahon').value.trim();
   var title = document.getElementById('p-title').value.trim();
   var desc = document.getElementById('p-description').value.trim();
   var price = parseInt(document.getElementById('p-price').value) || 0;
@@ -441,6 +442,7 @@ async function saveProduct() {
       token: adminToken,
       oqim_id: oqim_id,
       inbaza_offer_id: inbaza_offer_id,
+      alijahon_stream_id: alijahon_stream_id,
       title: title,
       description: desc,
       price: price,
@@ -481,7 +483,7 @@ async function saveProduct() {
 }
 
 function resetForm() {
-  ['p-oqim', 'p-inbaza', 'p-inbaza-stream', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
+  ['p-oqim', 'p-inbaza', 'p-inbaza-stream', 'p-alijahon', 'p-title', 'p-description', 'p-price', 'p-discount', 'p-stock', 'p-images'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -511,6 +513,7 @@ function editProduct(id) {
   editingProductId = id;
   document.getElementById('p-oqim').value = p.oqim_id || '';
   document.getElementById('p-inbaza').value = p.inbaza_offer_id || '';
+  document.getElementById('p-alijahon').value = p.alijahon_stream_id || '';
   var ibs = document.getElementById('p-inbaza-stream');
   ibs.value = '';
   ibs.placeholder = p.inbaza_stream_set ? '✅ Kalit saqlangan (almashtirish uchun yangisini yozing)' : 'inbaza → Sizning faol oqimlaringiz → Oqim kaliti';
