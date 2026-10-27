@@ -1360,3 +1360,13 @@ html.mm-locked, html.mm-locked body { overflow: hidden; }
 
 /* Botlar uchun yashirin maydon (odamga ko'rinmaydi) */
 .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* O'rnatish taklifi (install.js) */
+.install-bar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 9000;
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px;
+    background: #1565c0; color: #fff; box-shadow: 0 6px 22px rgba(0, 0, 0, .25); font-size: 14px; }
+.install-bar span { flex: 1; line-height: 1.35; }
+.install-bar button { border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 600; cursor: pointer; }
+#install-btn { background: #fff; color: #1565c0; }
+.install-x { background: transparent; color: #fff; padding: 6px 8px; }
+.install-bar.hidden { display: none; }
