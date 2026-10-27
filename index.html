@@ -56,6 +56,11 @@
     <link rel="stylesheet" href="style.css?v=20261017">
 </head>
 <body>
+    <div id="install-bar" class="install-bar hidden" role="region" aria-label="Ilovani o'rnatish">
+        <span>📲 MaxiMarket ilovasini telefoningizga o'rnating — tezroq kiring</span>
+        <button id="install-btn" type="button">O'rnatish</button>
+        <button id="install-close" type="button" class="install-x" aria-label="Yopish">✕</button>
+    </div>
     <!-- ILOVA QULFI: ochilish ekrani + PIN-kod (faqat ilova rejimida) -->
     <div id="app-lock" class="app-lock" aria-live="polite">
         <div class="lock-brand">
@@ -200,5 +205,6 @@
     <script src="app.js?v=20261017"></script>
     <script src="lock.js?v=20261017"></script>
     <script src="sw-register.js?v=20261017"></script>
+    <script src="install.js?v=20261027"></script>
 </body>
 </html>
