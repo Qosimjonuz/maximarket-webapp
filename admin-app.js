@@ -9,8 +9,8 @@ var TOKEN_KEY = "maximarket_admin_token";
 
 // ⭐ Konstantalar
 var MAX_CATEGORIES = 2;
-var MAX_SIZES = 4;
-var MAX_COLORS = 10;
+var MAX_SIZES = 100;    // o'lcham va rangda amalda cheklov yo'q (egasi so'rovi)
+var MAX_COLORS = 100;
 var MAX_IMAGES = 4;
 var PER_PAGE = 10;
 var USERS_PER_PAGE = 12;
@@ -208,6 +208,7 @@ function renderCategories() {
   });
   g.innerHTML = h;
   bindChips(g, '.chip[data-cat]', 'data-cat', selectedCategories, MAX_CATEGORIES, renderCategories);
+  updateAttrCounts();
 }
 function renderSizes() {
   var g = document.getElementById('sizes-grid'), h = '';
@@ -217,6 +218,7 @@ function renderSizes() {
   });
   g.innerHTML = h;
   bindChips(g, '.chip[data-size]', 'data-size', selectedSizes, MAX_SIZES, renderSizes);
+  updateAttrCounts();
 }
 function renderColors() {
   var g = document.getElementById('colors-grid'), h = '';
@@ -232,6 +234,24 @@ function renderColors() {
       else { if (selectedColors.length >= MAX_COLORS) { alert("Faqat " + MAX_COLORS + " ta rang!"); return; } selectedColors.push(v); }
       renderColors();
     });
+  });
+  updateAttrCounts();
+}
+
+// Turkum / o'lcham / rang tugmalari: bittasi ochiladi, tanlanganlar soni tugmada
+function showAttr(name) {
+  ['cat', 'size', 'color'].forEach(function (p) {
+    document.getElementById('ap-' + p).classList.toggle('hidden', p !== name);
+  });
+  document.querySelectorAll('[data-click="showAttr"]').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-arg') === name);
+  });
+}
+function updateAttrCounts() {
+  var n = { cat: selectedCategories.length, size: selectedSizes.length, color: selectedColors.length };
+  Object.keys(n).forEach(function (k) {
+    var el = document.getElementById('at-' + k);
+    if (el) el.textContent = n[k] ? '✅' + n[k] : '';
   });
 }
 function bindChips(grid, sel, attr, arr, max, rnd) {
@@ -490,7 +510,7 @@ function showPartner(name) {
   ['100k', 'inbaza', 'alijahon'].forEach(function (p) {
     document.getElementById('pp-' + p).classList.toggle('hidden', p !== name);
   });
-  document.querySelectorAll('.partner-tab').forEach(function (b) {
+  document.querySelectorAll('[data-click="showPartner"]').forEach(function (b) {
     b.classList.toggle('active', b.getAttribute('data-arg') === name);
   });
 }
@@ -517,7 +537,7 @@ function resetForm() {
   editingProductId = null;
   renderImageSlots(); renderCategories(); renderSizes(); renderColors();
   document.getElementById('form-title').innerText = "➕ Yangi mahsulot qo'shish";
-  showPartner('100k'); updatePartnerDots();
+  showPartner('100k'); updatePartnerDots(); showAttr('cat');
   document.getElementById('cancel-btn').classList.add('hidden');
 }
 

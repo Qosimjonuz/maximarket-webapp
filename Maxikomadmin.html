@@ -324,14 +324,15 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
       <label>Ombordagi soni (dona)</label>
       <input type="number" id="p-stock" placeholder="10" inputmode="numeric">
 
-      <label>📂 Kategoriyalar (2 tagacha)</label>
-      <div class="grid-2" id="categories-grid"></div>
-
-      <div class="collapsible-header" data-click="toggleCollapsible" data-arg="sizes"><span>📏 O'lchamlar</span><span class="arrow" id="sizes-arrow">▼</span></div>
-      <div class="collapsible-body" id="sizes-body"><div class="grid-3" id="sizes-grid"></div></div>
-
-      <div class="collapsible-header" data-click="toggleCollapsible" data-arg="colors"><span>🎨 Ranglar (10 tagacha)</span><span class="arrow" id="colors-arrow">▼</span></div>
-      <div class="collapsible-body" id="colors-body"><div class="grid-4" id="colors-grid"></div></div>
+      <label>🏷 Turkum, o'lcham va rang</label>
+      <div class="partner-tabs">
+        <button type="button" class="partner-tab active" data-click="showAttr" data-arg="cat">📂 Turkum <span id="at-cat"></span></button>
+        <button type="button" class="partner-tab" data-click="showAttr" data-arg="size">📏 O'lcham <span id="at-size"></span></button>
+        <button type="button" class="partner-tab" data-click="showAttr" data-arg="color">🎨 Rang <span id="at-color"></span></button>
+      </div>
+      <div class="partner-pane attr-pane" id="ap-cat"><div class="info-note">2 tagacha tanlang</div><div class="grid-2" id="categories-grid"></div></div>
+      <div class="partner-pane attr-pane hidden" id="ap-size"><div class="info-note">Kerakli o'lchamlarning hammasini tanlang (cheklov yo'q)</div><div class="grid-3" id="sizes-grid"></div></div>
+      <div class="partner-pane attr-pane hidden" id="ap-color"><div class="info-note">Kerakli ranglarning hammasini tanlang (cheklov yo'q)</div><div class="grid-4" id="colors-grid"></div></div>
 
       <label>📷 Rasmlar (4 tagacha)</label>
       <div class="main-image-note">⭐ <b>1-slot</b> — asosiy rasm (katalogda ko'rinadi)</div>
@@ -652,7 +653,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261029"></script>
-<script src="admin-app.js?v=20261030"></script>
+<script src="admin-events.js?v=20261031"></script>
+<script src="admin-app.js?v=20261031"></script>
 </body>
 </html>
