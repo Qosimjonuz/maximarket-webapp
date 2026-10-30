@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - name: Playwright o'rnatish
         run: |
           npm i --no-save --no-package-lock playwright@1.56.1
@@ -25,7 +25,7 @@ jobs:
         shell: bash -o pipefail {0}
       - name: Xato bo'lsa issue ochish (egasiga GitHub xabari keladi)
         if: failure() && steps.check.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');

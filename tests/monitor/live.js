@@ -7,10 +7,17 @@ const SITE = 'https://maxi-market.uz';
 const PLAY = 'https://play.google.com/store/apps/details?id=uz.maxi_market.twa&hl=uz';
 const API = 'https://maximarketbot-production.up.railway.app';
 
-async function get(url) {
+// Tarmoq bir lahza uzilsa (fetch failed) soxta signal bermaslik uchun 5 soniyadan keyin bir marta qayta uriniladi.
+async function get(url, retry = true) {
   const t = Date.now();
-  const r = await fetch(url, { headers: { 'User-Agent': 'MaxiMarket-monitor' }, signal: AbortSignal.timeout(30000) });
-  return { status: r.status, text: await r.text(), ms: Date.now() - t };
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': 'MaxiMarket-monitor' }, signal: AbortSignal.timeout(30000) });
+    return { status: r.status, text: await r.text(), ms: Date.now() - t };
+  } catch (e) {
+    if (!retry) throw e;
+    await new Promise(res => setTimeout(res, 5000));
+    return get(url, false);
+  }
 }
 
 const checks = [
