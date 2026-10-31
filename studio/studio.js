@@ -24,8 +24,10 @@
     ['😱 Hook', { text: 'Qaranglar, nima oldim! 😱', font: 'rubik', size: 0.065, outline: true, y: 0.3 }]];
   var EMOJIS = ['🔥', '😍', '✅', '💥', '⭐', '🎁', '❤️', '👍', '😱', '🤩', '💯', '🛒', '🚚', '💰', '⚡', '👇', '👉', '🎉', '😊', '🆕'];
 
-  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'none' };
+  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'none', frameScale: 1,
+    banner: 'none', bannerScale: 0.9, bannerX: 0.5, bannerY: 0.8 };
   var FRAMES = ['f1', 'f2', 'f3'];
+  var BANNERS = ['b1', 'b2'];
   var USER = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) || 'x';
   var DRAFT_KEY = 'maxistudio:' + USER;
   var $ = function (id) { return document.getElementById(id); };
@@ -478,7 +480,8 @@
           bold: x.bold, shadow: x.shadow, outline: x.outline, anim: x.anim === false ? 'none' : 'fade', x: x.x, y: x.y, start: x.start, end: x.end };
       }),
       music: S.music ? { id: S.music.id, volume: S.music.volume, segments: S.music.segs.map(function (g) { return { start: g.s, end: g.e }; }) } : null,
-      video_volume: S.videoVolume, fit: S.fit, frame: S.frame
+      video_volume: S.videoVolume, fit: S.fit, frame: S.frame, frame_scale: S.frameScale,
+      banner: S.banner, banner_scale: S.bannerScale, banner_x: S.bannerX, banner_y: S.bannerY
     };
   }
 
@@ -522,7 +525,8 @@
       var d = { v: 1, t: Date.now(), clips: S.clips.filter(function (c) { return c.id; }).map(function (c) {
         return { id: c.id, kind: c.kind, start: c.start, end: c.end, imgDur: c.imgDur, filter: c.filter, duration: c.duration }; }),
         texts: S.texts, music: S.music ? { id: S.music.id, name: S.music.name, duration: S.music.duration, segs: S.music.segs, volume: S.music.volume } : null,
-        videoVolume: S.videoVolume, fit: S.fit, transition: S.transition, tdur: S.tdur, frame: S.frame, caption: $('caption').value };
+        videoVolume: S.videoVolume, fit: S.fit, transition: S.transition, tdur: S.tdur, frame: S.frame, frameScale: S.frameScale,
+        banner: S.banner, bannerScale: S.bannerScale, bannerX: S.bannerX, bannerY: S.bannerY, caption: $('caption').value };
       var js = JSON.stringify(d);
       if (js !== lastSaved) { localStorage.setItem(DRAFT_KEY, js); lastSaved = js; }
     } catch (e) {}
@@ -543,7 +547,10 @@
         if (d.music && urls[d.music.id]) { setMusic({ id: d.music.id, duration: d.music.duration }, urls[d.music.id], d.music.name); S.music.segs = d.music.segs && d.music.segs.length ? d.music.segs : [{ s: d.music.offset || 0, e: d.music.duration }]; S.music.volume = d.music.volume; renderSegs(); $('music-vol').value = Math.round(d.music.volume * 100); }
         S.videoVolume = d.videoVolume || 1; S.fit = d.fit || 'cover'; S.transition = d.transition || 'none'; S.tdur = d.tdur || 0.5;
         $('caption').value = d.caption || '';
+        S.frameScale = d.frameScale || 1;
+        S.bannerScale = d.bannerScale || 0.9; S.bannerX = d.bannerX != null ? d.bannerX : 0.5; S.bannerY = d.bannerY != null ? d.bannerY : 0.8;
         setFrame(FRAMES.indexOf(d.frame) >= 0 ? d.frame : 'none');
+        setBanner(BANNERS.indexOf(d.banner) >= 0 ? d.banner : 'none');
         stage.classList.toggle('contain', S.fit === 'contain');
         document.querySelectorAll('.seg button').forEach(function (x) { x.classList.toggle('active', x.getAttribute('data-fit') === S.fit); });
         renderTransitions(); renderClips(); renderTextList(); refresh();
@@ -553,24 +560,56 @@
   }
 
   // ---------- hoshiya ----------
+  // Hoshiya markazda, o'lchami 50-150% (150% da chetlari kadrdan chiqadi).
+  function placeFrame() {
+    var s = S.frameScale, st = $('pfr').style, off = ((1 - s) / 2 * 100) + '%';
+    st.left = off; st.top = off; st.width = (s * 100) + '%'; st.height = (s * 100) + '%';
+    $('fscale').value = Math.round(s * 100); $('fscale-v').textContent = Math.round(s * 100) + '%';
+  }
   function setFrame(id) {
     S.frame = id;
     var img = $('pfr');
     if (id === 'none') { img.classList.add('hidden'); img.removeAttribute('src'); }
     else { img.src = 'frames/' + id + '.png'; img.classList.remove('hidden'); }
+    $('frame-opts').classList.toggle('hidden', id === 'none');
+    placeFrame();
     document.querySelectorAll('#frames button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-frame') === id); });
   }
-  function renderFrames() {
-    var box = $('frames'); box.textContent = '';
-    ['none'].concat(FRAMES).forEach(function (id) {
-      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-frame', id);
-      b.setAttribute('aria-label', id === 'none' ? 'Hoshiyasiz' : 'Hoshiya ' + id.slice(1));
+  // Plashka: eni videoning S.bannerScale qismi, markazi (bannerX, bannerY).
+  function placeBanner() {
+    var st = $('pbn').style;
+    st.width = (S.bannerScale * 100) + '%'; st.left = (S.bannerX * 100) + '%'; st.top = (S.bannerY * 100) + '%';
+    $('bscale').value = Math.round(S.bannerScale * 100); $('bscale-v').textContent = Math.round(S.bannerScale * 100) + '%';
+    $('bx').value = Math.round(S.bannerX * 100); $('by').value = Math.round(S.bannerY * 100);
+  }
+  function setBanner(id) {
+    S.banner = id;
+    var img = $('pbn');
+    if (id === 'none') { img.classList.add('hidden'); img.removeAttribute('src'); }
+    else { img.src = 'frames/' + id + '.png'; img.classList.remove('hidden'); }
+    $('banner-opts').classList.toggle('hidden', id === 'none');
+    placeBanner();
+    document.querySelectorAll('#banners button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-banner') === id); });
+  }
+  function optButtons(boxId, ids, attr, label, onPick) {
+    var box = $(boxId); box.textContent = '';
+    ['none'].concat(ids).forEach(function (id) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute(attr, id);
+      b.setAttribute('aria-label', id === 'none' ? label + 'siz' : label + ' ' + id.slice(1));
       if (id === 'none') b.textContent = 'Yo\'q';
       else { var im = document.createElement('img'); im.src = 'frames/' + id + '.png'; im.alt = ''; im.loading = 'lazy'; b.appendChild(im); }
-      b.addEventListener('click', function () { setFrame(id); haptic(); saveDraft(); });
+      b.addEventListener('click', function () { onPick(id); haptic(); saveDraft(); });
       box.appendChild(b);
     });
-    setFrame(S.frame);
+  }
+  function renderFrames() {
+    optButtons('frames', FRAMES, 'data-frame', 'Hoshiya', setFrame);
+    optButtons('banners', BANNERS, 'data-banner', 'Plashka', setBanner);
+    $('fscale').addEventListener('input', function () { S.frameScale = this.value / 100; placeFrame(); saveDraft(); });
+    $('bscale').addEventListener('input', function () { S.bannerScale = this.value / 100; placeBanner(); saveDraft(); });
+    $('bx').addEventListener('input', function () { S.bannerX = this.value / 100; placeBanner(); saveDraft(); });
+    $('by').addEventListener('input', function () { S.bannerY = this.value / 100; placeBanner(); saveDraft(); });
+    setFrame(S.frame); setBanner(S.banner);
   }
 
   // ---------- sahifalar (Telegram ichidagi brauzerda) ----------
