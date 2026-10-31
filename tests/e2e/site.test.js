@@ -70,6 +70,12 @@ async function testStudio(browser, base) {
   assert.strictEqual(await p.$$eval('#clips .card', (x) => x.length), 3, 'klip 3 bo\'lakka bo\'linishi kerak');
   await p.click('#clips .card:nth-child(2) .clip-actions button:has-text("🗑")');
   await p.click('#frames button[data-frame=f2]');
+  const slide = (id, v) => p.evaluate(([id, v]) => { const s = document.getElementById(id); s.value = v; s.dispatchEvent(new Event('input')); }, [id, v]);
+  await slide('fscale', 80);
+  await p.click('#banners button[data-banner=b2]');
+  await slide('bscale', 60); await slide('by', 75); await slide('bx', 40);
+  const pb = await p.$eval('#pbn', (e) => ({ w: e.style.width, top: e.style.top, vis: getComputedStyle(e).display !== 'none' }));
+  assert.deepStrictEqual(pb, { w: '60%', top: '75%', vis: true }, 'plashka ko\'rinishi');
   await p.click('.tabs button[data-tab=music]');
   await p.setInputFiles('#add-music', { name: 'v.m4a', mimeType: 'audio/mp4', buffer: Buffer.from('test') });
   await p.waitForSelector('#music-segs .seg-card');
@@ -85,9 +91,10 @@ async function testStudio(browser, base) {
   assert.deepStrictEqual(pr.clips.map((c) => [c.start, c.end]), [[0, 2], [4, 6]]);
   assert.deepStrictEqual(pr.music.segments, [{ start: 0, end: 1 }, { start: 2, end: 20 }]);
   assert.strictEqual(pr.frame, 'f2');
+  assert.deepStrictEqual([pr.frame_scale, pr.banner, pr.banner_scale, pr.banner_x, pr.banner_y], [0.8, 'b2', 0.6, 0.4, 0.75]);
   assert.deepStrictEqual(errors, [], 'studio\'da JS xato');
   await p.close();
-  console.log('✓ MaxiStudio: kesish, ovoz bo\'laklari, hoshiya, sahifa tugmasi');
+  console.log('✓ MaxiStudio: kesish, ovoz bo\'laklari, hoshiya o\'lchami, plashka, sahifa tugmasi');
 }
 
 (async () => {
