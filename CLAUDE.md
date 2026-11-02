@@ -4,6 +4,8 @@ Egasi bilan **o'zbek tilida** gaplash. Bu repo: sayt maxi-market.uz (GitHub Page
 Backend/bot alohida repoda: `Qosimjonuz/MaxiMarketBot` (Railway, MongoDB Atlas).
 
 ## Kontekstni tez olish (token tejash)
+**Avval:** ikkinchi miyadagi `02-Sohalar/Ish/MaxiMarket/Claude-qollanma.md` ni o'qi (repo `Qosimjonuz/Ikkinchi-miyya-`, sandbox'da `/home/user/ikkinchi-miyya-`). Unda repolar, testlar buyrug'i, deploy, tezkor ID'lar, vositalar tuzoqlari va hozirgi holat bor.
+
 Loyiha haqida batafsil bilim Keragli xotirasida ("Internet magazin" ish maydoni). Fayllarni o'qishdan oldin shuni chaqir:
 
 `recall(query="<mavzu>", repository_id="Qosimjonuz/maximarket-webapp", profile="audit", k=2, render="compact", include_turns=true, token_budget=1500)`
