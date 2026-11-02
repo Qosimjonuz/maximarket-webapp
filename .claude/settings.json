@@ -1,13 +1,20 @@
 {
+  "enabledPlugins": {
+    "ecc@ecc": true,
+    "lemo-opuscar@lemolab": true
+  },
   "extraKnownMarketplaces": {
     "ecc": {
       "source": {
         "source": "git",
         "url": "https://github.com/affaan-m/ECC.git"
       }
+    },
+    "lemolab": {
+      "source": {
+        "source": "github",
+        "repo": "lemomo-ai/lemo-opuscar"
+      }
     }
-  },
-  "enabledPlugins": {
-    "ecc@ecc": true
   }
 }
