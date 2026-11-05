@@ -13,7 +13,15 @@
     var openedAt = Date.now(), allProducts = [], product = null, idx = 0, size = '', color = '';
 
     function showMsg(html) { var m = $('msg'); m.innerHTML = html; m.classList.remove('hide'); }
-    function imgUrl(u) { return !u ? '' : (/^https?:/.test(u) ? u : API_URL + '/api/image/' + encodeURIComponent(u)); }
+    function origUrl(u) { return !u ? '' : (/^https?:/.test(u) ? u : API_URL + '/api/image/' + encodeURIComponent(u)); }
+    // Rasm ombori: ImgBB rasmi server orqali (siqilgan WebP), ishlamasa asl havolaga o'tiladi
+    function imgUrl(u, w) {
+        if (u && /^https:\/\/i\.ibb\.co\//.test(u)) return API_URL + '/img?u=' + encodeURIComponent(u) + '&w=' + (w || 900);
+        return origUrl(u);
+    }
+    function withFallback(im, u) {
+        im.onerror = function () { var o = origUrl(u); if (o && im.src !== o) { im.onerror = null; im.src = o; } };
+    }
     function num(n) { return Number(n || 0).toLocaleString('ru-RU'); }
     function post(path, body) {
         return fetch(API_URL + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -26,6 +34,7 @@
 
     function showImage() {
         var imgs = product.images || [];
+        if (imgs.length) withFallback($('img'), imgs[idx]);
         $('img').src = imgs.length ? imgUrl(imgs[idx]) : '';
         $('dots').innerHTML = '';
         imgs.forEach(function (_, i) {
@@ -107,7 +116,8 @@
             a.href = '/product/?id=' + encodeURIComponent(q.id);
             var im = document.createElement('img');
             im.loading = 'lazy'; im.decoding = 'async'; im.alt = '';
-            im.src = imgUrl((q.images || [])[0]);
+            withFallback(im, (q.images || [])[0]);
+            im.src = imgUrl((q.images || [])[0], 400);
             var t = document.createElement('div'); t.className = 't'; t.textContent = (q.title || '').slice(0, 60);
             var price = q.discount_price || q.price || 0;
             var o = document.createElement('div'); o.className = 'o'; o.textContent = q.price > price ? num(q.price) : '';

@@ -233,7 +233,10 @@ function initImageObserver() {
                         img.classList.add('loaded');
                     };
                     loader.onerror = () => {
+                        const fb = img.getAttribute('data-fallback');
                         img.removeAttribute('data-src');
+                        img.removeAttribute('data-fallback');
+                        if (fb && fb !== realSrc) img.src = fb;
                         img.classList.add('loaded');
                     };
                     loader.src = realSrc;
@@ -454,10 +457,20 @@ function buildSkeleton(count) {
     return html;
 }
 
-function getImageUrl(url) {
+// Rasm ombori (2026-11-05): ImgBB rasmlari bizning server orqali (bucketdagi nusxa, siqilgan WebP).
+// Server yoki nusxa ishlamasa brauzer asl ImgBB havolasiga o'tadi (data-fallback / onerror).
+function getImageUrl(url, w) {
     if (!url) return "";
+    if (/^https:\/\/i\.ibb\.co\//.test(url)) {
+        return `${API_URL}/img?u=${encodeURIComponent(url)}` + (w ? `&w=${w}` : '');
+    }
     if (url.startsWith('http')) return url;
     return `${API_URL}/api/image/${url}`;
+}
+
+function originalImageUrl(url) {
+    if (!url) return "";
+    return url.startsWith('http') ? url : `${API_URL}/api/image/${url}`;
 }
 
 function buildProductCard(p) {
@@ -471,7 +484,8 @@ function buildProductCard(p) {
         }).join('') + '</div>'
         : '';
 
-    const realImg = getImageUrl(p.images && p.images[0]);
+    const realImg = getImageUrl(p.images && p.images[0], 400);
+    const fallbackImg = originalImageUrl(p.images && p.images[0]);
 
     return `
     <div class="product-card-h" data-id="${productId}">
@@ -480,6 +494,7 @@ function buildProductCard(p) {
             <img
                 src="${PLACEHOLDER_PIXEL}"
                 data-src="${realImg || ''}"
+                data-fallback="${fallbackImg || ''}"
                 alt="${(p.title || '').substring(0, 30)}"
                 decoding="async"
                 class="product-img"
@@ -500,7 +515,8 @@ function buildBigProductCard(p) {
     const discountPercent = p.price > 0 && p.discount_price > 0
         ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
     const productId = String(p.id);
-    const realImg = getImageUrl(p.images && p.images[0]);
+    const realImg = getImageUrl(p.images && p.images[0], 600);
+    const fallbackImg = originalImageUrl(p.images && p.images[0]);
     const description = (p.description || '').substring(0, 150);
 
     return `
@@ -510,6 +526,7 @@ function buildBigProductCard(p) {
             <img
                 src="${PLACEHOLDER_PIXEL}"
                 data-src="${realImg || ''}"
+                data-fallback="${fallbackImg || ''}"
                 alt="${(p.title || '').substring(0, 30)}"
                 decoding="async"
                 class="product-img"
@@ -893,7 +910,7 @@ function preloadModalImages() {
     if (!currentProduct || !currentProduct.images) return;
     currentProduct.images.forEach((imgUrl, idx) => {
         if (idx === currentImageIndex) return;
-        const url = getImageUrl(imgUrl);
+        const url = getImageUrl(imgUrl, 900);
         if (url && !url.startsWith('data:')) {
             const preloader = new Image();
             preloader.src = url;
@@ -909,7 +926,10 @@ function updateImage() {
     img.classList.remove('loaded');
     img.style.transform = '';
     const imgUrl = (currentProduct.images && currentProduct.images.length > 0)
-        ? getImageUrl(currentProduct.images[currentImageIndex])
+        ? getImageUrl(currentProduct.images[currentImageIndex], 900)
+        : "";
+    const fallbackUrl = (currentProduct.images && currentProduct.images.length > 0)
+        ? originalImageUrl(currentProduct.images[currentImageIndex])
         : "";
     if (!imgUrl) {
         img.src = PLACEHOLDER_PIXEL;
@@ -922,6 +942,11 @@ function updateImage() {
             preloadModalImages();
         };
         img.onerror = function() {
+            if (fallbackUrl && img.src !== fallbackUrl && img.getAttribute('data-tried') !== fallbackUrl) {
+                img.setAttribute('data-tried', fallbackUrl);
+                img.src = fallbackUrl;
+                return;
+            }
             img.src = PLACEHOLDER_PIXEL;
             img.classList.add('loaded');
             if (spinner) spinner.style.display = 'none';
