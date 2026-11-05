@@ -16,7 +16,7 @@
     function origUrl(u) { return !u ? '' : (/^https?:/.test(u) ? u : API_URL + '/api/image/' + encodeURIComponent(u)); }
     // Rasm ombori: ImgBB rasmi server orqali (siqilgan WebP), ishlamasa asl havolaga o'tiladi
     function imgUrl(u, w) {
-        if (u && /^https:\/\/i\.ibb\.co\//.test(u)) return API_URL + '/img?u=' + encodeURIComponent(u) + '&w=' + (w || 900);
+        if (u && /^https:\/\/i\.ibb\.co\//.test(u)) return API_URL + '/img?v=2&u=' + encodeURIComponent(u) + '&w=' + (w || 900);
         return origUrl(u);
     }
     function withFallback(im, u) {

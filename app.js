@@ -462,7 +462,7 @@ function buildSkeleton(count) {
 function getImageUrl(url, w) {
     if (!url) return "";
     if (/^https:\/\/i\.ibb\.co\//.test(url)) {
-        return `${API_URL}/img?u=${encodeURIComponent(url)}` + (w ? `&w=${w}` : '');
+        return `${API_URL}/img?v=2&u=${encodeURIComponent(url)}` + (w ? `&w=${w}` : '');
     }
     if (url.startsWith('http')) return url;
     return `${API_URL}/api/image/${url}`;
