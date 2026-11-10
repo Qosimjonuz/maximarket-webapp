@@ -101,18 +101,22 @@ async function testStudioMenu(browser, base) {
   const { p, errors } = await page(browser, base, () => ({ success: true }));
   await p.goto(base + '/studio/menu/index.html');
   await p.waitForSelector('#tools .tool');
-  assert.strictEqual(await p.$$eval('#tools .tool', (x) => x.length), 4, 'menyuda 4 vosita bo\'lishi kerak');
+  assert.strictEqual(await p.$$eval('#tools .tool', (x) => x.length), 6, 'menyuda 6 vosita bo\'lishi kerak');
   await p.click('#tools .tool:nth-child(2)');
   assert.strictEqual(await p.evaluate(() => window.__opened), 'https://vocalremover.org/');
   await p.click('#tools .tool:nth-child(3)');
   assert.strictEqual(await p.evaluate(() => window.__opened), 'https://voicelab.uz/speech-to-text');
   await p.click('#tools .tool:nth-child(4)');
-  assert.strictEqual(await p.evaluate(() => window.__opened), 'https://tapecut.app/');
+  assert.strictEqual(await p.evaluate(() => window.__opened), 'https://aroratools.com/tools/split-audio/');
+  await p.click('#tools .tool:nth-child(5)');
+  assert.strictEqual(await p.evaluate(() => window.__opened), 'https://adverthunt.com/tools/meta-ads-downloader');
+  await p.click('#tools .tool:nth-child(6)');
+  assert.strictEqual(await p.evaluate(() => window.__opened), 'https://pinetools.com/split-image');
   await p.click('#tools .tool:nth-child(1)');
   await p.waitForURL('**/studio/');
   assert.deepStrictEqual(errors, [], 'menyuda JS xato');
   await p.close();
-  console.log('✓ MaxiStudio menyu: 4 vosita, tashqi havolalar, muharrirga o\'tish');
+  console.log('✓ MaxiStudio menyu: 6 vosita, tashqi havolalar, muharrirga o\'tish');
 }
 
 (async () => {

@@ -6,7 +6,9 @@
     { icon: '🎬', title: 'Video', accent: 'muharrir', desc: "Klip qirqish, yozuv, hoshiya, ovoz va tayyor videoni joylash", href: '../', tag: 'MaxiStudio', main: true },
     { icon: '🎵', title: 'Videodan ovoz va', accent: 'musiqani ajratish', desc: "Ovoz (gap) va musiqani alohida fayllarga ajratadi", url: 'https://vocalremover.org/', tag: 'vocalremover.org' },
     { icon: '📝', title: 'Audio', accent: 'matnga aylantirish', desc: "Ovozli xabar yoki audioni o'zbekcha matnga o'giradi", url: 'https://voicelab.uz/speech-to-text', tag: 'voicelab.uz' },
-    { icon: '✂️', title: 'Audioni', accent: "bo'lish", desc: "Audioni kerakli joyidan qirqadi va bo'laklarga ajratadi", url: 'https://tapecut.app/', tag: 'tapecut.app' }
+    { icon: '✂️', title: 'Audioni', accent: "bo'lish", desc: "Audioni kerakli joyidan qirqadi va bo'laklarga ajratadi", url: 'https://aroratools.com/tools/split-audio/', tag: 'aroratools.com' },
+    { icon: '📥', title: 'Meta reklamani', accent: 'yuklab olish', desc: "Facebook va Instagram reklama videosini yuklab oladi", url: 'https://adverthunt.com/tools/meta-ads-downloader', tag: 'adverthunt.com' },
+    { icon: '🖼', title: 'Rasmni', accent: "bo'laklarga qirqish", desc: "Rasmni turli ko'rinishlarda (setka, qism) qirqadi", url: 'https://pinetools.com/split-image', tag: 'pinetools.com' }
   ];
   var tg = window.Telegram && window.Telegram.WebApp;
   try { if (tg) { tg.ready(); tg.expand(); } } catch (e) {}
