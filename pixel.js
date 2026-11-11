@@ -3,7 +3,7 @@
 (function () {
     'use strict';
     // Meta Events Manager > Data sources > Pixel ID (faqat raqam, sir emas). Bo'sh bo'lsa hech narsa yuklanmaydi.
-    var PIXEL_ID = '';
+    var PIXEL_ID = '994609253124059';   // MaxiMarket (biznes shodmakuz, ads akkaunt "maxi marked"), 2026-11-11
 
     window.mmTrack = function () {};
     if (!/^\d{10,20}$/.test(PIXEL_ID)) return;
