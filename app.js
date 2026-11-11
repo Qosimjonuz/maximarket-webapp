@@ -1077,10 +1077,12 @@ async function submitOrder(event) {
 // ==================== TASHRIF ====================
 async function trackVisit() {
     try {
+        // Reklama manbasi: ?utm_source=instagram&utm_campaign=... (server faqat kichik harf/raqam/_.- ni qabul qiladi)
+        const q = new URLSearchParams(location.search);
         await fetch(`${API_URL}/api/visit`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ page: 'main' })
+            body: JSON.stringify({ page: 'main', src: (q.get('utm_source') || '').slice(0, 40), cmp: (q.get('utm_campaign') || '').slice(0, 40) })
         });
     } catch (e) {}
 }

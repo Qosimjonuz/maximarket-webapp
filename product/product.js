@@ -191,7 +191,16 @@
           .then(function () { btn.disabled = false; btn.textContent = 'Tasdiqlash'; });
     }
 
+    function trackVisit() {
+        try {   // Reklamadan kelgan tashrif: ?utm_source=instagram&utm_campaign=... (server tekshiradi, IP saqlanmaydi)
+            var q = new URLSearchParams(location.search);
+            post('/api/visit', { page: 'product', src: (q.get('utm_source') || '').slice(0, 40), cmp: (q.get('utm_campaign') || '').slice(0, 40) })
+                .catch(function () {});
+        } catch (e) { /* kuzatuv sahifaga halaqit bermasin */ }
+    }
+
     function init() {
+        trackVisit();
         var id = getId();
         if (!id) return showMsg('Mahsulot havolasi noto\'g\'ri. <a href="/">Bosh sahifaga o\'tish</a>');
         $('prev').addEventListener('click', function () { slide(-1); });
