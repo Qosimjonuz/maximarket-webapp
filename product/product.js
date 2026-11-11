@@ -180,6 +180,10 @@
             color: colorName
         }).then(function (r) { return r.json(); }).then(function (d) {
             if (d.success) {
+                try {   // Meta Pixel Lead: faqat mahsulot va narx, ism/telefon yuborilmaydi
+                    if (window.mmTrack) window.mmTrack('Lead', { content_ids: [String(product.id)], content_name: String(product.title || ''),
+                        value: Number(product.discount_price || product.price || 0), currency: 'UZS' });
+                } catch (e2) { /* o'lchash xatosi buyurtmaga halaqit bermasin */ }
                 setStatus('✅ Buyurtmangiz qabul qilindi! Tez orada operatorimiz bog\'lanadi.', 'ok');
                 $('form').reset();
             } else setStatus('❌ ' + (d.error || 'Xatolik'), 'err');
@@ -207,6 +211,10 @@
             product = allProducts.filter(function (p) { return String(p.id) === id; })[0];
             if (!product) return showMsg('Mahsulot topilmadi. <a href="/">Bosh sahifaga o\'tish</a>');
             render();
+            try {   // Meta Pixel ViewContent (reklamadan kelgan odam mahsulotni ko'rdi)
+                if (window.mmTrack) window.mmTrack('ViewContent', { content_ids: [String(product.id)], content_type: 'product',
+                    content_name: String(product.title || ''), value: Number(product.discount_price || product.price || 0), currency: 'UZS' });
+            } catch (e3) { /* o'lchash xatosi sahifaga halaqit bermasin */ }
         }).catch(function () { showMsg('Xatolik. Qayta urinib ko\'ring. <a href="/">Bosh sahifa</a>'); });
     }
     init();

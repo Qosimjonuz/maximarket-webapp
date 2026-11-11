@@ -991,6 +991,16 @@ function startCountdown() {
     countdownInterval = setInterval(tick, 1000);
 }
 
+// Meta Pixel: buyurtma yuborildi (Lead). Ism va telefon YUBORILMAYDI, faqat mahsulot va narx.
+function trackLead() {
+    try {
+        if (window.mmTrack && currentProduct) {
+            mmTrack('Lead', { content_ids: [String(currentProduct.id)], content_name: String(currentProduct.title || ''),
+                value: Number(currentProduct.discount_price || 0), currency: 'UZS' });
+        }
+    } catch (e) { /* o'lchash xatosi buyurtmaga halaqit bermasin */ }
+}
+
 async function submitOrder(event) {
     event.preventDefault();
     const name = document.getElementById('order-name').value.trim();
@@ -1026,6 +1036,7 @@ async function submitOrder(event) {
 
     if (isTelegram) {
         tg.sendData(JSON.stringify({ action: 'order', ...orderData }));
+        trackLead();
         statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
         statusEl.className = "status ok";
         setTimeout(() => {
@@ -1042,6 +1053,7 @@ async function submitOrder(event) {
             });
             const data = await res.json();
             if (data.success) {
+                trackLead();
                 statusEl.innerText = "✅ Buyurtmangiz qabul qilindi!";
                 statusEl.className = "status ok";
                 setTimeout(() => {
