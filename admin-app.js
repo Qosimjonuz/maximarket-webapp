@@ -896,6 +896,12 @@ async function loadStats() {
       document.getElementById('v-year').innerText = d3.year || 0;
       document.getElementById('v-webapp').innerText = d3.today_webapp || 0;
       document.getElementById('v-browser').innerText = d3.today_browser || 0;
+      var fmtSrc = function (rows) {
+        return (rows && rows.length) ? rows.map(function (s) { return String(s.name) + ': ' + Number(s.count); }).join(' · ') : 'hali yo\'q';
+      };
+      var st = document.getElementById('v-sources-today'), sw = document.getElementById('v-sources-week');
+      if (st) st.textContent = fmtSrc(d3.sources_today);     // textContent: XSS xavfsiz
+      if (sw) sw.textContent = fmtSrc(d3.sources_week);
     }
   } catch (e) {}
 }
