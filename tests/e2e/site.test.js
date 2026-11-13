@@ -46,9 +46,24 @@ async function testHome(browser, base) {
   const { p, errors } = await page(browser, base, (req) => (req.url().includes('/api/products') ? { products: PRODUCTS } : null));
   await p.goto(base + '/index.html');
   await p.waitForSelector('.product-card-h, .big-product-card', { timeout: 10000 });
+  assert.strictEqual(await p.evaluate(() => BANNER_DELAY), 12000, 'banner 12 soniyada almashsin');
+  assert.strictEqual(await p.$$eval('.banner-nav', (x) => x.length), 0, '< > tugmalari olib tashlangan bo\'lishi kerak');
+  const active = () => p.$$eval('#banner-dots span', (d) => d.findIndex((x) => x.classList.contains('active')));
+  const n = await p.$$eval('#banner-dots span', (d) => d.length);
+  const a0 = await active();
+  const b = await (await p.$('#banner-carousel')).boundingBox();
+  const swipe = async (from, to) => {
+    await p.mouse.move(b.x + b.width * from, b.y + b.height / 2); await p.mouse.down();
+    await p.mouse.move(b.x + b.width * to, b.y + b.height / 2, { steps: 5 }); await p.mouse.up();
+    await p.waitForTimeout(200);
+  };
+  await swipe(0.8, 0.2);
+  assert.strictEqual(await active(), (a0 + 1) % n, 'chapga surish: keyingi banner');
+  await swipe(0.2, 0.8);
+  assert.strictEqual(await active(), a0, 'o\'ngga surish: oldingi banner');
   assert.deepStrictEqual(errors, [], 'bosh sahifada JS xato');
   await p.close();
-  console.log('✓ bosh sahifa: mahsulotlar chiqadi');
+  console.log('✓ bosh sahifa: mahsulotlar chiqadi, banner 12 s va surish bilan');
 }
 
 async function testStudio(browser, base) {

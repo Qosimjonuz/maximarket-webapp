@@ -89,6 +89,9 @@ body::before {
     overflow: hidden;
     box-shadow: 0 3px 12px rgba(0,0,0,0.2);
     background: #1565c0;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
 }
 .banner-slide {
     width: 100%; height: 100%;
@@ -103,16 +106,6 @@ body::before {
 .banner-emoji { font-size: 28px; margin-bottom: 4px; }
 .banner-title { font-size: 16px; font-weight: 800; margin-bottom: 2px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
 .banner-subtitle { font-size: 11px; opacity: 0.95; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
-.banner-nav {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.9); border: none;
-    width: 28px; height: 28px; border-radius: 50%;
-    font-size: 16px; cursor: pointer; color: #1565c0;
-    font-weight: 700; z-index: 3; display: flex;
-    align-items: center; justify-content: center;
-}
-.banner-nav.prev { left: 6px; }
-.banner-nav.next { right: 6px; }
 .banner-dots { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; z-index: 3; }
 .banner-dots span {
     display: inline-block; width: 6px; height: 6px;
@@ -1212,13 +1205,6 @@ body::before {
     .banner-slide {
         border-radius: 20px !important;
     }
-    .banner-nav {
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 30px !important;
-    }
-    .banner-nav.prev { left: 20px !important; }
-    .banner-nav.next { right: 20px !important; }
     .banner-dots {
         bottom: 16px !important;
     }
