@@ -58,7 +58,7 @@ const banners = [
 
 let currentBannerIndex = 0;
 let bannerInterval = null;
-const BANNER_DELAY = 4000;
+const BANNER_DELAY = 12000;
 
 let products = [];
 let filteredProducts = [];
@@ -271,6 +271,22 @@ function initBanner() {
         `<span class="${i === 0 ? 'active' : ''}" data-act="banner-go" data-v="${i}"></span>`
     ).join('');
     startBannerAutoSlide();
+    initBannerSwipe();
+}
+// Qo'l bilan surish: chapga surilsa keyingisi, o'ngga surilsa oldingisi (vertikal aylantirish xalaqit bermaydi)
+function initBannerSwipe() {
+    const el = document.getElementById('banner-carousel');
+    if (!el || el.dataset.swipe) return;
+    el.dataset.swipe = '1';
+    let sx = 0, sy = 0, down = false;
+    el.addEventListener('pointerdown', (e) => { down = true; sx = e.clientX; sy = e.clientY; });
+    el.addEventListener('pointercancel', () => { down = false; });
+    el.addEventListener('pointerup', (e) => {
+        if (!down) return;
+        down = false;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) slideBanner(dx < 0 ? 1 : -1);
+    });
 }
 function startBannerAutoSlide() {
     if (bannerInterval) clearInterval(bannerInterval);
@@ -1100,8 +1116,6 @@ document.addEventListener('click', function(e) {
     if (!el) return;
     const v = el.getAttribute('data-v');
     switch (el.getAttribute('data-act')) {
-        case 'banner-prev': slideBanner(-1); break;
-        case 'banner-next': slideBanner(1); break;
         case 'banner-go': goToBanner(parseInt(v, 10)); break;
         case 'category': setCategory(v); break;
         case 'search-clear': clearSearch(); break;
