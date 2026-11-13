@@ -38,7 +38,8 @@ var currentUsersPage = 1;
 var usersTotalPages = 1;
 var userSearchDebounce = null;
 var visibleUsers = [];
-var usersListOpen = true;
+var usersListOpen = false;
+var broadcastImage = null;
 var broadcastPoll = null;
 
 var currentOrdersPeriod = "today";
@@ -151,8 +152,9 @@ function toggleUsersList() {
   usersListOpen = !usersListOpen;
   var c = document.getElementById('users-list-container');
   var btn = document.getElementById('toggle-users-btn');
-  if (usersListOpen) { c.style.display = 'block'; btn.innerText = '🔼 Ro\'yxatni yopish'; }
-  else { c.style.display = 'none'; btn.innerText = '🔽 Ro\'yxatni ochish'; }
+  var pg = document.getElementById('users-pagination');
+  if (usersListOpen) { c.style.display = 'block'; pg.style.display = ''; btn.innerText = '🔼 Ro\'yxatni yopish'; }
+  else { c.style.display = 'none'; pg.style.display = 'none'; btn.innerText = '🔽 Ro\'yxatni ko\'rish'; }
 }
 
 
@@ -1125,6 +1127,7 @@ async function loadUsers() {
   var c = document.getElementById('users-list-container');
   c.innerHTML = '⏳ Yuklanmoqda...';
   c.style.display = usersListOpen ? 'block' : 'none';
+  document.getElementById('users-pagination').style.display = usersListOpen ? '' : 'none';
   var search = document.getElementById('user-search-input').value.trim();
   try {
     var r = await fetch(API_URL + '/api/users/list', {
@@ -1183,25 +1186,67 @@ function deselectAllUsers() {
   selectedUsers = [];
   updateUsersCountInfo();
 }
+// Xabarga rasm: telefon rasmi katta bo'lishi mumkin, shuning uchun yuborishdan oldin kichraytiramiz (JPEG, eng uzun tomoni 1600px).
+function clearBroadcastImage() {
+  broadcastImage = null;
+  document.getElementById('broadcast-image').value = '';
+  document.getElementById('broadcast-image-box').style.display = 'none';
+  var im = document.getElementById('broadcast-image-preview');
+  if (im.dataset.url) { URL.revokeObjectURL(im.dataset.url); im.dataset.url = ''; }
+  im.removeAttribute('src');
+}
+function pickBroadcastImage() {
+  var inp = document.getElementById('broadcast-image'), f = inp.files && inp.files[0];
+  var s = document.getElementById('send-status');
+  if (!f) { clearBroadcastImage(); return; }
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { clearBroadcastImage(); s.innerText = "❌ Rasm JPG, PNG yoki WebP bo'lsin"; s.className = 'status err'; return; }
+  var url = URL.createObjectURL(f), img = new Image();
+  img.onload = function () {
+    var k = Math.min(1, 1600 / Math.max(img.width, img.height));
+    var cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(img.width * k)); cv.height = Math.max(1, Math.round(img.height * k));
+    var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height);
+    cv.toBlob(function (blob) {
+      if (!blob) { URL.revokeObjectURL(url); s.innerText = "❌ Rasmni o'qib bo'lmadi"; s.className = 'status err'; return; }
+      broadcastImage = blob;
+      var im = document.getElementById('broadcast-image-preview');
+      if (im.dataset.url) URL.revokeObjectURL(im.dataset.url);
+      im.src = url; im.dataset.url = url;
+      document.getElementById('broadcast-image-box').style.display = 'block';
+      s.innerText = ''; s.className = '';
+    }, 'image/jpeg', 0.88);
+  };
+  img.onerror = function () { URL.revokeObjectURL(url); clearBroadcastImage(); s.innerText = "❌ Rasmni o'qib bo'lmadi"; s.className = 'status err'; };
+  img.src = url;
+}
 async function sendMessage() {
   var msg = document.getElementById('broadcast-message').value.trim();
   var all = document.getElementById('send-all-check').checked;
   var s = document.getElementById('send-status'), b = document.getElementById('send-message-btn');
-  if (!msg) { s.innerText = "❌ Xabar matnini kiriting!"; s.className = "status err"; return; }
+  if (!msg && !broadcastImage) { s.innerText = "❌ Xabar matnini yoki rasm kiriting!"; s.className = "status err"; return; }
   if (!all && selectedUsers.length === 0) { s.innerText = "❌ Obunachi tanlang yoki «Barcha obunachilarga» ni belgilang!"; s.className = "status err"; return; }
   var who = all ? "BARCHA obunachilarga" : selectedUsers.length + " ta obunachiga";
   if (!confirm(who + " xabar yuborilsinmi?")) return;
   b.disabled = true; s.innerText = ''; s.className = '';
   try {
-    var r = await fetch(API_URL + '/api/send_message', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(all ? { token: adminToken, send_all: true, message: msg }
-                               : { token: adminToken, user_ids: selectedUsers, message: msg })
-    });
+    var opts;
+    if (broadcastImage) {
+      var fd = new FormData();
+      fd.append('token', adminToken); fd.append('message', msg);
+      if (all) fd.append('send_all', 'true'); else fd.append('user_ids', JSON.stringify(selectedUsers));
+      fd.append('image', broadcastImage, 'xabar.jpg');
+      opts = { method: 'POST', body: fd };
+    } else {
+      opts = { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(all ? { token: adminToken, send_all: true, message: msg }
+                                 : { token: adminToken, user_ids: selectedUsers, message: msg }) };
+    }
+    var r = await fetch(API_URL + '/api/send_message', opts);
     if (r.status === 401) { handleAuthError(); return; }
     var d = await r.json();
     if (d.success) {
       document.getElementById('broadcast-message').value = '';
+      clearBroadcastImage();
       checkBroadcastStatus();
     } else {
       s.innerText = "❌ " + (d.error || "Xatolik");
