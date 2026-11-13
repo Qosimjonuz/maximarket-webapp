@@ -523,16 +523,22 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
         <button class="small danger" data-click="deselectAllUsers">❌ Tozalash</button>
       </div>
       <div class="user-actions">
-        <button class="small" data-click="toggleUsersList" id="toggle-users-btn">🔼 Ro'yxatni yopish</button>
+        <button class="small" data-click="toggleUsersList" id="toggle-users-btn">🔽 Ro'yxatni ko'rish</button>
       </div>
       <div style="font-size:12px;font-weight:700;color:#1565c0;text-align:center;margin:6px 0" id="users-count-info">0 ta obunachi tanlangan</div>
-      <div id="users-list-container" style="max-height:500px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
+      <div id="users-list-container" style="display:none;max-height:500px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:10px;padding:8px;margin-bottom:10px">
         <div class="empty-result">"Yuklash" tugmasini bosing</div>
       </div>
-      <div class="pagination" id="users-pagination"></div>
+      <div class="pagination" id="users-pagination" style="display:none"></div>
       <div class="message-box">
         <label>Xabar matni</label>
         <textarea id="broadcast-message" placeholder="Xabar matnini kiriting..."></textarea>
+        <label>🖼 Rasm (ixtiyoriy)</label>
+        <input type="file" id="broadcast-image" accept="image/jpeg,image/png,image/webp" data-change="pickBroadcastImage">
+        <div id="broadcast-image-box" style="display:none;margin:8px 0">
+          <img id="broadcast-image-preview" alt="Tanlangan rasm" style="max-width:100%;max-height:220px;border-radius:10px;display:block">
+          <button class="small danger" type="button" data-click="clearBroadcastImage" style="margin-top:6px">🗑 Rasmni olib tashlash</button>
+        </div>
         <label class="send-all-label"><input type="checkbox" id="send-all-check" data-change="updateUsersCountInfo"> Barcha obunachilarga yuborish</label>
         <button id="send-message-btn" class="success" data-click="sendMessage">📤 Yuborish</button>
         <div id="send-status" class="status"></div>
@@ -657,7 +663,7 @@ button.small{width:auto;padding:6px 10px;margin:0;font-size:12px}
   </div>
 </div>
 
-<script src="admin-events.js?v=20261031"></script>
-<script src="admin-app.js?v=20261112"></script>
+<script src="admin-events.js?v=20261113"></script>
+<script src="admin-app.js?v=20261113"></script>
 </body>
 </html>
