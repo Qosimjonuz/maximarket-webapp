@@ -1008,12 +1008,26 @@ function startCountdown() {
 }
 
 // Meta Pixel: buyurtma yuborildi (Lead). Ism va telefon YUBORILMAYDI, faqat mahsulot va narx.
+function pixelData() {
+    return { content_ids: [String(currentProduct.id)], content_type: 'product', content_name: String(currentProduct.title || ''),
+        value: Number(currentProduct.discount_price || currentProduct.price || 0), currency: 'UZS', num_items: 1 };
+}
+
+// Buyurtma muvaffaqiyatli yuborilganda: Lead (eski kampaniyalar uchun) va Purchase (xarid, to'lov yetkazilganda)
 function trackLead() {
     try {
         if (window.mmTrack && currentProduct) {
-            mmTrack('Lead', { content_ids: [String(currentProduct.id)], content_name: String(currentProduct.title || ''),
-                value: Number(currentProduct.discount_price || 0), currency: 'UZS' });
+            const d = pixelData();
+            mmTrack('Lead', d);
+            mmTrack('Purchase', d);
         }
+    } catch (e) { /* o'lchash xatosi buyurtmaga halaqit bermasin */ }
+}
+
+// Buyurtma formasi bilan birinchi aloqa (AddToCart) va tasdiqlash bosilishi (InitiateCheckout): oynaga bir martadan
+function trackFunnel(name, key) {
+    try {
+        if (window.mmTrackOnce && currentProduct) mmTrackOnce(key + ':' + currentProduct.id + ':' + orderOpenedAt, name, pixelData());
     } catch (e) { /* o'lchash xatosi buyurtmaga halaqit bermasin */ }
 }
 
@@ -1029,6 +1043,7 @@ async function submitOrder(event) {
     if (phoneDigits.length < 12) { statusEl.innerText = "❌ Telefon to'liq emas!"; statusEl.className = "status err"; return; }
     if (currentProduct.sizes && currentProduct.sizes.length > 0 && !selectedSize) { statusEl.innerText = "❌ O'lchamni tanlang!"; statusEl.className = "status err"; return; }
     if (currentProduct.colors && currentProduct.colors.length > 0 && !selectedColor) { statusEl.innerText = "❌ Rangni tanlang!"; statusEl.className = "status err"; return; }
+    trackFunnel('InitiateCheckout', 'ic');
 
     let colorName = "";
     if (selectedColor) {
@@ -1130,6 +1145,7 @@ document.addEventListener('click', function(e) {
     if (search) search.addEventListener('input', filterProducts);
     const form = document.getElementById('order-form');
     if (form) form.addEventListener('submit', submitOrder);
+    if (form) form.addEventListener('focusin', function () { trackFunnel('AddToCart', 'atc'); });
     const logo = document.querySelector('.logo-img');
     if (logo) {
         const hide = () => { logo.style.display = 'none'; };

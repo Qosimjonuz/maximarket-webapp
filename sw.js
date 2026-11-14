@@ -2,7 +2,7 @@
    Muhim: HTML/JS/CSS uchun "network-first" — sayt yangilansa, ilova ham
    darhol yangi versiyani oladi (eski kesh muammosi bo'lmaydi).
    API (Railway) hech qachon keshlanmaydi — doim jonli ma'lumot. */
-const VERSION = 'v6';
+const VERSION = 'v7';
 const STATIC_CACHE = 'maximarket-static-' + VERSION;
 const APP_SHELL = ['/', '/index.html', '/style.css', '/app.js', '/lock.js', '/manifest.json', '/icons/icon-512.png'];
 

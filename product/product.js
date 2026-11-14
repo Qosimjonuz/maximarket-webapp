@@ -155,6 +155,15 @@
 
     function setStatus(text, cls) { var s = $('status'); s.textContent = text; s.className = 'st ' + (cls || ''); }
 
+    function pixelData() {
+        return { content_ids: [String(product.id)], content_type: 'product', content_name: String(product.title || ''),
+            value: Number(product.discount_price || product.price || 0), currency: 'UZS', num_items: 1 };
+    }
+    // AddToCart (forma bilan birinchi aloqa) va InitiateCheckout (tasdiqlash): sahifaga bir martadan
+    function track(name, key) {
+        try { if (window.mmTrackOnce && product) window.mmTrackOnce(key + ':' + product.id, name, pixelData()); } catch (e4) { /* o'lchash xatosi halaqit bermasin */ }
+    }
+
     function submit(e) {
         e.preventDefault();
         var name = $('name').value.trim(), phone = $('phone').value.trim();
@@ -166,6 +175,7 @@
             if (!color) return setStatus('❌ Rangni tanlang!', 'err');
             colorName = COLORS[color] ? COLORS[color][0] : '';
         }
+        track('InitiateCheckout', 'ic');
         var btn = $('submit');
         btn.disabled = true; btn.textContent = 'Yuborilmoqda...';
         post('/api/public_order', {
@@ -180,9 +190,8 @@
             color: colorName
         }).then(function (r) { return r.json(); }).then(function (d) {
             if (d.success) {
-                try {   // Meta Pixel Lead: faqat mahsulot va narx, ism/telefon yuborilmaydi
-                    if (window.mmTrack) window.mmTrack('Lead', { content_ids: [String(product.id)], content_name: String(product.title || ''),
-                        value: Number(product.discount_price || product.price || 0), currency: 'UZS' });
+                try {   // Meta Pixel Lead va Purchase: faqat mahsulot va narx, ism/telefon yuborilmaydi
+                    if (window.mmTrack) { window.mmTrack('Lead', pixelData()); window.mmTrack('Purchase', pixelData()); }
                 } catch (e2) { /* o'lchash xatosi buyurtmaga halaqit bermasin */ }
                 setStatus('✅ Buyurtmangiz qabul qilindi! Tez orada operatorimiz bog\'lanadi.', 'ok');
                 $('form').reset();
@@ -213,7 +222,8 @@
         }, { passive: true });
         $('phone').addEventListener('input', function () { this.value = formatPhone(this.value); });
         $('phone').addEventListener('focus', function () { if (!this.value) this.value = '+998'; });
-        $('goOrder').addEventListener('click', function () { $('form').scrollIntoView({ behavior: 'smooth' }); });
+        $('goOrder').addEventListener('click', function () { track('AddToCart', 'atc'); $('form').scrollIntoView({ behavior: 'smooth' }); });
+        $('form').addEventListener('focusin', function () { track('AddToCart', 'atc'); });
         $('form').addEventListener('submit', submit);
         fetch(API_URL + '/api/products').then(function (r) { return r.json(); }).then(function (d) {
             allProducts = d.products || [];

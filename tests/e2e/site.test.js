@@ -134,6 +134,27 @@ async function testStudioMenu(browser, base) {
   console.log('✓ MaxiStudio menyu: 6 vosita, tashqi havolalar, muharrirga o\'tish');
 }
 
+async function testPixelFunnel(browser, base) {
+  const { p, errors } = await page(browser, base, (req) => (req.url().includes('/api/products') ? { products: PRODUCTS.map((x) => ({ ...x, title: x.name, discount_price: 150000 })) } : null));
+  await p.route('https://connect.facebook.net/**', (r) => r.fulfill({ contentType: 'application/javascript', body: '' }));
+  await p.goto(base + '/product/index.html?id=' + PRODUCTS[0].id);
+  await p.waitForSelector('#form');
+  await p.click('#goOrder');
+  await p.focus('#name'); await p.focus('#phone');
+  await p.fill('#name', 'Test Mijoz'); await p.fill('#phone', '+998901234567');
+  await p.click('#submit');
+  await p.waitForFunction(() => /qabul/.test(document.getElementById('status').textContent));
+  const ev = await p.evaluate(() => (window.fbq.queue || []).filter((a) => a[0] === 'track').map((a) => [a[1], a[2]]));
+  const names = ev.map((e) => e[0]);
+  assert.deepStrictEqual(names, ['PageView', 'ViewContent', 'AddToCart', 'InitiateCheckout', 'Lead', 'Purchase'], 'hodisalar tartibi (AddToCart bir marta): ' + names);
+  const pur = ev[5][1];
+  assert.strictEqual(pur.currency, 'UZS'); assert.strictEqual(pur.value, 150000); assert.deepStrictEqual(pur.content_ids, [PRODUCTS[0].id]);
+  assert.ok(!/Test Mijoz|998901234567/.test(JSON.stringify(ev)), 'ism/telefon pixelga ketmasligi kerak');
+  assert.deepStrictEqual(errors, [], 'mahsulot sahifasida JS xato');
+  await p.close();
+  console.log('✓ pixel: ViewContent, AddToCart, InitiateCheckout, Lead, Purchase (UZS, shaxsiy ma\'lumotsiz)');
+}
+
 (async () => {
   const srv = await serve();
   const base = 'http://127.0.0.1:' + srv.address().port;
@@ -142,6 +163,7 @@ async function testStudioMenu(browser, base) {
     await testHome(browser, base);
     await testStudio(browser, base);
     await testStudioMenu(browser, base);
+    await testPixelFunnel(browser, base);
   } finally {
     await browser.close(); srv.close();
   }

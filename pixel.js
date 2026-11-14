@@ -6,6 +6,7 @@
     var PIXEL_ID = '994609253124059';   // MaxiMarket (biznes shodmakuz, ads akkaunt "maxi marked"), 2026-11-11
 
     window.mmTrack = function () {};
+    window.mmTrackOnce = function () {};
     if (!/^\d{10,20}$/.test(PIXEL_ID)) return;
     // Foydalanuvchi kuzatuvni o'chirgan bo'lsa (Do Not Track / Global Privacy Control), hurmat qilamiz
     if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
@@ -24,5 +25,13 @@
     // mmTrack('Lead', {content_ids: ['id'], content_name: '...', value: 99000, currency: 'UZS'})
     window.mmTrack = function (name, data) {
         try { window.fbq('track', String(name), data || {}); } catch (e) { /* o'lchash xatosi saytga halaqit bermasin */ }
+    };
+
+    // Bir sahifa/oyna uchun bir marta (AddToCart, InitiateCheckout): key bir xil bo'lsa qayta yuborilmaydi
+    var seen = {};
+    window.mmTrackOnce = function (key, name, data) {
+        if (seen[key]) return;
+        seen[key] = 1;
+        window.mmTrack(name, data);
     };
 })();
