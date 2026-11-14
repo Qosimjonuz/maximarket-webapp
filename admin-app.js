@@ -191,6 +191,14 @@ function switchPage(page) {
 
 
 // ==================== OQIM FILTER ====================
+// Mahsulotda hech bo'lmasa bitta hamkor oqimi bormi (100k, Inbaza yoki Alijahon) va ularning qisqa ro'yxati
+function partnerList(p) {
+  var l = [];
+  if (p.oqim_id) l.push(['100k', p.oqim_id]);
+  if (p.inbaza_offer_id) l.push(['Inbaza', p.inbaza_offer_id]);
+  if (p.alijahon_stream_id) l.push(['Alijahon', p.alijahon_stream_id]);
+  return l;
+}
 function switchOqimFilter(filter) {
   activeOqimFilter = filter;
   currentPage = 1;
@@ -610,8 +618,8 @@ function applyFilters() {
       (p.categories && p.categories.indexOf(activeFilterCategory) > -1);
     // ⭐ Oqim filter
     var mo = true;
-    if (activeOqimFilter === 'has') mo = !!p.oqim_id;
-    else if (activeOqimFilter === 'no') mo = !p.oqim_id;
+    if (activeOqimFilter === 'has') mo = partnerList(p).length > 0;
+    else if (activeOqimFilter === 'no') mo = partnerList(p).length === 0;
     return ms && mc && mo;
   });
   totalPages = Math.max(1, Math.ceil(filteredProducts.length / PER_PAGE));
@@ -669,11 +677,12 @@ function renderProductsPage() {
     var stockColor = p.stock <= 10 ? '#e53935' : '#2e7d32';
 
     // ⭐ Oqim status fishka
-    var oqimBadge = p.oqim_id
-      ? '<div class="oqim-badge has">✅ Oqim: ' + escapeHtml(p.oqim_id) + '</div>'
+    var partners = partnerList(p);
+    var oqimBadge = partners.length
+      ? partners.map(function (x) { return '<div class="oqim-badge has">✅ ' + x[0] + ': ' + escapeHtml(String(x[1])) + '</div>'; }).join(' ')
       : '<div class="oqim-badge no">❌ Oqim yo\'q</div>';
 
-    var itemClass = p.oqim_id ? 'has-oqim' : 'no-oqim';
+    var itemClass = partners.length ? 'has-oqim' : 'no-oqim';
 
     h += '<div class="product-item ' + itemClass + '" data-click="openProductModal" data-arg="' + escapeHtml(String(p.id)) + '">';
     h += '<div class="product-item-info">';
@@ -793,8 +802,9 @@ function openProductModal(id) {
 
   // ⭐ Oqim ID
   var pmOqim = document.getElementById('pm-oqim');
-  if (p.oqim_id) {
-    pmOqim.innerText = '✅ ' + p.oqim_id;
+  var pmPartners = partnerList(p);
+  if (pmPartners.length) {
+    pmOqim.innerText = '✅ ' + pmPartners.map(function (x) { return x[0] + ': ' + x[1]; }).join(' | ');
     pmOqim.className = 'product-modal-info-value has-oqim';
   } else {
     pmOqim.innerText = '❌ Yo\'q';
