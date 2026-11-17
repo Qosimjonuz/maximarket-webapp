@@ -26,6 +26,7 @@ const checks = [
     const r = await get(API + '/api/products'); assert.strictEqual(r.status, 200);
     const n = (JSON.parse(r.text).products || []).length; assert.ok(n > 0, 'mahsulotlar 0 ta'); return r.ms + ' ms, ' + n + ' ta';
   }],
+  ['MaxiStudio sahifasi', async () => { const r = await get(SITE + '/studio/'); assert.strictEqual(r.status, 200); return r.ms; }],
   ['Admin panel sahifasi', async () => { const r = await get(SITE + '/Maxikomadmin.html'); assert.strictEqual(r.status, 200); return r.ms; }],
   ['Brauzerda mahsulotlar chiqishi', async () => {
     const browser = await launch();
