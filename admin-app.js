@@ -4,6 +4,9 @@
  * Yangilik: Oqim ID (100k.uz integratsiya)
  * ============================================================ */
 
+// Clickjacking himoyasi: GitHub Pages X-Frame-Options yubora olmaydi, shuning uchun admin panel boshqa sayt ramkasida ochilmaydi
+if (window.top !== window.self) { try { window.top.location = window.self.location; } catch (e) { document.documentElement.innerHTML = ''; } }
+
 var API_URL = "https://maximarketbot-production.up.railway.app";
 var TOKEN_KEY = "maximarket_admin_token";
 
@@ -729,7 +732,7 @@ function loadProducts() {
     document.getElementById('filtered-count').innerText = filteredProducts.length;
     renderProductsPage();
   }).catch(function (e) {
-    l.innerHTML = '<p style="color:#c62828">Xatolik: ' + e.message + '</p>';
+    l.innerHTML = '<p style="color:#c62828">Xatolik: ' + escapeHtml(e.message) + '</p>';
   });
 }
 
@@ -1055,7 +1058,7 @@ async function loadOrders() {
     l.innerHTML = h;
     renderPagination('orders-pagination', currentOrdersPage, ordersTotalPages, 'goToOrdersPage');
   } catch (e) {
-    l.innerHTML = '<div class="empty-result">Xatolik: ' + e.message + '</div>';
+    l.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
   }
 }
 function goToOrdersPage(p) {
@@ -1111,7 +1114,7 @@ async function loadSalesList() {
     l.innerHTML = h;
     renderPagination('sm-pagination', salesListPage, salesListTotalPages, 'goToSalesPage');
   } catch (e) {
-    l.innerHTML = '<div class="empty-result">Xatolik: ' + e.message + '</div>';
+    l.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>';
   }
 }
 function goToSalesPage(p) {
@@ -1174,7 +1177,7 @@ async function loadUsers() {
     });
     renderPagination('users-pagination', currentUsersPage, usersTotalPages, 'goToUsersPage');
     updateUsersCountInfo();
-  } catch (e) { c.innerHTML = '<div class="empty-result">Xatolik: ' + e.message + '</div>'; }
+  } catch (e) { c.innerHTML = '<div class="empty-result">Xatolik: ' + escapeHtml(e.message) + '</div>'; }
 }
 function goToUsersPage(p) { currentUsersPage = p; loadUsers(); }
 function updateUsersCountInfo() {
@@ -1496,7 +1499,7 @@ function renderTargets(t) {
 
 function renderRecent(list) {
   var box = document.getElementById('conn-recent');
-  if (!list.length) { box.innerHTML = '<div class="empty-result">Hali kontent yo\'q. Kontentchi botda 🎬 Yangi kontent bosing.</div>'; return; }
+  if (!list.length) { box.innerHTML = '<div class="empty-result">Hali kontent yo\'q. Aksiya reeli har kuni 13:00 va 20:00 da avtomatik chiqadi.</div>'; return; }
   var names = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', facebook: 'Facebook', telegram: 'Telegram' };
   box.innerHTML = list.map(function (d) {
     var res = Object.keys(d.results || {}).map(function (k) {
