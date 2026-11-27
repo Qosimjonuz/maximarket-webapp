@@ -24,7 +24,7 @@
     ['😱 Hook', { text: 'Qaranglar, nima oldim! 😱', font: 'rubik', size: 0.065, outline: true, y: 0.3 }]];
   var EMOJIS = ['🔥', '😍', '✅', '💥', '⭐', '🎁', '❤️', '👍', '😱', '🤩', '💯', '🛒', '🚚', '💰', '⚡', '👇', '👉', '🎉', '😊', '🆕'];
 
-  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'none', frameScale: 1,
+  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'f1', frameScale: 1,
     banner: 'none', bannerScale: 0.9, bannerX: 0.5, bannerY: 0.8 };
   var FRAMES = ['f1', 'f2', 'f3'];
   var BANNERS = ['b1', 'b2'];
@@ -549,7 +549,7 @@
         $('caption').value = d.caption || '';
         S.frameScale = d.frameScale || 1;
         S.bannerScale = d.bannerScale || 0.9; S.bannerX = d.bannerX != null ? d.bannerX : 0.5; S.bannerY = d.bannerY != null ? d.bannerY : 0.8;
-        setFrame(FRAMES.indexOf(d.frame) >= 0 ? d.frame : 'none');
+        setFrame(FRAMES.indexOf(d.frame) >= 0 ? d.frame : (d.frame === 'none' ? 'none' : 'f1'));
         setBanner(BANNERS.indexOf(d.banner) >= 0 ? d.banner : 'none');
         stage.classList.toggle('contain', S.fit === 'contain');
         document.querySelectorAll('.seg button').forEach(function (x) { x.classList.toggle('active', x.getAttribute('data-fit') === S.fit); });
