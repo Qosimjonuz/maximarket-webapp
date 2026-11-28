@@ -24,7 +24,7 @@
     ['😱 Hook', { text: 'Qaranglar, nima oldim! 😱', font: 'rubik', size: 0.065, outline: true, y: 0.3 }]];
   var EMOJIS = ['🔥', '😍', '✅', '💥', '⭐', '🎁', '❤️', '👍', '😱', '🤩', '💯', '🛒', '🚚', '💰', '⚡', '👇', '👉', '🎉', '😊', '🆕'];
 
-  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'f1', frameScale: 1,
+  var S = { clips: [], texts: [], music: null, videoVolume: 1, fit: 'cover', transition: 'none', tdur: 0.5, frame: 'f1', frameScale: 0.9,
     banner: 'none', bannerScale: 0.9, bannerX: 0.5, bannerY: 0.8 };
   var FRAMES = ['f1', 'f2', 'f3'];
   var BANNERS = ['b1', 'b2'];
@@ -547,7 +547,7 @@
         if (d.music && urls[d.music.id]) { setMusic({ id: d.music.id, duration: d.music.duration }, urls[d.music.id], d.music.name); S.music.segs = d.music.segs && d.music.segs.length ? d.music.segs : [{ s: d.music.offset || 0, e: d.music.duration }]; S.music.volume = d.music.volume; renderSegs(); $('music-vol').value = Math.round(d.music.volume * 100); }
         S.videoVolume = d.videoVolume || 1; S.fit = d.fit || 'cover'; S.transition = d.transition || 'none'; S.tdur = d.tdur || 0.5;
         $('caption').value = d.caption || '';
-        S.frameScale = d.frameScale || 1;
+        S.frameScale = d.frameScale || 0.9;
         S.bannerScale = d.bannerScale || 0.9; S.bannerX = d.bannerX != null ? d.bannerX : 0.5; S.bannerY = d.bannerY != null ? d.bannerY : 0.8;
         setFrame(FRAMES.indexOf(d.frame) >= 0 ? d.frame : (d.frame === 'none' ? 'none' : 'f1'));
         setBanner(BANNERS.indexOf(d.banner) >= 0 ? d.banner : 'none');

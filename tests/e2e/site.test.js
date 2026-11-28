@@ -77,6 +77,7 @@ async function testStudio(browser, base) {
   });
   await p.goto(base + '/studio/index.html');
   assert.ok(await p.$eval('#frames button[data-frame=f1]', (b) => b.classList.contains('active')), 'yangi loyihada f1 ramka yoqilgan bo\'lishi kerak');
+  assert.strictEqual(await p.$eval('#fscale', (e) => e.value), '90', 'ramka standart 90%');
   await p.setInputFiles('#add-media', { name: 'a.mp4', mimeType: 'video/mp4', buffer: Buffer.from('test') });
   await p.waitForFunction(() => document.querySelectorAll('#clips .card').length === 1);
   await p.waitForTimeout(300);
